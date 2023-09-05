@@ -1,0 +1,21 @@
+spring:
+  datasource:
+    url: jdbc:h2:tcp://localhost/~/test
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    # JPA 처리 시에 발생하는 SQL을 보여줄 것인지 결정합니다.
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        show_sql: true
+        # 실제 JPA의 구현체인 Hibernate 가 동작하면서 발생하는 SQL을 포맷팅해서 출력합니다.
+        # 실행되는 SQL의 가독성을 높여 줍니다.
+        format_sql: true
+        # 일대다 컬렉션 조회 시 성능 최적화
+        default_batch_fetch_size: 500
