@@ -1,5 +1,6 @@
 package com.example.shopping.domain.member;
 
+import com.example.shopping.entity.member.MemberEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
@@ -66,5 +67,20 @@ public class MemberDTO {
         this.memberAddress = memberAddress;
         this.provider = provider;
         this.providerId = providerId;
+    }
+
+    public static MemberDTO toMemberDTO(MemberEntity member) {
+        return MemberDTO.builder()
+                .memberId(member.getMemberId())
+                .email(member.getEmail())
+                .memberPw(member.getMemberPw())
+                .nickName(member.getNickName())
+                .memberName(member.getMemberName())
+                .memberRole(member.getMemberRole())
+                .memberAddress(AddressDTO.builder()
+                        .memberAddr(member.getAddress().getMemberAddr())
+                        .memberAddrDetail(member.getAddress().getMemberAddrDetail())
+                        .memberAddrEtc(member.getAddress().getMemberAddrEtc())
+                        .build()).build();
     }
 }

@@ -34,7 +34,11 @@ public class MemberController {
         }
 
         try {
-            String join = me
+            ResponseEntity<?> signUp = memberService.signUp(member);
+            return ResponseEntity.ok().body(signUp);
+        } catch (Exception e) {
+            log.error("예외 : " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 }
