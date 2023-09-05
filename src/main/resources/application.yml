@@ -1,0 +1,54 @@
+spring:
+  profiles:
+    include:
+      - jwt
+      - oauth
+  devtools:
+    livereload:
+      enabled: true
+    restart:
+      enabled: true
+
+  # swagger
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/project1
+    username: root
+    password: 1234
+
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+    # 영속성 컨텍스트의 생존 범위를 트랜잭션 범위로 한정
+    # 실시간 트래픽이 중요한 API 애플리케이션에는 false로 유지
+    open-in-view: true
+    # JPA 처리 시에 발생하는 SQL을 보여줄 것인지 결정합니다.
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        show_sql: true
+        # 실제 JPA의 구현체인 Hibernate 가 동작하면서 발생하는 SQL을 포맷팅해서 출력합니다.
+        # 실행되는 SQL의 가독성을 높여 줍니다.
+        format_sql: true
+        # 일대다 컬렉션 조회 시 성능 최적화
+        default_batch_fetch_size: 500
+
+  thymeleaf:
+    prefix: classpath:templates/
+    suffix: .html
+    mode: HTML5
+    cache: false
+
+
+logging:
+  level:
+    org:
+      hibernate:
+        type:
+          descriptor:
+            sql: trace
