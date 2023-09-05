@@ -16,7 +16,7 @@ spring:
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/project1
+    url: jdbc:mysql://localhost:3306/shopping_project
     username: root
     password: 1234
 
@@ -37,13 +37,6 @@ spring:
         format_sql: true
         # 일대다 컬렉션 조회 시 성능 최적화
         default_batch_fetch_size: 500
-
-  thymeleaf:
-    prefix: classpath:templates/
-    suffix: .html
-    mode: HTML5
-    cache: false
-
 
 logging:
   level:
