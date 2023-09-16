@@ -41,7 +41,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // Spring Security의 SecurityContextHolder를 사용하여 현재 인증 정보를 설정합니다.
             // 이를 통해 현재 사용자가 인증된 상태로 처리됩니다.
             // 이렇게 저장하면 컨트롤러에서 토큰에서 정보를 가져와서 사용할 수 있습니다.
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+            getContext().setAuthentication(authentication);
         } else {
             log.error("유효한 토큰이 없습니다.");
         }
