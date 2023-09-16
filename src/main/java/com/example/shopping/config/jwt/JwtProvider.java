@@ -1,22 +1,22 @@
 package com.example.shopping.config.jwt;
 
 import com.example.shopping.domain.jwt.TokenDTO;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import javax.security.sasl.AuthenticationException;
 import javax.xml.bind.DatatypeConverter;
 import java.security.Key;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 // PrincipalDetails 정보를 가지고 토큰을 만들어준다.
@@ -110,9 +110,51 @@ public class JwtProvider {
 
     }
 
-    //
+    // JWT 토큰을 복호화하여 토큰에 들어있는 정보를 꺼내는 코드
+    // 토큰으로 클레임을 만들고 이를 이용해 유저 객체를 만들어서 최종적으로 authentication 객체를 리턴
+    public Authentication getAuthentication(String token) {
+        // 토큰 복호화 메소드
+        Claims claims = parseClaims(token);
+        log.info("claims : " + claims);
 
+        if(claims.get("auth") == null) {
+            log.info("권한 정보가 없는 토큰입니다.");
+        }
+        // 권한 정보 가져오기
+        List<String> authority = (List<String>) claims.get(AUTHORITIES_KEY);
+        log.info("authority : " + authority);
 
+        Collection<? extends GrantedAuthority> authorities =
+                authority.stream()
+                        .map(SimpleGrantedAuthority::new)
+                        .collect(Collectors.toList());
+
+        UserDetails userDetails = new User(claims.getSubject(), "", authorities);
+        log.info("subject : " + claims.getSubject());
+
+        // 일반 로그인 시 주로 이거로 인증처리해서 SecurityContext에 저장한다.
+        // Spring Security에서 인증을 나타내는 객체로 사용됩니다.
+        return new UsernamePasswordAuthenticationToken(userDetails, token, authorities);
+    }
+
+    // 토큰 복호화 메소드
+    private Claims parseClaims(String token) {
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (ExpiredJwtException e) {
+            log.info("ExpiredJwtException : " + e.getMessage());
+            log.info("ExpiredJwtException : " + e.getClaims());
+            return e.getClaims();
+        }
+    }
+
+    // 토큰을 만들 때 제대로 만들어졌는지 log를 찍어보려고할 때
+    // 토큰을 만들 때마다 치면 가독성이 떨어지니
+    // 메소드로 만들어줍니다.
     private String checkToken(String token) {
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(key)
@@ -122,6 +164,26 @@ public class JwtProvider {
 
         String subject = claims.getSubject();
         return subject;
+    }
+
+    // 토큰 검증을 위해 사용
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token);
+            return true;
+        } catch (SecurityException | MalformedJwtException e) {
+            log.error("잘못된 JWT 설명입니다. \n info : " + e.getMessage());
+        } catch (ExpiredJwtException e) {
+            log.error("만료된 JWT입니다. \n info : " + e.getMessage());
+        } catch (UnsupportedJwtException e) {
+            log.error("지원되지 않는 JWT입니다. \n info : " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            log.error("JWT가 잘못되었습니다. \n info : " + e.getMessage());
+        }
+        return false;
     }
 
 }
