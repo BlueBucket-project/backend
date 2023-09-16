@@ -1,5 +1,8 @@
 package com.example.shopping.config.security;
 
+import com.example.shopping.config.jwt.JwtAccessDeniedHandler;
+import com.example.shopping.config.jwt.JwtAuthenticationEntryPoint;
+import com.example.shopping.config.jwt.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,6 +21,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 @EnableWebSecurity
 public class SecurityConfig {
+
+    private final JwtProvider jwtProvider;
 
 
     @Bean
@@ -49,6 +54,17 @@ public class SecurityConfig {
                     .antMatchers("/swagger-resources/**").permitAll()
                     .antMatchers("/swagger-ui/**").permitAll()
                     .antMatchers("/api/v1/users/**").permitAll();
+
+        http
+                // JWT Token을 위한 Filter를 아래에서 만들어 줄건데,
+                // 이 Filter를 어느위치에서 사용하겠다고 등록을 해주어야 Filter가 작동이 됩니다.
+                .apply(new JwtSecurtityConfig(jwtProvider));
+
+        // 에러 방지
+        http
+                .exceptionHandling()
+                .authenticationEntryPoint(new JwtAuthenticationEntryPoint())
+                .accessDeniedHandler(new JwtAccessDeniedHandler());
 
 
         return http.build();
