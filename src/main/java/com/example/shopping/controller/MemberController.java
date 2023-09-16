@@ -8,22 +8,23 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import javax.persistence.EntityNotFoundException;
 
 @RestController
 // @Slf4j를 사용하지 않고 Log4j2를 사용하는 이유는
 // 기능면에서 더 좋기 때문입니다.
 @Log4j2
 @RequiredArgsConstructor
+@RequestMapping("/api/v1/users")
 public class MemberController {
 
     private final MemberService memberService;
 
 
     // 회원가입
-    @PostMapping("/api/v1/users/")
+    @PostMapping("/")
     // BindingResult 타입의 매개변수를 지정하면 BindingResult 매개 변수가 입력값 검증 예외를 처리한다.
     public ResponseEntity<?> join(@Validated @RequestBody MemberDTO member,
                                   BindingResult result) throws Exception {
@@ -39,6 +40,17 @@ public class MemberController {
         } catch (Exception e) {
             log.error("예외 : " + e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    // 회원 조회
+    @GetMapping("/{memberId}")
+    public ResponseEntity<MemberDTO> search(@PathVariable Long memberId) throws Exception {
+        try {
+            MemberDTO search = memberService.search(memberId);
+            return ResponseEntity.ok().body(search);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 }

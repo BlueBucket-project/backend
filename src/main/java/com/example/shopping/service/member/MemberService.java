@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityNotFoundException;
+
 @Service
 @RequiredArgsConstructor
 @Log4j2
@@ -48,5 +50,13 @@ public class MemberService {
             log.error(e.getMessage());
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    // 회원 조회
+    public MemberDTO search(Long memberId) {
+        MemberEntity member = memberRepository.findById(memberId)
+                .orElseThrow(EntityNotFoundException::new);
+
+        return MemberDTO.toMemberDTO(member);
     }
 }
