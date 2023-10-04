@@ -24,7 +24,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 
 @SpringBootTest
-@TestPropertySource(locations = "classpath:application-test.yml")
 @Log4j2
 @AutoConfigureMockMvc
 @Transactional
