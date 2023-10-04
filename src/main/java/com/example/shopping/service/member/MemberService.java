@@ -135,8 +135,6 @@ public class MemberService {
             return ResponseEntity.badRequest().build();
         }
     }
-
-
     // 회원의 권한을 GrantedAuthority타입으로 반환하는 메소드
     private List<GrantedAuthority> getAuthoritiesForUser(MemberEntity member) {
         Role memberRole = member.getMemberRole();
@@ -144,5 +142,35 @@ public class MemberService {
         authorities.add(new SimpleGrantedAuthority("ROLE_" + memberRole.name()));
         log.info("role : " + authorities);
         return authorities;
+    }
+
+    // 회원정보 수정
+    public ResponseEntity<?> updateUser(MemberDTO memberDTO, String memberEmail) {
+        try {
+            MemberEntity findUser = memberRepository.findByEmail(memberEmail);
+            log.info("user : " + findUser);
+
+            if(findUser != null) {
+                findUser = MemberEntity.builder()
+                        .memberId(findUser.getMemberId())
+                        .email(findUser.getEmail())
+                        .memberPw(passwordEncoder.encode(memberDTO.getMemberPw()))
+                        .nickName(memberDTO.getNickName())
+                        .memberRole(memberDTO.getMemberRole())
+                        .address(AddressEntity.builder()
+                                .memberAddr(memberDTO.getMemberAddress().getMemberAddr())
+                                .memberAddrDetail(memberDTO.getMemberAddress().getMemberAddrDetail())
+                                .memberAddrEtc(memberDTO.getMemberAddress().getMemberAddrEtc())
+                                .build()).build();
+
+                MemberEntity updateUser = memberRepository.save(findUser);
+                MemberDTO toMemberDTO = MemberDTO.toMemberDTO(updateUser);
+                return ResponseEntity.ok().body(toMemberDTO);
+            } else {
+                throw new EntityNotFoundException();
+            }
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("회원 정보가 없습니다.");
+        }
     }
 }

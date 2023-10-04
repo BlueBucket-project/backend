@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -75,6 +77,20 @@ public class MemberController {
             return ResponseEntity.ok().body(login);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("로그인을 실패했습니다.");
+        }
+    }
+
+    // 회원 수정
+    @PutMapping("")
+    public ResponseEntity<?> update(@RequestBody MemberDTO memberDTO,
+                                    @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            String email = userDetails.getUsername();
+            log.info("email : " + email);
+            ResponseEntity<?> responseEntity = memberService.updateUser(memberDTO, email);
+            return ResponseEntity.ok().body(responseEntity);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("잘못된 요청");
         }
     }
 }
