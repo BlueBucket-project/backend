@@ -60,5 +60,16 @@ public class MemberService {
         return MemberDTO.toMemberDTO(member);
     }
 
-    //
+    // 회원 삭제
+    public String removeUser(Long memberId) throws Exception {
+        MemberEntity member = memberRepository.findById(memberId)
+                .orElseThrow(EntityNotFoundException::new);
+
+        if(member != null) {
+            memberRepository.deleteByMemberId(memberId);
+            return "회원 탈퇴 완료";
+        } else {
+            return "유저가 등록되어 있지 않습니다.";
+        }
+    }
 }
