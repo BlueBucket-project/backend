@@ -93,4 +93,12 @@ public class MemberController {
             return ResponseEntity.badRequest().body("잘못된 요청");
         }
     }
+
+    // 중복체크
+    @PostMapping("/{memberEmail}")
+    public String emailCheck(@PathVariable String memberEmail) {
+        log.info("email : " + memberEmail);
+        String result = memberService.emailCheck(memberEmail);
+        return result;
+    }
 }

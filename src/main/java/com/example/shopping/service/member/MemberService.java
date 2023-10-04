@@ -173,4 +173,14 @@ public class MemberService {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("회원 정보가 없습니다.");
         }
     }
+
+    // 중복체크
+    public String emailCheck(String email) {
+        MemberEntity findEmail = memberRepository.findByEmail(email);
+        if(findEmail == null) {
+            return "회원가입이 가능한 이메일입니다.";
+        } else {
+            return "이미 가입한 이메일이 있습니다.";
+        }
+    }
 }
