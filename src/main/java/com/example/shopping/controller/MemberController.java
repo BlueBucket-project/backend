@@ -1,6 +1,8 @@
 package com.example.shopping.controller;
 
+import com.example.shopping.domain.jwt.TokenDTO;
 import com.example.shopping.domain.member.MemberDTO;
+import com.example.shopping.service.jwt.TokenService;
 import com.example.shopping.service.member.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -23,6 +25,7 @@ import javax.persistence.EntityNotFoundException;
 public class MemberController {
 
     private final MemberService memberService;
+    private final TokenService tokenService;
 
 
     // 회원가입
@@ -100,5 +103,20 @@ public class MemberController {
         log.info("email : " + memberEmail);
         String result = memberService.emailCheck(memberEmail);
         return result;
+    }
+
+    // accessToken 만료시 refreshToken으로 accessToken 발급
+    @GetMapping("/refresh")
+    public ResponseEntity<?> refreshToken(@RequestHeader("Authorization") String token) throws Exception {
+        try {
+            if(token != null) {
+                ResponseEntity<TokenDTO> accessToken = tokenService.createAccessToken(token);
+                return ResponseEntity.ok().body(accessToken);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

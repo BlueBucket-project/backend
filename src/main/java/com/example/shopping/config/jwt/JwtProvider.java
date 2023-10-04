@@ -159,6 +159,47 @@ public class JwtProvider {
                 .build();
     }
 
+    // accessToken 만료시 refreshToken으로 accessToken 발급
+    public TokenDTO createAccessToken(String userEmail, List<GrantedAuthority> authorities) {
+        Long now = (new Date()).getTime();
+        Date now2 = new Date();
+        Date accessTokenExpire = new Date(now + this.accessTokenTime);
+
+        log.info("authorities : " + authorities);
+
+        Map<String, Object> claims = new HashMap<>();
+        claims.put(AUTHORITIES_KEY, authorities.stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList()));
+        // setSubject이다.
+        // 클레임에 subject를 넣는것
+        claims.put("sub", userEmail);
+
+        log.info("claims : " + claims);
+
+        String accessToken = Jwts.builder()
+                .setIssuedAt(now2)
+                .setClaims(claims)
+                .setExpiration(accessTokenExpire)
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
+
+        log.info("accessToken in JwtProvider : " + accessToken);
+
+        // claims subject 확인 in JwtProvider : zxzz45@naver.com
+        log.info("claims subject 확인 in JwtProvider : " + checkToken(accessToken));
+
+        TokenDTO tokenDTO = TokenDTO.builder()
+                .grantType("Bearer ")
+                .accessToken(accessToken)
+                .memberEmail(userEmail)
+                .accessTokenTime(accessTokenExpire)
+                .build();
+
+        log.info("tokenDTO in JwtProvider : " + tokenDTO);
+        return tokenDTO;
+    }
+
     // JWT 토큰을 복호화하여 토큰에 들어있는 정보를 꺼내는 코드
     // 토큰으로 클레임을 만들고 이를 이용해 유저 객체를 만들어서 최종적으로 authentication 객체를 리턴
     public Authentication getAuthentication(String token) {
