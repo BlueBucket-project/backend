@@ -6,6 +6,8 @@ import com.example.shopping.config.jwt.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -20,6 +22,9 @@ import java.util.Map;
 @Configuration
 @RequiredArgsConstructor
 @EnableWebSecurity
+// @EnableGlobalMethodSecurity 어노테이션은 Spring Security에서 메서드 수준의 보안 설정을 활성화하는데
+// 사용되는 어노테이션입니다.
+@EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true)
 public class SecurityConfig {
 
     private final JwtProvider jwtProvider;
@@ -30,30 +35,42 @@ public class SecurityConfig {
         http
                 // 스프링 시큐리티에서 제공하는 로그인 페이지를 안쓰는 설정
                 .httpBasic()
-                    .disable()
+                .disable()
                 // JWT 방식을 사용하려면 프론트엔드가 분리된 환경을 가정해야 한다.
                 .csrf()
-                    .disable()
+                .disable()
                 .formLogin()
-                    .disable()
+                .disable()
                 .logout()
-                    .disable()
+                .disable()
                 // JWT 방식은 세션저장을 사용하지 않기 때문에 꺼줍니다.
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
         http
                 .authorizeRequests()
-                    .antMatchers("/api/v1/boards/write")
-                        .access("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
-                    .antMatchers("/api/v1/boards/modify")
-                        .access("hasRole('ROLE_USER')")
-                    .antMatchers("/api/v1/boards/remove")
-                        .access("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
-                    .antMatchers("/api/v1/admin/**")
-                        .access("hasRole('ROLE_ADMIN')")
-                    .antMatchers("/swagger-resources/**").permitAll()
-                    .antMatchers("/swagger-ui/**").permitAll()
-                    .antMatchers("/api/v1/users/**").permitAll();
+                .antMatchers(HttpMethod.PUT, "/api/v1/users")
+                    .access("hasRole('ROLE_USER')")
+                .antMatchers(HttpMethod.DELETE, "/api/v1/users/{memberId}")
+                    .access("hasRole('ROLE_USER')")
+                .antMatchers("/api/v1/users/**").permitAll()
+                .antMatchers("/api/v1/boards/**").permitAll()
+                .antMatchers(HttpMethod.PUT, "/api/v1/boards/{boardId}")
+                    .access("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
+                .antMatchers(HttpMethod.POST, "/api/v1/boards")
+                    .access("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
+                .antMatchers(HttpMethod.DELETE, "/api/v1/boards/{boardId}")
+                    .access("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
+                .antMatchers("/api/v1/items/**").permitAll()
+                .antMatchers(HttpMethod.POST, "/api/v1/items")
+                    .access("hasRole('ROLE_ADMIN')")
+                .antMatchers(HttpMethod.PUT, "/api/v1/items/{itemId}")
+                    .access("hasRole('ROLE_ADMIN')")
+                .antMatchers(HttpMethod.DELETE, "/api/v1/items/{itemId}")
+                    .access("hasRole('ROLE_ADMIN')")
+                .antMatchers("/api/v1/admin/**")
+                    .access("hasRole('ROLE_ADMIN')")
+                .antMatchers("/swagger-resources/**").permitAll()
+                .antMatchers("/swagger-ui/**").permitAll();
 
         http
                 // JWT Token을 위한 Filter를 아래에서 만들어 줄건데,
@@ -66,7 +83,6 @@ public class SecurityConfig {
                 .authenticationEntryPoint(new JwtAuthenticationEntryPoint())
                 .accessDeniedHandler(new JwtAccessDeniedHandler());
 
-
         return http.build();
     }
 
@@ -75,6 +91,6 @@ public class SecurityConfig {
         String idForEncode = "bcrypt";
         Map<String, PasswordEncoder> encoders = new HashMap<>();
         encoders.put(idForEncode, new BCryptPasswordEncoder());
-        return new DelegatingPasswordEncoder(idForEncode,encoders);
+        return new DelegatingPasswordEncoder(idForEncode, encoders);
     }
 }
