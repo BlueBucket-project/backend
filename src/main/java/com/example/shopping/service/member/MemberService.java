@@ -41,9 +41,9 @@ public class MemberService {
                                 .build()).build();
 
                 log.info("member in service : " + member);
-                memberRepository.save(member);
+                MemberEntity saveMember = memberRepository.save(member);
 
-                MemberDTO coverMember = MemberDTO.toMemberDTO(member);
+                MemberDTO coverMember = MemberDTO.toMemberDTO(saveMember);
                 return ResponseEntity.ok().body(coverMember);
             }
         } catch (Exception e) {
@@ -59,4 +59,6 @@ public class MemberService {
 
         return MemberDTO.toMemberDTO(member);
     }
+
+    //
 }

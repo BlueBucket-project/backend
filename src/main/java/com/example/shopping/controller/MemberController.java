@@ -28,13 +28,13 @@ public class MemberController {
     // BindingResult 타입의 매개변수를 지정하면 BindingResult 매개 변수가 입력값 검증 예외를 처리한다.
     public ResponseEntity<?> join(@Validated @RequestBody MemberDTO member,
                                   BindingResult result) throws Exception {
-        // 입력값 검증 예외가 발생하면 예외 메시지를 응답한다.
-        if(result.hasErrors()) {
-            log.info("BindingResult error : " + result.hasErrors());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result.getClass().getSimpleName());
-        }
-
         try {
+            // 입력값 검증 예외가 발생하면 예외 메시지를 응답한다.
+            if(result.hasErrors()) {
+                log.info("BindingResult error : " + result.hasErrors());
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result.getClass().getSimpleName());
+            }
+
             ResponseEntity<?> signUp = memberService.signUp(member);
             return ResponseEntity.ok().body(signUp);
         } catch (Exception e) {
