@@ -4,6 +4,8 @@ import com.example.shopping.domain.jwt.TokenDTO;
 import com.example.shopping.domain.member.MemberDTO;
 import com.example.shopping.service.jwt.TokenService;
 import com.example.shopping.service.member.MemberService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
@@ -22,6 +24,7 @@ import javax.persistence.EntityNotFoundException;
 @Log4j2
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/users")
+@Tag(name = "member", description = "유저 API")
 public class MemberController {
 
     private final MemberService memberService;
@@ -30,6 +33,8 @@ public class MemberController {
 
     // 회원가입
     @PostMapping("/")
+    @Tag(name = "member")
+    @Operation(summary = "회원가입", description = "회원가입하는 API입니다")
     // BindingResult 타입의 매개변수를 지정하면 BindingResult 매개 변수가 입력값 검증 예외를 처리한다.
     public ResponseEntity<?> join(@Validated @RequestBody MemberDTO member,
                                   BindingResult result) {
@@ -50,6 +55,8 @@ public class MemberController {
 
     // 회원 조회
     @GetMapping("/{memberId}")
+    @Tag(name = "member")
+    @Operation(summary = "회원 조회", description = "회원을 검색하는 API입니다.")
     public ResponseEntity<MemberDTO> search(@PathVariable Long memberId) {
         try {
             MemberDTO search = memberService.search(memberId);
@@ -61,6 +68,8 @@ public class MemberController {
 
     // 회원 탈퇴
     @DeleteMapping("/{memberId}")
+    @Tag(name = "member")
+    @Operation(summary = "삭제 API", description = "유저를 삭제하는 API입니다.")
     public String remove(@PathVariable Long memberId) {
         try {
             String remove = memberService.removeUser(memberId);
@@ -72,6 +81,8 @@ public class MemberController {
 
     // 로그인
     @PostMapping("")
+    @Tag(name = "member")
+    @Operation(summary = "로그인 API", description = "로그인을 하면 JWT를 반환해줍니다.")
     public ResponseEntity<?> login(@RequestBody MemberDTO memberDTO) {
         try {
             String email = memberDTO.getEmail();
@@ -85,6 +96,8 @@ public class MemberController {
 
     // 회원 수정
     @PutMapping("")
+    @Tag(name = "member")
+    @Operation(summary = "수정 API", description = "유저 정보를 수정하는 API입니다.")
     public ResponseEntity<?> update(@RequestBody MemberDTO memberDTO,
                                     @AuthenticationPrincipal UserDetails userDetails) {
         try {
@@ -99,6 +112,8 @@ public class MemberController {
 
     // 중복체크
     @PostMapping("/{memberEmail}")
+    @Tag(name = "member")
+    @Operation(summary = "중복체크 API", description = "userEmail이 중복인지 체크하는 API입니다.")
     public String emailCheck(@PathVariable String memberEmail) {
         log.info("email : " + memberEmail);
         String result = memberService.emailCheck(memberEmail);
@@ -107,6 +122,8 @@ public class MemberController {
 
     // accessToken 만료시 refreshToken으로 accessToken 발급
     @GetMapping("/refresh")
+    @Tag(name = "member")
+    @Operation(summary = "access token 발급", description = "refresh token을 받으면 access token을 반환해줍니다.")
     public ResponseEntity<?> refreshToken(@RequestHeader("Authorization") String token) throws Exception {
         try {
             if(token != null) {
