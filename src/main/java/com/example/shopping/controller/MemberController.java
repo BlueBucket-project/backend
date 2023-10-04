@@ -64,4 +64,17 @@ public class MemberController {
             return "회원탈퇴 실패했습니다.";
         }
     }
+
+    // 로그인
+    @PostMapping("")
+    public ResponseEntity<?> login(@RequestBody MemberDTO memberDTO) {
+        try {
+            String email = memberDTO.getEmail();
+            String password = memberDTO.getMemberPw();
+            ResponseEntity<?> login = memberService.login(email, password);
+            return ResponseEntity.ok().body(login);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("로그인을 실패했습니다.");
+        }
+    }
 }

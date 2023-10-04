@@ -1,16 +1,28 @@
 package com.example.shopping.service.member;
 
+import com.example.shopping.config.jwt.JwtProvider;
+import com.example.shopping.domain.jwt.TokenDTO;
 import com.example.shopping.domain.member.MemberDTO;
+import com.example.shopping.domain.member.Role;
+import com.example.shopping.entity.jwt.TokenEntity;
 import com.example.shopping.entity.member.AddressEntity;
 import com.example.shopping.entity.member.MemberEntity;
+import com.example.shopping.repository.jwt.TokenRepository;
 import com.example.shopping.repository.member.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +30,8 @@ import javax.persistence.EntityNotFoundException;
 public class MemberService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtProvider jwtProvider;
+    private final TokenRepository tokenRepository;
 
     // 회원가입
     public ResponseEntity<?> signUp(MemberDTO memberDTO) throws Exception {
@@ -71,5 +85,64 @@ public class MemberService {
         } else {
             return "유저가 등록되어 있지 않습니다.";
         }
+    }
+
+    // 로그인
+    public ResponseEntity<?> login(String memberEmail, String memberPw) throws Exception {
+        try {
+            MemberEntity findUser = memberRepository.findByEmail(memberEmail);
+            log.info("user : " + findUser);
+
+            if(findUser != null) {
+                // DB에 넣어져 있는 비밀번호는 암호화가 되어 있어서 비교하는 기능을 사용해야 합니다.
+                // 사용자가 입력한 패스워드를 암호화하여 사용자 정보와 비교
+                if(passwordEncoder.matches(memberPw, findUser.getMemberPw())) {
+                    Authentication authentication = new UsernamePasswordAuthenticationToken(memberEmail, memberPw);
+                    log.info("authentication : " + authentication);
+                    List<GrantedAuthority> authoritiesForUser = getAuthoritiesForUser(findUser);
+
+                    // JWT 생성
+                    TokenDTO token = jwtProvider.createToken(authentication, authoritiesForUser);
+                    TokenEntity findToken = tokenRepository.findByMemberEmail(token.getMemberEmail());
+
+                    TokenDTO retrunToken = null;
+                    if(findToken == null) {
+                        log.info("발급한 토큰이 없습니다. 새로운 토큰을 발급합니다.");
+                        TokenEntity tokenEntity = TokenEntity.tokenEntity(token);
+                        tokenRepository.save(tokenEntity);
+                    } else {
+                        log.info("이미 발급한 토큰이 있습니다. 토큰을 업데이트합니다.");
+                        token = TokenDTO.builder()
+                                .id(findToken.getId())
+                                .grantType(token.getGrantType())
+                                .accessToken(token.getAccessToken())
+                                .accessTokenTime(token.getAccessTokenTime())
+                                .refreshToken(token.getRefreshToken())
+                                .refreshTokenTime(token.getRefreshTokenTime())
+                                .memberEmail(token.getMemberEmail())
+                                .build();
+                        TokenEntity tokenEntity = TokenEntity.tokenEntity(token);
+                        tokenRepository.save(tokenEntity);
+                    }
+                    return ResponseEntity.ok().body(token);
+                } else {
+                    return ResponseEntity.badRequest().build();
+                }
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("유저가 없습니다.");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+
+    // 회원의 권한을 GrantedAuthority타입으로 반환하는 메소드
+    private List<GrantedAuthority> getAuthoritiesForUser(MemberEntity member) {
+        Role memberRole = member.getMemberRole();
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority("ROLE_" + memberRole.name()));
+        log.info("role : " + authorities);
+        return authorities;
     }
 }
