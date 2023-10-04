@@ -107,7 +107,56 @@ public class JwtProvider {
 
         log.info("token in JwtProvider : " + tokenDTO);
         return tokenDTO;
+    }
 
+    // 소셜 로그인 성공시 JWT 발급
+    // 위의 코드와 비슷하지만 차이점은
+    // 위에서는 accessToken만 발급하지만 여기에서는
+    // accessToken과 refreshToken 모두 발급
+    public TokenDTO createTokenForOAuth2(String memberEmail,
+                                         List<GrantedAuthority> authorities) {
+        log.info("email in JwtProvicer : " + memberEmail);
+        log.info("authorities in JwtProvicer : " + authorities);
+
+        // 권한 가져오기
+        Map<String, Object> claims = new HashMap<>();
+        claims.put(AUTHORITIES_KEY, authorities.stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList()));
+        claims.put("sub", memberEmail);
+        log.info("권한 JwtProvicer : " + claims);
+        log.info("claims sub JwtProvicer : " + claims.get("sub"));
+
+        long now = (new Date()).getTime();
+        Date now2 = new Date();
+
+        // accessToken 생성
+        Date accessTokenExpire = new Date(now + this.accessTokenTime);
+        String accessToken = Jwts.builder()
+                .setIssuedAt(now2)
+                .setClaims(claims)
+                .setExpiration(accessTokenExpire)
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
+        log.info("claims subject 확인 in JwtProvider : " + checkToken(accessToken));
+
+        Date refreshTokenExpire = new Date(now + this.refreshTokenTime);
+        String refreshToken = Jwts.builder()
+                .setIssuedAt(now2)
+                .setClaims(claims)
+                .setExpiration(refreshTokenExpire)
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
+        log.info("claims subject 확인 in JwtProvider : " + checkToken(refreshToken));
+
+        return TokenDTO.builder()
+                .grantType("Bearer ")
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .accessTokenTime(accessTokenExpire)
+                .refreshTokenTime(refreshTokenExpire)
+                .memberEmail(memberEmail)
+                .build();
     }
 
     // JWT 토큰을 복호화하여 토큰에 들어있는 정보를 꺼내는 코드
