@@ -3,6 +3,7 @@ spring:
     include:
       - jwt
       - oauth
+      - s3
   devtools:
     livereload:
       enabled: true
