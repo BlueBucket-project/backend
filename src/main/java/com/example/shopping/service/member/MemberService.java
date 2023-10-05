@@ -107,7 +107,6 @@ public class MemberService {
                     TokenDTO token = jwtProvider.createToken(authentication, authoritiesForUser);
                     TokenEntity findToken = tokenRepository.findByMemberEmail(token.getMemberEmail());
 
-                    TokenDTO retrunToken = null;
                     if(findToken == null) {
                         log.info("발급한 토큰이 없습니다. 새로운 토큰을 발급합니다.");
                         TokenEntity tokenEntity = TokenEntity.tokenEntity(token);
