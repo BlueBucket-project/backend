@@ -1,4 +1,4 @@
-package com.example.shopping.controller;
+package com.example.shopping.controller.member;
 
 import com.example.shopping.domain.jwt.TokenDTO;
 import com.example.shopping.domain.member.MemberDTO;
