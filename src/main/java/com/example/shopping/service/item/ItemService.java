@@ -84,4 +84,20 @@ public class ItemService {
         }
     }
 
+    // 상품 상세정보
+    // 상품의 데이터를 읽어오는 트랜잭션을 읽기 전용으로 설정합니다.
+    // 이럴 경우 JPA가 더티체킹(변경감지)를 수행하지 않아서 성능을 향상 시킬 수 있다.
+    @Transactional(readOnly = true)
+    public ResponseEntity<ItemDTO> getItem(Long itemId) {
+        try {
+            ItemEntity findItem = itemRepository.findById(itemId)
+                    .orElseThrow(EntityNotFoundException::new);
+
+            ItemDTO itemDTO = ItemDTO.toItemDTO(findItem);
+            return ResponseEntity.ok().body(itemDTO);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+    }
+
 }
