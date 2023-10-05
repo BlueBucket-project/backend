@@ -4,6 +4,7 @@ spring:
       - jwt
       - oauth
       - s3
+  active: s3
   devtools:
     livereload:
       enabled: true

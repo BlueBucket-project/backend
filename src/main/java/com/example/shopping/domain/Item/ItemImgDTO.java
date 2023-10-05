@@ -57,17 +57,6 @@ public class ItemImgDTO {
                 .uploadImgUrl(itemImgEntity.getUploadImgUrl())
                 .uploadImgPath(itemImgEntity.getUploadImgPath())
                 .repImgYn(itemImgEntity.getRepImgYn())
-                .item(ItemDTO.builder()
-                        .itemId(itemImgEntity.getItem().getItemId())
-                        .itemName(itemImgEntity.getItem().getItemName())
-                        .itemDetail(itemImgEntity.getItem().getItemDetail())
-                        .itemSellStatus(itemImgEntity.getItem().getItemSellStatus())
-                        .price(itemImgEntity.getItem().getPrice())
-                        .memberNickName(itemImgEntity.getItem().getMember().getNickName())
-                        .sellPlace(itemImgEntity.getItem().getItemPlace())
-                        .regTime(itemImgEntity.getRegTime())
-                        .stockNumber(itemImgEntity.getItem().getStockNumber())
-                        .updateTime(itemImgEntity.getUpdateTime())
-                        .build()).build();
+                .build();
     }
 }
