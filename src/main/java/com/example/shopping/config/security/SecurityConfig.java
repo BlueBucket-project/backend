@@ -6,6 +6,7 @@ import com.example.shopping.config.jwt.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.web.config.PageableHandlerMethodArgumentResolverCustomizer;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -62,11 +63,11 @@ public class SecurityConfig {
                     .access("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
                 .antMatchers("/api/v1/items/**").permitAll()
                 .antMatchers(HttpMethod.POST, "/api/v1/items")
-                    .access("hasRole('ROLE_ADMIN')")
+                    .access("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
                 .antMatchers(HttpMethod.PUT, "/api/v1/items/{itemId}")
-                    .access("hasRole('ROLE_ADMIN')")
+                    .access("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
                 .antMatchers(HttpMethod.DELETE, "/api/v1/items/{itemId}")
-                    .access("hasRole('ROLE_ADMIN')")
+                    .access("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
                 .antMatchers("/api/v1/admin/**")
                     .access("hasRole('ROLE_ADMIN')")
                 .antMatchers("/swagger-resources/**").permitAll()
@@ -92,5 +93,13 @@ public class SecurityConfig {
         Map<String, PasswordEncoder> encoders = new HashMap<>();
         encoders.put(idForEncode, new BCryptPasswordEncoder());
         return new DelegatingPasswordEncoder(idForEncode, encoders);
+    }
+
+    @Bean
+    public PageableHandlerMethodArgumentResolverCustomizer customize() {
+        return p -> {
+            p.setOneIndexedParameters(true);    // 1 페이지 부터 시작
+            p.setMaxPageSize(10);       // 한 페이지에 10개씩 출력
+        };
     }
 }
