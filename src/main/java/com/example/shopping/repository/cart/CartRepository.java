@@ -6,7 +6,7 @@ import java.util.*;
 
 public interface CartRepository {
 
-    CartDTO save(CartDTO cart);
+    CartDTO save(long id, CartDTO cart);
 
     Optional<CartDTO> findByMemberId(long mbrId);
 }

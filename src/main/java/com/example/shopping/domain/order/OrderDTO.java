@@ -2,6 +2,7 @@ package com.example.shopping.domain.order;
 
 import com.example.shopping.entity.order.OrderEntity;
 import com.example.shopping.entity.order.OrderItemEntity;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,12 +19,19 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 public class OrderDTO {
 
+    @Schema(description = "주문결제번호")
     private Long orderId;
+
+    @Schema(description = "주문결제일자")
     private LocalDateTime orderDate;
+
+    @Schema(description = "주문결제자")
     private Long orderAdmin;
+
+    @Schema(description = "구매자닉네임")
     private Long orderMember;
+
     private List<OrderItemDTO> orderItem;
-    private String memberNickname;
 
     @Builder
     public OrderDTO(Long orderId, LocalDateTime orderDate, Long orderAdmin, Long orderMember, List<OrderItemDTO> orderItem) {
