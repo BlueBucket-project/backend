@@ -4,7 +4,7 @@ import com.example.shopping.domain.jwt.TokenDTO;
 import com.example.shopping.domain.member.LoginDTO;
 import com.example.shopping.domain.member.MemberDTO;
 import com.example.shopping.domain.member.ModifyDTO;
-import com.example.shopping.service.jwt.TokenService;
+import com.example.shopping.service.jwt.TokenServiceImpl;
 import com.example.shopping.service.member.MemberServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,7 +30,7 @@ import javax.persistence.EntityNotFoundException;
 public class MemberController {
 
     private final MemberServiceImpl memberServiceImpl;
-    private final TokenService tokenService;
+    private final TokenServiceImpl tokenServiceImpl;
 
 
     // 회원가입
@@ -129,7 +129,7 @@ public class MemberController {
     public ResponseEntity<?> refreshToken(@RequestHeader("Authorization") String token) throws Exception {
         try {
             if(token != null) {
-                ResponseEntity<TokenDTO> accessToken = tokenService.createAccessToken(token);
+                ResponseEntity<TokenDTO> accessToken = tokenServiceImpl.createAccessToken(token);
                 return ResponseEntity.ok().body(accessToken);
             } else {
                 return ResponseEntity.notFound().build();
