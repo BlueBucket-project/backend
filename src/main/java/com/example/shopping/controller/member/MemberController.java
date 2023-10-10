@@ -1,7 +1,9 @@
 package com.example.shopping.controller.member;
 
 import com.example.shopping.domain.jwt.TokenDTO;
+import com.example.shopping.domain.member.LoginDTO;
 import com.example.shopping.domain.member.MemberDTO;
+import com.example.shopping.domain.member.ModifyDTO;
 import com.example.shopping.service.jwt.TokenService;
 import com.example.shopping.service.member.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -83,10 +85,10 @@ public class MemberController {
     @PostMapping("")
     @Tag(name = "member")
     @Operation(summary = "로그인 API", description = "로그인을 하면 JWT를 반환해줍니다.")
-    public ResponseEntity<?> login(@RequestBody MemberDTO memberDTO) {
+    public ResponseEntity<?> login(@RequestBody LoginDTO loginDTO) {
         try {
-            String email = memberDTO.getEmail();
-            String password = memberDTO.getMemberPw();
+            String email = loginDTO.getMemberEmail();
+            String password = loginDTO.getMemberPw();
             ResponseEntity<?> login = memberService.login(email, password);
             return ResponseEntity.ok().body(login);
         } catch (Exception e) {
@@ -98,12 +100,12 @@ public class MemberController {
     @PutMapping("")
     @Tag(name = "member")
     @Operation(summary = "수정 API", description = "유저 정보를 수정하는 API입니다.")
-    public ResponseEntity<?> update(@RequestBody MemberDTO memberDTO,
+    public ResponseEntity<?> update(@RequestBody ModifyDTO modifyDTO,
                                     @AuthenticationPrincipal UserDetails userDetails) {
         try {
             String email = userDetails.getUsername();
             log.info("email : " + email);
-            ResponseEntity<?> responseEntity = memberService.updateUser(memberDTO, email);
+            ResponseEntity<?> responseEntity = memberService.updateUser(modifyDTO, email);
             return ResponseEntity.ok().body(responseEntity);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("잘못된 요청");
