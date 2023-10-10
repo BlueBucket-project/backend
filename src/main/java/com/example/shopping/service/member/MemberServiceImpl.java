@@ -81,7 +81,7 @@ public class MemberServiceImpl implements MemberService{
 
     // 회원 삭제
     @Override
-    public String removeUser(Long memberId) throws Exception {
+    public String removeUser(Long memberId) {
         MemberEntity member = memberRepository.findById(memberId)
                 .orElseThrow(EntityNotFoundException::new);
 
@@ -95,7 +95,7 @@ public class MemberServiceImpl implements MemberService{
 
     // 로그인
     @Override
-    public ResponseEntity<?> login(String memberEmail, String memberPw) throws Exception {
+    public ResponseEntity<?> login(String memberEmail, String memberPw){
         try {
             MemberEntity findUser = memberRepository.findByEmail(memberEmail);
             log.info("user : " + findUser);
