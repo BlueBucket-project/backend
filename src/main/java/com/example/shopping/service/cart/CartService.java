@@ -10,7 +10,7 @@ import java.util.*;
 
 public interface CartService {
 
-    CartDTO addCart(CartDTO리 cart, ItemDTO item);
+    CartDTO addCart(CartDTO cart, ItemDTO item);
 
     CartDTO getByMemberId(long mbrId);
 }
