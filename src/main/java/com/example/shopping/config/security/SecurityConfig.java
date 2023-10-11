@@ -65,6 +65,8 @@ public class SecurityConfig {
                     .access("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
                 .antMatchers(HttpMethod.DELETE, "/api/v1/boards/{boardId}")
                     .access("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
+                .antMatchers("/api/v1/comments/**")
+                    .access("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
                 .antMatchers("/api/v1/items/**").permitAll()
                 .antMatchers(HttpMethod.POST, "/api/v1/items")
                     .access("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
