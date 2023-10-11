@@ -138,4 +138,14 @@ public class MemberController {
             throw new RuntimeException(e);
         }
     }
+
+    // 닉네임 조회
+    @GetMapping("/{nickName}")
+    @Tag(name = "member")
+    @Operation(summary = "닉네임 조회", description = "중복된 닉네임이 있는지 확인하는 API입니다.")
+    public String nickNameCheck(@PathVariable String nickName) {
+        log.info("nickName : " + nickName);
+        String result = memberServiceImpl.nickNameCheck(nickName);
+        return result;
+    }
 }
