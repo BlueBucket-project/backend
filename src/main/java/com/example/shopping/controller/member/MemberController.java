@@ -113,7 +113,7 @@ public class MemberController {
     }
 
     // 중복체크
-    @PostMapping("/{memberEmail}")
+    @GetMapping("/{memberEmail}")
     @Tag(name = "member")
     @Operation(summary = "중복체크 API", description = "userEmail이 중복인지 체크하는 API입니다.")
     public String emailCheck(@PathVariable String memberEmail) {
