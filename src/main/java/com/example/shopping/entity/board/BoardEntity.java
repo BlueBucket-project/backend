@@ -1,6 +1,7 @@
 package com.example.shopping.entity.board;
 
 import com.example.shopping.entity.Base.BaseEntity;
+import com.example.shopping.entity.comment.CommentEntity;
 import com.example.shopping.entity.member.MemberEntity;
 import lombok.Builder;
 import lombok.Getter;
@@ -29,20 +30,28 @@ public class BoardEntity extends BaseEntity {
     @JoinColumn(name = "member_id")
     private MemberEntity member;
 
+    // 게시판 이미지
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
     @OrderBy("boardImgId asc")
     private List<BoardImgEntity> boardImgDTOList = new ArrayList<>();
+
+    // 댓글
+    @OneToMany(mappedBy = "board", fetch = FetchType.LAZY)
+    @OrderBy("commentId asc ")
+    private List<CommentEntity> commentEntityList = new ArrayList<>();
 
     @Builder
     public BoardEntity(Long boardId,
                        String title,
                        String content,
                        MemberEntity member,
-                       List<BoardImgEntity> boardImgDTOList) {
+                       List<BoardImgEntity> boardImgDTOList,
+                       List<CommentEntity> commentEntityList) {
         this.boardId = boardId;
         this.title = title;
         this.content = content;
         this.member = member;
         this.boardImgDTOList = boardImgDTOList;
+        this.commentEntityList = commentEntityList;
     }
 }
