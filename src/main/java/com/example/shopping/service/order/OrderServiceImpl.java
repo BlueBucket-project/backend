@@ -6,13 +6,11 @@ import com.example.shopping.domain.order.OrderItemDTO;
 import com.example.shopping.domain.order.OrderMainDTO;
 import com.example.shopping.entity.item.ItemEntity;
 import com.example.shopping.entity.member.MemberEntity;
-import com.example.shopping.entity.order.OrderEntity;
 import com.example.shopping.entity.order.OrderItemEntity;
 import com.example.shopping.repository.item.ItemRepository;
 import com.example.shopping.repository.member.MemberRepository;
 import com.example.shopping.repository.order.OrderRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
