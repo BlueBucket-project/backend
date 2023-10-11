@@ -54,9 +54,9 @@ public class SecurityConfig {
         http
                 .authorizeRequests()
                 .antMatchers(HttpMethod.PUT, "/api/v1/users")
-                    .access("hasRole('ROLE_USER')")
+                .access("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
                 .antMatchers(HttpMethod.DELETE, "/api/v1/users/{memberId}")
-                    .access("hasRole('ROLE_USER')")
+                .access("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
                 .antMatchers("/api/v1/users/**").permitAll()
                 .antMatchers("/api/v1/boards/**").permitAll()
                 .antMatchers(HttpMethod.PUT, "/api/v1/boards/{boardId}")
