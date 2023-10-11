@@ -1,7 +1,7 @@
 package com.example.shopping.service.comment;
 
-import com.example.shopping.domain.board.BoardDTO;
 import com.example.shopping.domain.comment.CommentDTO;
+import com.example.shopping.domain.comment.ModifyCommentDTO;
 import com.example.shopping.entity.board.BoardEntity;
 import com.example.shopping.entity.comment.CommentEntity;
 import com.example.shopping.entity.member.MemberEntity;
@@ -95,11 +95,12 @@ public class CommentServiceImpl implements CommentService{
         }
     }
 
+
     // 댓글 수정
     @Override
     public ResponseEntity<?> update(Long boardId,
                                     Long commentId,
-                                    CommentDTO commentDTO,
+                                    ModifyCommentDTO commentDTO,
                                     String memberEmail) {
         try {
             // 게시물 조회

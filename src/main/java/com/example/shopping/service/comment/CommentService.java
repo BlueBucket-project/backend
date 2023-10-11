@@ -1,6 +1,7 @@
 package com.example.shopping.service.comment;
 
 import com.example.shopping.domain.comment.CommentDTO;
+import com.example.shopping.domain.comment.ModifyCommentDTO;
 import org.springframework.http.ResponseEntity;
 
 public interface CommentService {
@@ -17,6 +18,6 @@ public interface CommentService {
     // 댓글 수정
     ResponseEntity<?> update(Long boardId,
                              Long commentId,
-                             CommentDTO commentDTO,
+                             ModifyCommentDTO commentDTO,
                              String memberEmail);
 }

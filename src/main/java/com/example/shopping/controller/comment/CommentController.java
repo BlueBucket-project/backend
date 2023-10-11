@@ -1,6 +1,7 @@
 package com.example.shopping.controller.comment;
 
 import com.example.shopping.domain.comment.CommentDTO;
+import com.example.shopping.domain.comment.ModifyCommentDTO;
 import com.example.shopping.service.comment.CommentServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -54,7 +55,7 @@ public class CommentController {
     @Operation(summary = "댓글 수정", description = "댓글을 수정하는 API입니다.")
     public ResponseEntity<?> updateComment(@PathVariable Long boardId,
                                            @PathVariable Long commentId,
-                                           @RequestBody CommentDTO commentDTO,
+                                           @RequestBody ModifyCommentDTO commentDTO,
                                            @AuthenticationPrincipal UserDetails userDetails) {
         String email = userDetails.getUsername();
         log.info("email : " + email);
