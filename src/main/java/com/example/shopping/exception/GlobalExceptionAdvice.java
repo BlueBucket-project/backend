@@ -3,7 +3,6 @@ package com.example.shopping.exception;
 import com.example.shopping.exception.board.BoardException;
 import com.example.shopping.exception.item.ItemException;
 import com.example.shopping.exception.member.UserException;
-import com.example.shopping.exception.member.UserNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
