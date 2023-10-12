@@ -1,4 +1,4 @@
-package com.example.shopping.exception;
+package com.example.shopping.exception.board;
 
 public class BoardException extends RuntimeException{
     private static final long serialVersionUID = 1L;

@@ -1,4 +1,4 @@
-package com.example.shopping.exception;
+package com.example.shopping.exception.board;
 
 public class BoardNotFoundException extends BoardException{
 

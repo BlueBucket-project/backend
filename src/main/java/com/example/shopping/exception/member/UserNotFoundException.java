@@ -1,4 +1,4 @@
-package com.example.shopping.exception;
+package com.example.shopping.exception.member;
 
 public class UserNotFoundException extends UserException{
 

@@ -1,4 +1,4 @@
-package com.example.shopping.exception;
+package com.example.shopping.exception.member;
 
 public class UserException extends RuntimeException{
     private static final long serialVersionUID = 1L;

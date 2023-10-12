@@ -1,4 +1,4 @@
-package com.example.shopping.exception;
+package com.example.shopping.exception.item;
 
 public class ItemException extends RuntimeException{
     private static final long serialVersionUID = 1L;
