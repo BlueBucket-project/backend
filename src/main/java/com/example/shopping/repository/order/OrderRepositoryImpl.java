@@ -17,4 +17,14 @@ public class OrderRepositoryImpl implements OrderRepository{
 
         return orderJpaRepository.save(order.toEntity()).toDTO();
     }
+
+    @Override
+    public Optional<OrderDTO> findByOrderAdmin(String admin) {
+        return orderJpaRepository.findByOrderAdmin(admin);
+    }
+
+    @Override
+    public Optional<OrderDTO> findByOrderMember(String mbrId) {
+        return orderJpaRepository.findByOrderMember(mbrId);
+    }
 }
