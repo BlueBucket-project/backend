@@ -19,19 +19,19 @@ public class GlobalExceptionAdvice {
     }
 
     // 유저를 못찾을 경우 발생하는 예외처리
-    @ExceptionHandler(UserNotFoundException.class )
+    @ExceptionHandler(UserException.class )
     public ResponseEntity<UserException> handleCustomException(UserException userException) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(userException);
     }
 
     // 게시글을 못찾을 경우 발생하는 예외처리
-    @ExceptionHandler(BoardNotFoundException.class)
+    @ExceptionHandler(BoardException.class)
     public ResponseEntity<BoardException> handleCustomException2(BoardException boardException) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(boardException);
     }
 
     // 상품을 못찾을 경우 발생하는 예외처리
-    @ExceptionHandler(ItemNotFoundException.class)
+    @ExceptionHandler(ItemException.class)
     public ResponseEntity<ItemException> handleCustomException3(ItemException itemException) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(itemException);
     }
