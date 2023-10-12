@@ -1,9 +1,7 @@
 package com.example.shopping.exception;
 
 import com.example.shopping.exception.board.BoardException;
-import com.example.shopping.exception.board.BoardNotFoundException;
 import com.example.shopping.exception.item.ItemException;
-import com.example.shopping.exception.item.ItemNotFoundException;
 import com.example.shopping.exception.member.UserException;
 import com.example.shopping.exception.member.UserNotFoundException;
 import org.springframework.http.HttpStatus;
