@@ -1,14 +1,17 @@
 package com.example.shopping.repository.order;
 
 import com.example.shopping.domain.order.OrderDTO;
+import com.example.shopping.domain.order.OrderItemDTO;
 import com.example.shopping.entity.order.OrderEntity;
+import com.example.shopping.entity.order.OrderItemEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.Optional;
+import java.util.*;
 
 public interface OrderJpaRepository extends JpaRepository<OrderEntity, Long> {
 
-    Optional<OrderDTO> findByOrderAdmin(String admin);
+    List<OrderEntity> findByOrderAdmin(Long memberId);
 
-    Optional<OrderDTO> findByOrderMember(String mbrId);
+    List<OrderEntity> findByOrderMember(Long memberId);
+
 }
