@@ -11,5 +11,6 @@ public interface AdminService {
     // 게시글 삭제
     String removeBoard(Long boardId, UserDetails userDetails);
     // 상품 관리
-    Page<ItemDTO> superitendItem(Pageable pageable, UserDetails userDetails);
+    Page<ItemDTO> superitendItemForReserved(Pageable pageable, UserDetails userDetails);
+    Page<ItemDTO> superitendItemForSoldOut(Pageable pageable, UserDetails userDetails);
 }

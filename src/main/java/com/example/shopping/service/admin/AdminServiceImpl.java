@@ -136,7 +136,7 @@ public class AdminServiceImpl implements AdminService {
 
     // 예약 상품 전체 페이지 조회
     @Override
-    public Page<ItemDTO> superitendItem(Pageable pageable, UserDetails userDetails) {
+    public Page<ItemDTO> superitendItemForReserved(Pageable pageable, UserDetails userDetails) {
         try {
             // userDetails에서 권한을 가져오기
             Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
@@ -152,6 +152,33 @@ public class AdminServiceImpl implements AdminService {
                     // 페이지 처리해서 예약된 것만 조회
                     Page<ItemEntity> items =
                             itemRepository.findByItemSellStatus(pageable, ItemSellStatus.RESERVED);
+                    log.info("items : {}", items);
+                    return items.map(ItemDTO::toItemDTO);
+                }
+            }
+            return null;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // 판매된 상품 전체 페이지 조회
+    @Override
+    public Page<ItemDTO> superitendItemForSoldOut(Pageable pageable, UserDetails userDetails) {
+        try {
+            // userDetails에서 권한을 가져오기
+            Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
+            // GrantedAuthority 타입의 권한을 List<String>으로 담아줌
+            List<String> collectAuthorities = authorities.stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .collect(Collectors.toList());
+
+            for (String role : collectAuthorities) {
+                // 존재하는 권한이 관리자인지 체크
+                if (role.equals("ADMIN") || role.equals("ROLE_ADMIN")) {
+                    // 페이지 처리해서 예약된 것만 조회
+                    Page<ItemEntity> items =
+                            itemRepository.findByItemSellStatus(pageable, ItemSellStatus.SOLD_OUT);
                     log.info("items : {}", items);
                     return items.map(ItemDTO::toItemDTO);
                 }
