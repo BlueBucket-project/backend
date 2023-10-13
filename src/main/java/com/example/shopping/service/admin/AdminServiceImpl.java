@@ -4,6 +4,7 @@ import com.example.shopping.domain.Item.ItemDTO;
 import com.example.shopping.domain.Item.ItemSellStatus;
 import com.example.shopping.entity.board.BoardEntity;
 import com.example.shopping.entity.board.BoardImgEntity;
+import com.example.shopping.entity.comment.CommentEntity;
 import com.example.shopping.entity.item.ItemEntity;
 import com.example.shopping.entity.item.ItemImgEntity;
 import com.example.shopping.repository.board.BoardImgRepository;
@@ -76,15 +77,12 @@ public class AdminServiceImpl implements AdminService {
                             itemRepository.deleteByItemId(findItem.getItemId());
                             // S3에서 이미지 삭제
                             s3ItemImgUploaderService.deleteFile(uploadImgPath, uploadImgName);
+                            return "상품을 삭제 했습니다.";
                         }
-                    } else {
-                        return "삭제할 권한이 없습니다.";
                     }
                 }
-                return "상품을 삭제 했습니다.";
-            } else {
-                return "권한 정보가 비어 있습니다.";
             }
+            return "상품 삭제 권한이 없습니다.";
         } catch (Exception e) {
             return e.getMessage();
         }
@@ -122,15 +120,44 @@ public class AdminServiceImpl implements AdminService {
                             // 게시글 정보 삭제
                             boardRepository.deleteByBoardId(findBoard.getBoardId());
                             // S3에서 이미지 삭제
+                            return "상품을 삭제 했습니다.";
                         }
-                    } else {
-                        return "삭제할 권한이 없습니다.";
                     }
                 }
-                return "상품을 삭제 했습니다.";
-            } else {
-                return "권한 정보가 비어 있습니다.";
             }
+            return "게시글 삭제 권한이 없습니다.";
+        } catch (Exception e) {
+            return e.getMessage();
+        }
+    }
+
+    // 댓글 삭제
+    @Override
+    public String removeComment(Long commentId, UserDetails userDetails) {
+        try {
+            // 삭제할 권한이 있는지 확인
+            // userDetails에서 권한을 가져오기
+            Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
+            // GrantedAuthority 타입의 권한을 List<String>으로 담아줌
+            List<String> collectAuthorities = authorities.stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .collect(Collectors.toList());
+
+            // 댓글 조회
+            CommentEntity findComment = commentRepository.findById(commentId)
+                    .orElseThrow(EntityNotFoundException::new);
+
+            // 권한이 있는지 체크
+            if (!collectAuthorities.isEmpty()) {
+                for (String role : collectAuthorities) {
+                    // 존재하는 권한이 관리자인지 체크
+                    if (role.equals("ADMIN") || role.equals("ROLE_ADMIN")) {
+                        commentRepository.deleteById(findComment.getCommentId());
+                        return "댓글을 삭제했습니다.";
+                    }
+                }
+            }
+            return "댓글 삭제 권한이 없습니다.";
         } catch (Exception e) {
             return e.getMessage();
         }
