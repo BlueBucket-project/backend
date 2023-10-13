@@ -16,6 +16,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -136,6 +138,7 @@ public class AdminServiceImpl implements AdminService {
 
     // 예약 상품 전체 페이지 조회
     @Override
+    @Transactional(readOnly = true)
     public Page<ItemDTO> superitendItemForReserved(Pageable pageable, UserDetails userDetails) {
         try {
             // userDetails에서 권한을 가져오기
@@ -164,6 +167,7 @@ public class AdminServiceImpl implements AdminService {
 
     // 판매된 상품 전체 페이지 조회
     @Override
+    @Transactional(readOnly = true)
     public Page<ItemDTO> superitendItemForSoldOut(Pageable pageable, UserDetails userDetails) {
         try {
             // userDetails에서 권한을 가져오기
@@ -186,6 +190,37 @@ public class AdminServiceImpl implements AdminService {
             return null;
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    // 상품 상세정보
+    // 상품의 데이터를 읽어오는 트랜잭션을 읽기 전용으로 설정합니다.
+    // 이럴 경우 JPA가 더티체킹(변경감지)를 수행하지 않아서 성능을 향상 시킬 수 있다.
+    @Transactional(readOnly = true)
+    @Override
+    public ResponseEntity<ItemDTO> getItem(Long itemId, UserDetails userDetails) {
+        try {
+            // userDetails에서 권한을 가져오기
+            Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
+            // GrantedAuthority 타입의 권한을 List<String>으로 담아줌
+            List<String> collectAuthorities = authorities.stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .collect(Collectors.toList());
+
+            // 상품 조회
+            ItemEntity findItem = itemRepository.findById(itemId)
+                    .orElseThrow(EntityNotFoundException::new);
+
+            for (String role : collectAuthorities) {
+                // 존재하는 권한이 관리자인지 체크
+                if (role.equals("ADMIN") || role.equals("ROLE_ADMIN")) {
+                    ItemDTO itemDTO = ItemDTO.toItemDTO(findItem);
+                    return ResponseEntity.ok().body(itemDTO);
+                }
+            }
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
 }
