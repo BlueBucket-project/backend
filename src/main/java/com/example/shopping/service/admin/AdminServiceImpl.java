@@ -100,10 +100,10 @@ public class AdminServiceImpl implements AdminService {
                     .map(GrantedAuthority::getAuthority)
                     .collect(Collectors.toList());
 
-            // 상품 조회
+            // 게시글 조회
             BoardEntity findBoard = boardRepository.findById(boardId)
                     .orElseThrow(EntityNotFoundException::new);
-            // 상품 이미지 조회
+            // 게시글 이미지 조회
             List<BoardImgEntity> findBoardImg = boardImgRepository.findByBoardBoardId(boardId);
 
             // 권한이 있는지 체크
@@ -117,8 +117,8 @@ public class AdminServiceImpl implements AdminService {
                             String uploadImgPath = boardImgEntity.getUploadImgPath();
                             String uploadImgName = boardImgEntity.getUploadImgName();
 
-                            // 상품 정보 삭제
-                            itemRepository.deleteByItemId(findBoard.getBoardId());
+                            // 게시글 정보 삭제
+                            boardRepository.deleteByBoardId(findBoard.getBoardId());
                             // S3에서 이미지 삭제
                         }
                     } else {
