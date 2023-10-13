@@ -134,7 +134,7 @@ public class AdminServiceImpl implements AdminService {
         }
     }
 
-    // 전체 페이지 조회
+    // 예약 상품 전체 페이지 조회
     @Override
     public Page<ItemDTO> superitendItem(Pageable pageable, UserDetails userDetails) {
         try {
