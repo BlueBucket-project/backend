@@ -133,7 +133,7 @@ public class AdminServiceImpl implements AdminService {
 
     // 댓글 삭제
     @Override
-    public String removeComment(Long commentId, UserDetails userDetails) {
+    public String removeComment(Long boardId, Long commentId, UserDetails userDetails) {
         try {
             // 삭제할 권한이 있는지 확인
             // userDetails에서 권한을 가져오기
@@ -142,6 +142,9 @@ public class AdminServiceImpl implements AdminService {
             List<String> collectAuthorities = authorities.stream()
                     .map(GrantedAuthority::getAuthority)
                     .collect(Collectors.toList());
+
+            // 게시글 조회
+            BoardEntity findBoard = boardRepository.deleteByBoardId(boardId);
 
             // 댓글 조회
             CommentEntity findComment = commentRepository.findById(commentId)
@@ -152,8 +155,11 @@ public class AdminServiceImpl implements AdminService {
                 for (String role : collectAuthorities) {
                     // 존재하는 권한이 관리자인지 체크
                     if (role.equals("ADMIN") || role.equals("ROLE_ADMIN")) {
-                        commentRepository.deleteById(findComment.getCommentId());
-                        return "댓글을 삭제했습니다.";
+                        // 댓글에 담긴 게시글의 아이디와 게시글 자체 아이디가 일치할 때 true
+                        if(findComment.getBoard().getBoardId().equals(findBoard.getBoardId())) {
+                            commentRepository.deleteById(findComment.getCommentId());
+                            return "댓글을 삭제했습니다.";
+                        }
                     }
                 }
             }
@@ -163,39 +169,13 @@ public class AdminServiceImpl implements AdminService {
         }
     }
 
-    // 예약 상품 전체 페이지 조회
+
+    // 상품 전체 페이지 조회
     @Override
     @Transactional(readOnly = true)
-    public Page<ItemDTO> superitendItemForReserved(Pageable pageable, UserDetails userDetails) {
-        try {
-            // userDetails에서 권한을 가져오기
-            Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
-            // GrantedAuthority 타입의 권한을 List<String>으로 담아줌
-            List<String> collectAuthorities = authorities.stream()
-                    .map(GrantedAuthority::getAuthority)
-                    .collect(Collectors.toList());
-
-
-            for (String role : collectAuthorities) {
-                // 존재하는 권한이 관리자인지 체크
-                if (role.equals("ADMIN") || role.equals("ROLE_ADMIN")) {
-                    // 페이지 처리해서 예약된 것만 조회
-                    Page<ItemEntity> items =
-                            itemRepository.findByItemSellStatus(pageable, ItemSellStatus.RESERVED);
-                    log.info("items : {}", items);
-                    return items.map(ItemDTO::toItemDTO);
-                }
-            }
-            return null;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    // 판매된 상품 전체 페이지 조회
-    @Override
-    @Transactional(readOnly = true)
-    public Page<ItemDTO> superitendItemForSoldOut(Pageable pageable, UserDetails userDetails) {
+    public Page<ItemDTO> superitendItem(Pageable pageable,
+                                                  UserDetails userDetails,
+                                                  ItemSellStatus itemSellStatus) {
         try {
             // userDetails에서 권한을 가져오기
             Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
@@ -209,7 +189,7 @@ public class AdminServiceImpl implements AdminService {
                 if (role.equals("ADMIN") || role.equals("ROLE_ADMIN")) {
                     // 페이지 처리해서 예약된 것만 조회
                     Page<ItemEntity> items =
-                            itemRepository.findByItemSellStatus(pageable, ItemSellStatus.SOLD_OUT);
+                            itemRepository.findByItemSellStatus(pageable, itemSellStatus);
                     log.info("items : {}", items);
                     return items.map(ItemDTO::toItemDTO);
                 }
