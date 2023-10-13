@@ -4,8 +4,10 @@ import com.example.shopping.domain.jwt.TokenDTO;
 import com.example.shopping.domain.member.LoginDTO;
 import com.example.shopping.domain.member.MemberDTO;
 import com.example.shopping.domain.member.ModifyDTO;
+import com.example.shopping.domain.order.OrderItemDTO;
 import com.example.shopping.service.jwt.TokenServiceImpl;
 import com.example.shopping.service.member.MemberServiceImpl;
+import com.example.shopping.service.order.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.EntityNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 // @Slf4j를 사용하지 않고 Log4j2를 사용하는 이유는
@@ -32,7 +36,7 @@ public class MemberController {
 
     private final MemberServiceImpl memberServiceImpl;
     private final TokenServiceImpl tokenServiceImpl;
-
+    private final OrderService orderService;
 
     // 회원가입
     @PostMapping("/")
@@ -150,5 +154,20 @@ public class MemberController {
         log.info("nickName : " + nickName);
         String result = memberServiceImpl.nickNameCheck(nickName);
         return result;
+    }
+
+    @GetMapping(value = "/order/{findEmail}")
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
+    @Operation(summary = "주문내역조회", description = "주문내역을 조회하는 API입니다.")
+    public ResponseEntity<?> getOrders(@PathVariable String findEmail
+            ,@AuthenticationPrincipal UserDetails userDetails) {
+        List<OrderItemDTO> orders = new ArrayList<>();
+        try {
+            orders = orderService.getOrders(findEmail);
+
+        } catch (Exception e) {
+            return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+        return ResponseEntity.ok().body(orders);
     }
 }

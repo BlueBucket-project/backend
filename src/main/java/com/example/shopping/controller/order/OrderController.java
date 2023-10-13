@@ -28,10 +28,10 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping(value = "/orderItem")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Operation(summary = "상품주문", description = "상품을 주문하는 API입니다.")
     public ResponseEntity<?> order(@RequestBody OrderMainDTO order, BindingResult result
-                                     ,@AuthenticationPrincipal UserDetails userDetails
+            ,@AuthenticationPrincipal UserDetails userDetails
     ) {
         OrderDTO orderItem;
 
@@ -49,22 +49,6 @@ public class OrderController {
         }
 
         return ResponseEntity.ok().body(orderItem);
-    }
-
-
-    @GetMapping(value = "/{findEmail}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
-    @Operation(summary = "주문내역조회", description = "주문내역을 조회하는 API입니다.")
-    public ResponseEntity<?> getOrders(@PathVariable String findEmail
-                                        ,@AuthenticationPrincipal UserDetails userDetails) {
-        List<OrderItemDTO> orders = new ArrayList<>();
-        try {
-            orders = orderService.getOrders(findEmail);
-
-        } catch (Exception e) {
-            return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
-        return ResponseEntity.ok().body(orders);
     }
 
 }
