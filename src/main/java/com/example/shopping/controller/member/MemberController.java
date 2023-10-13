@@ -73,7 +73,7 @@ public class MemberController {
     @DeleteMapping("/{memberId}")
     @Tag(name = "member")
     @Operation(summary = "삭제 API", description = "유저를 삭제하는 API입니다.")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
     public String remove(@PathVariable Long memberId) {
         try {
             String remove = memberServiceImpl.removeUser(memberId);
@@ -102,7 +102,7 @@ public class MemberController {
     @PutMapping("")
     @Tag(name = "member")
     @Operation(summary = "수정 API", description = "유저 정보를 수정하는 API입니다.")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
     public ResponseEntity<?> update(@RequestBody ModifyDTO modifyDTO,
                                     @AuthenticationPrincipal UserDetails userDetails) {
         try {
