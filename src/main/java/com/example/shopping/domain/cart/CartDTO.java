@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Getter
 @NoArgsConstructor
@@ -21,19 +20,19 @@ public class CartDTO {
 
     private MemberDTO member;
 
-    private List<CartItemDTO> cartItem = new ArrayList<>();
+    private List<CartMainDTO> cartItem = new ArrayList<>();
 
     @Builder
-    public CartDTO(Long cartId, MemberDTO member, List<CartItemDTO> cartItem) {
+    public CartDTO(Long cartId, MemberDTO member, List<CartMainDTO> cartItem) {
         this.cartId = cartId;
         this.member = member;
         this.cartItem = cartItem;
     }
 
-    public CartEntity toEntity(MemberEntity member){
+    public CartEntity toEntity(){
         return CartEntity.builder()
                 .cartId(this.cartId)
-                .member(member)
+                .member(member.toMemberInfoEntity())
                 .build();
     }
 
@@ -42,6 +41,7 @@ public class CartDTO {
         return CartDTO.builder()
                 .cartId(this.cartId)
                 .member(MemberDTO.toMemberDTO(member))
+                .cartItem(this.cartItem)
                 .build();
     }
 }

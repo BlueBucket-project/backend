@@ -1,9 +1,14 @@
 package com.example.shopping.repository.cart;
 
 import com.example.shopping.domain.cart.CartItemDTO;
+import com.example.shopping.domain.cart.CartMainDTO;
+import com.example.shopping.entity.cart.CartItemEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -16,6 +21,42 @@ public class CartItemRepositoryImpl implements CartItemRepository{
 
     @Override
     public CartItemDTO save(CartItemDTO cartItem) {
-        return null;
+        CartItemEntity savedCartItem = cartItemJpaRepository.save(cartItem.toEntity());
+        return savedCartItem.toItemDTO();
+    }
+
+    @Override
+    public CartMainDTO findByCartMainDTO(Long cartId, Long itemId) {
+        CartItemEntity cartItem = cartItemJpaRepository.findByCartCartIdAndItemItemId(cartId, itemId);
+        if(cartItem != null){
+            return cartItem.toMainDTO();
+        }
+        else
+            return null;
+    }
+
+    @Override
+    public CartItemDTO findByCartItemDTO(Long cartId, Long itemId) {
+        CartItemEntity cartItem = cartItemJpaRepository.findByCartCartIdAndItemItemId(cartId, itemId);
+        if(cartItem != null){
+            return cartItem.toItemDTO();
+        }
+        else
+            return null;
+    }
+
+    @Override
+    public List<CartItemDTO> findByCartCartId(Long cartId) {
+        List<CartItemEntity> items = cartItemJpaRepository.findByCartCartId(cartId);
+
+        if(items == null)
+            return null;
+        else
+            return items.stream().map(CartItemEntity::toItemDTO).collect(Collectors.toList());
+    }
+
+    @Override
+    public void delete(Long id) {
+        cartItemJpaRepository.deleteById(id);
     }
 }
