@@ -41,8 +41,8 @@ public class OrderController {
                 return ResponseEntity.badRequest().body(result.getClass().getSimpleName());
             }
 
-            //String email = userDetails.getUsername();
-            orderItem = orderService.orderItem(order, "admin123@test.com");
+            String email = userDetails.getUsername();
+            orderItem = orderService.orderItem(order, email);
 
         } catch (Exception e) {
             return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
