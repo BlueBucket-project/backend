@@ -25,9 +25,12 @@ public interface ItemService {
 
     // 상품 삭제
     String removeItem(Long itemId, String memberEmail);
+    // 이미지 삭제
+    String removeImg(Long itemId, Long itemImgId, String memberEmail);
     // 전체 상품 보기
     Page<ItemDTO> getItems(Pageable pageable);
     // 검색
     Page<ItemDTO> getSearchItems(Pageable pageable,
                                  String searchKeyword);
+
 }

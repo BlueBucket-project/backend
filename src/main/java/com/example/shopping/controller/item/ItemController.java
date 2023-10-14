@@ -108,6 +108,18 @@ public class ItemController {
         }
     }
 
+    // 이미지 삭제
+    @DeleteMapping("/{itemId}/{itemImgId}")
+    public String removeImg(@PathVariable Long itemId,
+                            @PathVariable Long itemImgId,
+                            @AuthenticationPrincipal UserDetails userDetails) {
+        String email = userDetails.getUsername();
+        log.info("email : " + email);
+        String result = itemServiceImpl.removeImg(itemId, itemImgId, email);
+        return result;
+    }
+
+
     // 전체 상품 보여주기
     // 파라미터로 받는다.
     // 예) localhost:8080/api/v1/items?page=1&searchKeyword=내용

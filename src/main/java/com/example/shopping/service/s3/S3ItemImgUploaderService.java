@@ -66,7 +66,7 @@ public class S3ItemImgUploaderService {
 
     // S3에 업로드된 파일 삭제
     public String deleteFile(String uploadFilePath, String uuidFileName) {
-        String result = "success";
+        String result = "삭제하는데 성공했습니다.";
 
         try {
             // ex) 구분/년/월/일/파일.확장자

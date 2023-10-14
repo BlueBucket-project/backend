@@ -140,6 +140,7 @@ public class ItemServiceImpl implements ItemService{
                 List<ItemImgDTO> products = s3ItemImgUploaderService.upload("product", itemFiles);
 
                 // 가지고 온 이미지가 비어있을 경우
+                // 새로운 이미지를 넣어준다.
                 if(itemImgList.isEmpty()) {
                     for (int i = 0; i < products.size(); i++) {
                         ItemImgDTO itemImgDTO = products.get(i);
@@ -157,22 +158,21 @@ public class ItemServiceImpl implements ItemService{
                     }
                 } else {
                     // 가지고 온 이미지가 있는 경우
-                    for (ItemImgEntity imgEntity : itemImgList) {
-                        for (int i = 0; i < products.size(); i++) {
-                            ItemImgDTO itemImgDTO = products.get(i);
-                            ItemImgEntity itemImgEntity = ItemImgEntity.builder()
-                                    .itemImgId(imgEntity.getItemImgId())
-                                    .oriImgName(itemImgDTO.getOriImgName())
-                                    .uploadImgPath(itemImgDTO.getUploadImgPath())
-                                    .uploadImgUrl(itemImgDTO.getUploadImgUrl())
-                                    .uploadImgName(itemImgDTO.getUploadImgName())
-                                    .repImgYn(i == 0 ? "Y" : "N")
-                                    .item(findItem)
-                                    .build();
-
-                            ItemImgEntity saveImg = itemImgRepository.save(itemImgEntity);
-                            itemImgList.add(saveImg);
-                        }
+                    // S3에서 생성한 이미지들을 가지고 온다.
+                    for (int i = 0; i < products.size(); i++) {
+                        ItemImgDTO itemImgDTO = products.get(i);
+                        ItemImgEntity imgEntity = ItemImgEntity.builder()
+                                .oriImgName(itemImgDTO.getOriImgName())
+                                .uploadImgPath(itemImgDTO.getUploadImgPath())
+                                .uploadImgUrl(itemImgDTO.getUploadImgUrl())
+                                .uploadImgName(itemImgDTO.getUploadImgName())
+                                .repImgYn("N")
+                                .item(findItem)
+                                .build();
+                        ItemImgEntity saveImg = itemImgRepository.save(imgEntity);
+                        log.info("img : " + saveImg);
+                        // 기존의 이미지에 추가시켜 준다.
+                        itemImgList.add(saveImg);
                     }
                 }
                 // 위에서 진행한 것은 ItemImg를 처리하고 저장하는 것이다.
@@ -196,6 +196,69 @@ public class ItemServiceImpl implements ItemService{
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    // 이미지 삭제
+    @Override
+    public String removeImg(Long itemId, Long itemImgId, String memberEmail) {
+        // 이미지 조회
+        ItemImgEntity imgEntity = itemImgRepository.findById(itemImgId)
+                .orElseThrow(EntityNotFoundException::new);
+        // 회원 조회
+        MemberEntity findUser = memberRepository.findByEmail(memberEmail);
+        // 상품 조회
+        ItemEntity findItem = itemRepository.findById(itemId)
+                .orElseThrow(EntityNotFoundException::new);
+
+        String uploadFilePath = imgEntity.getUploadImgPath();
+        String uuidFileName = imgEntity.getUploadImgName();
+
+        // 이미지 엔티티에 있는 Item엔티티에 담겨있는 id와 조회한 Item엔티티 id와 일치하면 true
+        if(imgEntity.getItem().getItemId().equals(findItem.getItemId())) {
+            // 상품 엔티티에 담아져 있는 유저의 이메일과 조회한 유저의 이메일과 일치하면 true
+            if(findItem.getMember().getEmail().equals(findUser.getEmail())) {
+                itemImgRepository.deleteById(imgEntity.getItemImgId());
+                String result = s3ItemImgUploaderService.deleteFile(uploadFilePath, uuidFileName);
+                log.info("result : " + result);
+
+                // 상품 번호로 담겨져있는 이미지 불러옴
+                List<ItemImgEntity> findItemIdImgList = itemImgRepository.findByItemItemId(itemId);
+
+                if(!findItemIdImgList.isEmpty()) {
+                    for (int i = 0; i < findItemIdImgList.size(); i++) {
+                        ItemImgEntity itemImgEntity = findItemIdImgList.get(i);
+                        ItemImgEntity itemImg = ItemImgEntity.builder()
+                                .itemImgId(itemImgEntity.getItemImgId())
+                                .oriImgName(itemImgEntity.getOriImgName())
+                                .uploadImgPath(itemImgEntity.getUploadImgPath())
+                                .uploadImgUrl(itemImgEntity.getUploadImgUrl())
+                                .uploadImgName(itemImgEntity.getUploadImgName())
+                                .repImgYn(i == 0 ? "Y" : "N")
+                                .item(findItem)
+                                .build();
+                        ItemImgEntity saveImg = itemImgRepository.save(itemImg);
+                        log.info("img : " + saveImg);
+                        findItemIdImgList.add(saveImg);
+                    }
+                } else {
+                    // 모든 이미지를 삭제했으므로 상품의 이미지 목록을 비웁니다.
+                    findItemIdImgList = new ArrayList<>();
+                }
+                findItem = ItemEntity.builder()
+                        .itemId(findItem.getItemId())
+                        .itemName(findItem.getItemName())
+                        .itemDetail(findItem.getItemDetail())
+                        .itemPlace(findItem.getItemPlace())
+                        .stockNumber(findItem.getStockNumber())
+                        .price(findItem.getPrice())
+                        .itemImgList(findItemIdImgList)
+                        .build();
+                ItemEntity saveItem = itemRepository.save(findItem);
+                log.info("item : " +saveItem);
+                return result;
+            }
+        }
+        return "삭제를 실패했습니다.";
     }
 
     // 상품 삭제
