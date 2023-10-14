@@ -89,4 +89,18 @@ public class MemberDTO {
                         .memberAddrEtc(member.getAddress().getMemberAddrEtc())
                         .build()).build();
     }
+
+    public MemberEntity toMemberInfoEntity() {
+        return MemberEntity.builder()
+                .memberId(this.memberId)
+                .memberName(this.memberName)
+                .memberPw(this.memberPw)
+                .email(this.email)
+                .nickName(this.nickName)
+                .memberPoint(this.memberPoint)
+                .memberRole(this.memberRole)
+                .provider(this.provider)
+                .providerId(this.providerId)
+                .build();
+    }
 }
