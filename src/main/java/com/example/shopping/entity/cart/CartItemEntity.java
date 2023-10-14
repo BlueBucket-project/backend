@@ -1,11 +1,10 @@
 package com.example.shopping.entity.cart;
 
-import com.example.shopping.domain.cart.CartDTO;
 import com.example.shopping.domain.cart.CartItemDTO;
+import com.example.shopping.domain.cart.CartMainDTO;
+import com.example.shopping.domain.cart.CartUpdateDTO;
 import com.example.shopping.entity.Base.BaseTimeEntity;
 import com.example.shopping.entity.item.ItemEntity;
-import com.example.shopping.entity.member.MemberEntity;
-import com.example.shopping.entity.order.OrderEntity;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -31,6 +30,7 @@ public class CartItemEntity extends BaseTimeEntity {
     @Column(name="cart_count")
     private int count;
 
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "item_id")
     private ItemEntity item;
@@ -43,9 +43,29 @@ public class CartItemEntity extends BaseTimeEntity {
         this.count = count;
     }
 
-    public CartItemDTO toDTO(){
-        return CartItemDTO.builder()
+    public CartMainDTO toMainDTO(){
+        return CartMainDTO.builder()
                 .itemId(this.item.getItemId())
+                .count(this.count)
+                .build();
+    }
+
+    public CartItemDTO toItemDTO(){
+        return CartItemDTO.builder()
+                .cartItemId(this.cartitemId)
+                .cartId(this.cart.getCartId())
+                .cart(this.cart.toDTO())
+                .count(this.count)
+                .item(this.item.toItemInfoDTO())
+                .price(this.item.getPrice() * this.count)
+                .mbrId(this.cart.getMember().getMemberId())
+                .build();
+    }
+
+    public CartUpdateDTO toUpdateDTO(){
+        return CartUpdateDTO.builder()
+                .itemId(this.item.getItemId())
+                .cartId(this.cart.getCartId())
                 .count(this.count)
                 .build();
     }
@@ -57,13 +77,4 @@ public class CartItemEntity extends BaseTimeEntity {
                 .count(count)
                 .build();
     }
-
-    public void addCount(int count){
-        this.count += count;
-    }
-
-    public void updateCount(int count){
-        this.count = count;
-    }
-
 }
