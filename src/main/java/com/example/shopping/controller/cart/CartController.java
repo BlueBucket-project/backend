@@ -47,8 +47,8 @@ public class CartController {
             //test데이터 - 배포시 삭제필요
             //cartItem = cartService.addCart(cart, "test123@test.com");
 
-        } catch (Exception e) {
-            return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (CartException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
 
         return ResponseEntity.ok().body(cartItem);
@@ -73,9 +73,8 @@ public class CartController {
             //test데이터 - 배포시 삭제필요
             //res = cartService.updateCart(cartItem, "test123@test.com");
 
-
-        } catch (CartException e) {
-            return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
 
         return ResponseEntity.ok().body(res);
@@ -101,8 +100,8 @@ public class CartController {
             //res = cartService.deleteCart(cartItems, "test123@test.com");
 
 
-        } catch (CartException e) {
-            return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
 
         return ResponseEntity.ok().body(res);
@@ -127,8 +126,8 @@ public class CartController {
             //test데이터 - 배포시 삭제필요
             //res = cartService.orderCart(cartItems, "test123@test.com");
 
-        } catch (CartException e) {
-            return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
 
         return ResponseEntity.ok().body(res);
@@ -153,8 +152,8 @@ public class CartController {
             //test데이터 - 배포시 삭제필요
             //res = cartService.cancelCartOrder(cartItems, "test123@test.com");
 
-        } catch (CartException e) {
-            return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
 
         return ResponseEntity.ok().body(res);
@@ -174,7 +173,7 @@ public class CartController {
             items = cartService.getCartList(mbrEmail);
 
         } catch (Exception e) {
-            return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
         return ResponseEntity.ok().body(items);
     }

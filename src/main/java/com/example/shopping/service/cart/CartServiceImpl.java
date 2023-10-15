@@ -40,7 +40,7 @@ public class CartServiceImpl implements CartService{
         CartItemDTO savedCartItem = new CartItemDTO();
 
         MemberEntity member = memberRepository.findByEmail(mbrEmail);
-        ItemEntity item = itemRepository.findById(cartItem.getItemId()).orElseThrow();
+        ItemEntity item = itemRepository.findById(cartItem.getItemId()).orElseThrow(()->new CartException("해당 상품이 존재하지 않습니다."));
 
         //기존 장바구니 여부 확인
         CartDTO cart = cartRepository.findByMemberMemberId(member.getMemberId());
@@ -103,17 +103,7 @@ public class CartServiceImpl implements CartService{
     @Transactional
     public String updateCart(CartUpdateDTO updateItem, String email) {
 
-        //checkItemStock(updateItem.getItemId(), updateItem.getCount());
-        ItemEntity item = itemRepository.findByItemId(updateItem.getItemId());
-        if(item == null){
-            throw new OutOfStockException("재고가 부족합니다. 요청수량 : " + updateItem.getCount() +
-                    " 재고 : 0");
-        }
-
-        if(item.getStockNumber() < updateItem.getCount()){
-            throw new OutOfStockException("재고가 부족합니다. 요청수량 : " + updateItem.getCount() +
-                    " 재고 : " + item.getStockNumber());
-        }
+        checkItemStock(updateItem.getItemId(), updateItem.getCount());
 
         try{
             CartItemDTO cartItem = cartItemRepository.findByCartItemDTO(updateItem.getCartId(), updateItem.getItemId());
@@ -122,7 +112,7 @@ public class CartServiceImpl implements CartService{
             cartItemRepository.save(cartItem);
         }
         catch (Exception e){
-            throw new CartException("삼풍 수량 수정에 실패하였습니다.");
+            throw new CartException("상품 수량 수정에 실패하였습니다.");
         }
 
         return "상품 수량 수정에 성공하였습니다.";
@@ -175,9 +165,13 @@ public class CartServiceImpl implements CartService{
 
     private void checkItemStock(Long itemId, int modifyCnt){
         ItemEntity item = itemRepository.findByItemId(itemId);
+
         if(item == null){
-            throw new OutOfStockException("재고가 부족합니다. 요청수량 : " + modifyCnt +
-                    " 재고 : 0");
+            throw new OutOfStockException("상품이 존재하지 않습니다.");
+        }
+
+        if(item.getItemSellStatus() == ItemSellStatus.SOLD_OUT){
+            throw new OutOfStockException("이미 상품이 판매완료되었습니다.");
         }
 
         if(item.getStockNumber() < modifyCnt){
