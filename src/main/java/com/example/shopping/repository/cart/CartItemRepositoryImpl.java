@@ -59,4 +59,11 @@ public class CartItemRepositoryImpl implements CartItemRepository{
     public void delete(Long id) {
         cartItemJpaRepository.deleteById(id);
     }
+
+    @Override
+    public CartItemDTO findByCartItemId(Long cartItemId) {
+        CartItemEntity item = cartItemJpaRepository.findById(cartItemId).orElseThrow();
+        return item.toItemDTO();
+    }
+
 }

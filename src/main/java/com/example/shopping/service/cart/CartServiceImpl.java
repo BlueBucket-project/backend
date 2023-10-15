@@ -1,9 +1,7 @@
 package com.example.shopping.service.cart;
 
-import com.example.shopping.domain.cart.CartDTO;
-import com.example.shopping.domain.cart.CartItemDTO;
-import com.example.shopping.domain.cart.CartMainDTO;
-import com.example.shopping.domain.cart.CartUpdateDTO;
+import com.example.shopping.domain.Item.ItemSellStatus;
+import com.example.shopping.domain.cart.*;
 import com.example.shopping.entity.cart.CartItemEntity;
 import com.example.shopping.entity.item.ItemEntity;
 import com.example.shopping.entity.member.MemberEntity;
@@ -17,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import java.util.*;
 
@@ -104,6 +103,7 @@ public class CartServiceImpl implements CartService{
     @Transactional
     public String updateCart(CartUpdateDTO updateItem, String email) {
 
+        //checkItemStock(updateItem.getItemId(), updateItem.getCount());
         ItemEntity item = itemRepository.findByItemId(updateItem.getItemId());
         if(item == null){
             throw new OutOfStockException("재고가 부족합니다. 요청수량 : " + updateItem.getCount() +
@@ -126,5 +126,63 @@ public class CartServiceImpl implements CartService{
         }
 
         return "상품 수량 수정에 성공하였습니다.";
+    }
+
+    @Override
+    @Transactional
+    public String orderCart(List<CartOrderDTO> cartOrderList, String email) {
+
+        for(CartOrderDTO cartOrder : cartOrderList){
+            CartItemDTO cartItem = cartItemRepository.findByCartItemId(cartOrder.getCartItemId());
+
+            checkItemStock(cartItem.getItem().getItemId(), cartItem.getCount());
+
+            ItemEntity updateItem = itemRepository.findById(cartItem.getItem().getItemId()).orElseThrow();
+            updateItem.changeStatus(ItemSellStatus.RESERVED);
+        }
+        return "구매예약에 성공하였습니다.";
+    }
+
+    @Override
+    @Transactional
+    public String cancelCartOrder(List<CartOrderDTO> cartOrderList, String email) {
+        for(CartOrderDTO cartOrder : cartOrderList){
+            CartItemDTO cartItem = cartItemRepository.findByCartItemId(cartOrder.getCartItemId());
+
+            checkItemStock(cartItem.getItem().getItemId(), cartItem.getCount());
+
+            ItemEntity updateItem = itemRepository.findById(cartItem.getItem().getItemId()).orElseThrow();
+            updateItem.changeStatus(ItemSellStatus.SELL);
+        }
+        return "구매예약을 취소하였습니다.";
+    }
+
+    @Override
+    public List<CartItemDTO> getCartList(String email) {
+
+        List<CartItemDTO> cartItems = new ArrayList<>();
+
+        Long mbrId = memberRepository.findByEmail(email).getMemberId();
+        Long cartId = cartRepository.findByMemberMemberId(mbrId).getCartId();
+
+        if(cartId == null)
+            throw new CartException("장바구니에 물품이 없습니다.");
+        else{
+            cartItems = cartItemRepository.findByCartCartId(cartId);
+            return cartItems;
+        }
+    }
+
+    private void checkItemStock(Long itemId, int modifyCnt){
+        ItemEntity item = itemRepository.findByItemId(itemId);
+        if(item == null){
+            throw new OutOfStockException("재고가 부족합니다. 요청수량 : " + modifyCnt +
+                    " 재고 : 0");
+        }
+
+        if(item.getStockNumber() < modifyCnt){
+            throw new OutOfStockException("재고가 부족합니다. 요청수량 : " + modifyCnt +
+                    " 재고 : " + item.getStockNumber());
+        }
     }
 }
