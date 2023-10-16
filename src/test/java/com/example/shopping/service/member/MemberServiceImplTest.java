@@ -10,6 +10,7 @@ import com.example.shopping.repository.jwt.TokenRepository;
 import com.example.shopping.repository.member.MemberRepository;
 import lombok.extern.log4j.Log4j2;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,6 +19,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @Log4j2
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
+@Transactional
 class MemberServiceImplTest {
 
     @Autowired
@@ -50,6 +53,11 @@ class MemberServiceImplTest {
                         .memberAddrDetail("xxx")
                         .memberAddrEtc("101-1")
                         .build()).build();
+    }
+    // 테스트가 실행될 때마다 데이터 베이스를 비워준다.
+    @AfterEach
+    void clean() {
+        memberRepository.deleteAll();
     }
 
     @Test
@@ -88,6 +96,7 @@ class MemberServiceImplTest {
     }
 
     @Test
+    @DisplayName("조회하는 기능 테스트")
     void search() {
         MemberEntity findUser = memberRepository.findByEmail("zxzz11@naver.com");
         log.info("user : " + findUser);
@@ -95,22 +104,60 @@ class MemberServiceImplTest {
     }
 
     @Test
+    @DisplayName("삭제하는 기능 테스트")
     void removeUser() {
+        MemberEntity findUser = memberRepository.findByEmail(createMemberInfo().getEmail());
+
+        if(findUser != null) {
+            memberRepository.deleteByMemberId(findUser.getMemberId());
+            MemberEntity checkUser = memberRepository.findByEmail(createMemberInfo().getEmail());
+            Assertions.assertThat(checkUser).isNull();
+        }
     }
 
-    @Test
-    void login() {
-    }
 
     @Test
+    @DisplayName("업데이트 기능 테스트")
     void updateUser() {
+        MemberEntity findUser = memberRepository.findByEmail(createMemberInfo().getEmail());
+
+        if(findUser != null) {
+            MemberEntity member = MemberEntity.builder()
+                    .email("zxzz12@naver.com")
+                    .memberPw(passwordEncoder.encode("zxzz12"))
+                    .memberName("테스터2")
+                    .memberRole(createMemberInfo().getMemberRole())
+                    .nickName("테스터2")
+                    .address(AddressEntity.builder()
+                            .memberAddr(createMemberInfo().getMemberAddress().getMemberAddr())
+                            .memberAddrDetail(createMemberInfo().getMemberAddress().getMemberAddrDetail())
+                            .memberAddrEtc(createMemberInfo().getMemberAddress().getMemberAddrEtc())
+                            .build()).build();
+            MemberEntity save = memberRepository.save(member);
+            Assertions.assertThat(save.getEmail()).isEqualTo(member.getEmail());
+            Assertions.assertThat(save.getMemberName()).isEqualTo(member.getMemberName());
+            Assertions.assertThat(save.getMemberRole()).isEqualTo(member.getMemberRole());
+            Assertions.assertThat(save.getNickName()).isEqualTo(member.getNickName());
+            Assertions.assertThat(save.getAddress().getMemberAddr())
+                    .isEqualTo(member.getAddress().getMemberAddr());
+            Assertions.assertThat(save.getAddress().getMemberAddrDetail())
+                    .isEqualTo(member.getAddress().getMemberAddrDetail());
+            Assertions.assertThat(save.getAddress().getMemberAddrEtc())
+                    .isEqualTo(member.getAddress().getMemberAddrEtc());
+        }
     }
 
     @Test
+    @DisplayName("이메일 중복 체크")
     void emailCheck() {
+        MemberEntity findUser = memberRepository.findByEmail(createMemberInfo().getEmail());
+        Assertions.assertThat(findUser).isNull();
     }
 
     @Test
     void nickNameCheck() {
+        MemberEntity findNickName = memberRepository.findByNickName(createMemberInfo().getNickName());
+        Assertions.assertThat(findNickName).isNull();
+
     }
 }
