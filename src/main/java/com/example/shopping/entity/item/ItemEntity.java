@@ -104,6 +104,7 @@ public class ItemEntity extends BaseTimeEntity {
         this.itemRamount = 0;
     }
 
+
     public void changeStatus(ItemSellStatus status){
         this.itemSellStatus = status;
     }
