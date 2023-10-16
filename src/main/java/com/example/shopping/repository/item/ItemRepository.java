@@ -20,6 +20,5 @@ public interface ItemRepository extends JpaRepository<ItemEntity, Long> {
 
     ItemEntity findByItemId(Long itemId);
     Page<ItemEntity> findByItemSellStatus(Pageable pageable, ItemSellStatus itemSellStatus);
-    ItemEntity findByMemberEmail(String email);
 
 }

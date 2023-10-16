@@ -84,11 +84,11 @@ public class MemberDTO {
                 .memberRole(member.getMemberRole())
                 .memberPoint(member.getMemberPoint())
                 .memberAddress(AddressDTO.builder()
-                        .memberAddr(member.getAddress().getMemberAddr() == null
+                        .memberAddr(member.getAddress() == null
                                 ? null : member.getAddress().getMemberAddr())
-                        .memberAddrDetail(member.getAddress().getMemberAddrDetail() == null
+                        .memberAddrDetail(member.getAddress() == null
                                 ? null : member.getAddress().getMemberAddrDetail())
-                        .memberAddrEtc(member.getAddress().getMemberAddrEtc() == null
+                        .memberAddrEtc(member.getAddress() == null
                                 ? null : member.getAddress().getMemberAddrEtc())
                         .build()).build();
     }

@@ -20,7 +20,7 @@ public class CartItemEntity extends BaseTimeEntity {
 
     @Id
     @GeneratedValue
-    @Column(name="cartitem_id")
+    @Column(name="id")
     private Long cartitemId;
 
     @ManyToOne(fetch= FetchType.LAZY)
