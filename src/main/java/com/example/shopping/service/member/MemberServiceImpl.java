@@ -42,28 +42,29 @@ public class MemberServiceImpl implements MemberService{
         try {
             MemberEntity findEmail = memberRepository.findByEmail(memberDTO.getEmail());
 
+
             if(findEmail != null) {
                 return ResponseEntity.badRequest().body("이미 가입된 회원입니다.");
-            } else {
-                // 아이디가 없다면 DB에 등록해줍니다.
-                MemberEntity member = MemberEntity.builder()
-                        .email(memberDTO.getEmail())
-                        .memberPw(passwordEncoder.encode(memberDTO.getMemberPw()))
-                        .memberName(memberDTO.getMemberName())
-                        .nickName(memberDTO.getNickName())
-                        .memberRole(memberDTO.getMemberRole())
-                        .address(AddressEntity.builder()
-                                .memberAddr(memberDTO.getMemberAddress().getMemberAddr())
-                                .memberAddrDetail(memberDTO.getMemberAddress().getMemberAddrDetail())
-                                .memberAddrEtc(memberDTO.getMemberAddress().getMemberAddrEtc())
-                                .build()).build();
-
-                log.info("member in service : " + member);
-                MemberEntity saveMember = memberRepository.save(member);
-
-                MemberDTO coverMember = MemberDTO.toMemberDTO(saveMember);
-                return ResponseEntity.ok().body(coverMember);
             }
+
+            // 아이디가 없다면 DB에 등록해줍니다.
+            MemberEntity member = MemberEntity.builder()
+                    .email(memberDTO.getEmail())
+                    .memberPw(passwordEncoder.encode(memberDTO.getMemberPw()))
+                    .memberName(memberDTO.getMemberName())
+                    .nickName(memberDTO.getNickName())
+                    .memberRole(memberDTO.getMemberRole())
+                    .address(AddressEntity.builder()
+                            .memberAddr(memberDTO.getMemberAddress().getMemberAddr())
+                            .memberAddrDetail(memberDTO.getMemberAddress().getMemberAddrDetail())
+                            .memberAddrEtc(memberDTO.getMemberAddress().getMemberAddrEtc())
+                            .build()).build();
+
+            log.info("member in service : " + member);
+            MemberEntity saveMember = memberRepository.save(member);
+
+            MemberDTO coverMember = MemberDTO.toMemberDTO(saveMember);
+            return ResponseEntity.ok().body(coverMember);
         } catch (Exception e) {
             log.error(e.getMessage());
             return ResponseEntity.badRequest().body(e.getMessage());

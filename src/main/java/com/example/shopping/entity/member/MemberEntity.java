@@ -21,16 +21,17 @@ public class MemberEntity extends BaseTimeEntity {
     @Column(name = "member_name", nullable = false)
     private String memberName;
 
-    @Column(name = "member_email", nullable = false, unique = true)
+    @Column(name = "member_email", nullable = false)
     private String email;
 
     @Column(name = "member_pw")
     private String memberPw;
 
-    @Column(name = "nick_name", unique = true)
+    @Column(name = "nick_name")
     private String nickName;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     // USER, ADMIN
     private Role memberRole;
 
