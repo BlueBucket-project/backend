@@ -44,7 +44,7 @@ public class OrderServiceImpl implements  OrderService{
     @Transactional
     public OrderDTO orderItem(OrderMainDTO order, String adminEmail){
 
-        Long memberId = memberRepository.findByEmail(order.getMbrEmail()).getMemberId();
+        Long memberId = memberRepository.findByEmail(order.getItemReserver()).getMemberId();
         Long adminId = memberRepository.findByEmail(adminEmail).getMemberId();
 
         ItemEntity item = itemRepository.findByItemId(order.getItemId());
@@ -72,7 +72,7 @@ public class OrderServiceImpl implements  OrderService{
         OrderItemDTO savedOrderItem = orderItemRepository.save(savedOrder.getOrderItem().get(0), savedOrder);
 
         // Member-point 추가
-        MemberEntity member = memberRepository.findByEmail(order.getMbrEmail());
+        MemberEntity member = memberRepository.findByEmail(order.getItemReserver());
         member.addPoint(savedOrderItem.getItemPrice() * savedOrderItem.getItemAmount());
         memberRepository.save(member);
 

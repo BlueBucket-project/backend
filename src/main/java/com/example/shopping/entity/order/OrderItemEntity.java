@@ -56,6 +56,7 @@ public class OrderItemEntity {
                 .itemPrice(this.item.getPrice())
                 .orderitemId(this.orderitemId)
                 .itemId(this.item.getItemId())
+                .orderDate(this.order==null ? null:this.order.getRegTime())
                 .build();
     }
 
