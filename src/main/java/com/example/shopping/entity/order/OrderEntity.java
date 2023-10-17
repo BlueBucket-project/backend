@@ -24,9 +24,6 @@ public class OrderEntity extends BaseTimeEntity {
     @Column(name="order_id")
     private Long orderId;
 
-    @Column(name="order_date")
-    private LocalDateTime orderDate;
-
     @Column(name="order_admin")
     private Long orderAdmin;
 
@@ -38,9 +35,8 @@ public class OrderEntity extends BaseTimeEntity {
 
     @Builder
 
-    public OrderEntity(Long orderId, LocalDateTime orderDate, Long orderAdmin, Long orderMember, List<OrderItemEntity> orderItem) {
+    public OrderEntity(Long orderId, Long orderAdmin, Long orderMember, List<OrderItemEntity> orderItem) {
         this.orderId = orderId;
-        this.orderDate = orderDate;
         this.orderAdmin = orderAdmin;
         this.orderMember = orderMember;
         this.orderItem = orderItem;
@@ -48,8 +44,8 @@ public class OrderEntity extends BaseTimeEntity {
 
     public OrderDTO toDTO(){
         return OrderDTO.builder()
+                .orderDate(this.getRegTime())
                 .orderId(this.orderId)
-                .orderDate(this.orderDate)
                 .orderAdmin(this.orderAdmin)
                 .orderMember(this.orderMember)
                 .orderItem(this.orderItem.stream()

@@ -43,7 +43,6 @@ public class OrderDTO {
 
     public static OrderDTO createOrder(Long orderAdmin, Long orderMember, List<OrderItemDTO> orderItemList) {
         return OrderDTO.builder()
-                .orderDate(LocalDateTime.now())
                 .orderAdmin(orderAdmin)
                 .orderMember(orderMember)
                 .orderItem(orderItemList)
@@ -52,7 +51,6 @@ public class OrderDTO {
 
     public OrderEntity toEntity(){
         return OrderEntity.builder()
-                .orderDate(this.orderDate)
                 .orderAdmin(this.orderAdmin)
                 .orderMember(this.orderMember)
                 .orderId(this.orderId)
