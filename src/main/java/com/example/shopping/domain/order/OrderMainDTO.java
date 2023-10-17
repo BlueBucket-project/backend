@@ -1,5 +1,6 @@
 package com.example.shopping.domain.order;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 
 import javax.validation.constraints.Min;
@@ -11,6 +12,7 @@ public class OrderMainDTO {
     @Min(value = 1, message = "최소 주문 수량은 1개 입니다.")
     private int count;
 
-    private String mbrEmail;
+    @Schema(description = "구매자 아이디")
+    private String itemReserver;
 
 }

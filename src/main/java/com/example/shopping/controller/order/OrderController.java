@@ -31,7 +31,7 @@ public class OrderController {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Operation(summary = "상품주문", description = "상품을 주문하는 API입니다.")
     public ResponseEntity<?> order(@RequestBody OrderMainDTO order, BindingResult result
-            ,@AuthenticationPrincipal UserDetails userDetails
+                                 ,@AuthenticationPrincipal UserDetails userDetails
     ) {
         OrderDTO orderItem;
 
@@ -43,6 +43,8 @@ public class OrderController {
 
             String email = userDetails.getUsername();
             orderItem = orderService.orderItem(order, email);
+            //test데이터 - 배포시 삭제
+            //orderItem = orderService.orderItem(order, "admin123@test.com");
 
         } catch (Exception e) {
             return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);

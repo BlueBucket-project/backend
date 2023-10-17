@@ -9,6 +9,8 @@ import com.example.shopping.entity.item.ItemEntity;
 import com.example.shopping.entity.item.ItemImgEntity;
 import com.example.shopping.entity.member.MemberEntity;
 import com.example.shopping.entity.order.OrderItemEntity;
+import com.example.shopping.exception.item.ItemException;
+import com.example.shopping.exception.service.OutOfStockException;
 import com.example.shopping.repository.item.ItemImgRepository;
 import com.example.shopping.repository.item.ItemRepository;
 import com.example.shopping.repository.member.MemberRepository;
@@ -42,19 +44,19 @@ public class OrderServiceImpl implements  OrderService{
     @Transactional
     public OrderDTO orderItem(OrderMainDTO order, String adminEmail){
 
-        Long memberId = memberRepository.findByEmail(order.getMbrEmail()).getMemberId();
+        Long memberId = memberRepository.findByEmail(order.getItemReserver()).getMemberId();
         Long adminId = memberRepository.findByEmail(adminEmail).getMemberId();
 
         ItemEntity item = itemRepository.findByItemId(order.getItemId());
 
         if(item.getItemSellStatus() != ItemSellStatus.RESERVED){
             //throw 예약된 물품이 아니라 판매 못함
-            throw new RuntimeException();
+            throw new ItemException("예약된 물품이 아니라 구매처리 할 수 없습니다.");
         }
 
         if(item.getStockNumber() < order.getCount() || item.getStockNumber() == 0){
-            //throw 물품 수량이 부족할 때
-            throw new RuntimeException();
+            throw new OutOfStockException("재고가 부족합니다. 요청수량 : " + order.getCount() +
+                    " 재고 : " + item.getStockNumber());
         }
 
         List<OrderItemDTO> itemList = new ArrayList<>();
@@ -70,7 +72,7 @@ public class OrderServiceImpl implements  OrderService{
         OrderItemDTO savedOrderItem = orderItemRepository.save(savedOrder.getOrderItem().get(0), savedOrder);
 
         // Member-point 추가
-        MemberEntity member = memberRepository.findByEmail(order.getMbrEmail());
+        MemberEntity member = memberRepository.findByEmail(order.getItemReserver());
         member.addPoint(savedOrderItem.getItemPrice() * savedOrderItem.getItemAmount());
         memberRepository.save(member);
 

@@ -19,7 +19,7 @@ public class OrderItemEntity {
 
     @Id
     @GeneratedValue
-    @Column(name="orderitem_id")
+    @Column(name="id")
     private Long orderitemId;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -56,7 +56,7 @@ public class OrderItemEntity {
                 .itemPrice(this.item.getPrice())
                 .orderitemId(this.orderitemId)
                 .itemId(this.item.getItemId())
-                .orderDate(order==null? LocalDateTime.now():order.getOrderDate())
+                .orderDate(this.order==null ? null:this.order.getRegTime())
                 .build();
     }
 
@@ -68,7 +68,5 @@ public class OrderItemEntity {
                 .count(count)
                 .build();
     }
-
-
 
 }

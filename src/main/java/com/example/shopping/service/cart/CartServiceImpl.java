@@ -118,6 +118,7 @@ public class CartServiceImpl implements CartService{
         return "상품 수량 수정에 성공하였습니다.";
     }
 
+    //장바구니 상품 구매예약
     @Override
     @Transactional
     public String orderCart(List<CartOrderDTO> cartOrderList, String email) {
@@ -129,10 +130,12 @@ public class CartServiceImpl implements CartService{
 
             ItemEntity updateItem = itemRepository.findById(cartItem.getItem().getItemId()).orElseThrow();
             updateItem.changeStatus(ItemSellStatus.RESERVED);
+            updateItem.reserveItem(email, cartItem.getCount());
         }
         return "구매예약에 성공하였습니다.";
     }
 
+    //구매예약상품 취소
     @Override
     @Transactional
     public String cancelCartOrder(List<CartOrderDTO> cartOrderList, String email) {
@@ -143,6 +146,7 @@ public class CartServiceImpl implements CartService{
 
             ItemEntity updateItem = itemRepository.findById(cartItem.getItem().getItemId()).orElseThrow();
             updateItem.changeStatus(ItemSellStatus.SELL);
+            updateItem.reserveItem(null, 0);
         }
         return "구매예약을 취소하였습니다.";
     }
