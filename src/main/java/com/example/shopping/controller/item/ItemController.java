@@ -1,6 +1,7 @@
 package com.example.shopping.controller.item;
 
 import com.example.shopping.domain.Item.ItemDTO;
+import com.example.shopping.domain.Item.ItemSellStatus;
 import com.example.shopping.domain.Item.ModifyItemDTO;
 import com.example.shopping.service.item.ItemServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,13 +35,14 @@ import java.util.Map;
 public class ItemController {
     private final ItemServiceImpl itemServiceImpl;
 
+
     // 상품 등록
     @PostMapping("")
     @PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
     @Tag(name = "item")
     @Operation(summary = "상품 등록", description = "상품을 등록하는 API입니다.")
-    public ResponseEntity<?> createItem(@Validated @RequestBody ItemDTO itemDTO,
-                                        @RequestPart(value = "files")List<MultipartFile>itemFiles,
+    public ResponseEntity<?> createItem(@RequestPart("key")ModifyItemDTO item,
+                                        @RequestPart("files")List<MultipartFile>itemFiles,
                                         BindingResult result,
                                         @AuthenticationPrincipal UserDetails userDetails){
         try {
@@ -49,8 +51,19 @@ public class ItemController {
                 return ResponseEntity.badRequest().body(result.getClass().getSimpleName());
             }
 
+                ItemDTO itemInfo = ItemDTO.builder()
+                        .itemName(item.getItemName())
+                        .price(item.getPrice())
+                        .itemDetail(item.getItemDetail())
+                        .stockNumber(item.getStockNumber())
+                        .sellPlace(item.getSellPlace())
+                        .itemSellStatus(ItemSellStatus.SELL)
+                        .itemReserver(null)
+                        .itemRamount(0)
+                        .build();
+
             String email = userDetails.getUsername();
-            ResponseEntity<?> responseEntity = itemServiceImpl.saveItem(itemDTO, itemFiles, email);
+            ResponseEntity<?> responseEntity = itemServiceImpl.saveItem(itemInfo, itemFiles, email);
             return ResponseEntity.ok().body(responseEntity);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());

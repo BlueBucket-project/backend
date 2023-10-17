@@ -47,11 +47,13 @@ public class ItemServiceImpl implements ItemService{
             ItemEntity item = ItemEntity.builder()
                     .itemName(itemDTO.getItemName())
                     .itemDetail(itemDTO.getItemDetail())
-                    // 처음 상품을 등록하면 무조건 SELL 상태
-                    .itemSellStatus(ItemSellStatus.SELL)
+                    // 처음 상품을 등록하면 무조건 SELL 상태 - controller에서 셋팅해서 넘겨줌
+                    .itemSellStatus(itemDTO.getItemSellStatus())
                     .stockNumber(itemDTO.getStockNumber())
                     .price(itemDTO.getPrice())
                     .itemPlace(itemDTO.getSellPlace())
+                    .itemReserver(itemDTO.getItemReserver())
+                    .itemRamount(itemDTO.getItemRamount())
                     .build();
 
             // S3에 업로드
