@@ -109,6 +109,12 @@ public class ItemEntity extends BaseTimeEntity {
         this.itemSellStatus = status;
     }
 
+    // 상품 구매예약 시 예약정보 셋팅
+    public void reserveItem(String itemReserver, int amount){
+        this.itemReserver = itemReserver;
+        this.itemRamount = amount;
+    }
+
     public ItemDTO toItemInfoDTO(){
         return ItemDTO.builder()
                 .itemReserver(this.itemReserver)
