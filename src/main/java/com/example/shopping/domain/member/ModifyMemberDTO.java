@@ -12,7 +12,7 @@ import javax.validation.constraints.NotNull;
 @ToString
 @Getter
 @NoArgsConstructor
-public class ModifyDTO {
+public class ModifyMemberDTO {
     @Schema(description = "회원 이름")
     @NotNull(message = "이름은 필수 입력입니다.")
     private String memberName;
@@ -28,7 +28,7 @@ public class ModifyDTO {
     private AddressDTO memberAddress;
 
     @Builder
-    public ModifyDTO(String memberName, String nickName, String memberPw, AddressDTO memberAddress) {
+    public ModifyMemberDTO(String memberName, String nickName, String memberPw, AddressDTO memberAddress) {
         this.memberName = memberName;
         this.nickName = nickName;
         this.memberPw = memberPw;
