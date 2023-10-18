@@ -1,7 +1,7 @@
 package com.example.shopping.entity.cart;
 
 import com.example.shopping.domain.cart.CartDTO;
-import com.example.shopping.domain.member.MemberDTO;
+import com.example.shopping.domain.member.ResponseMemberDTO;
 import com.example.shopping.entity.Base.BaseTimeEntity;
 import com.example.shopping.entity.member.MemberEntity;
 import lombok.Builder;
@@ -10,8 +10,6 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import javax.persistence.*;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Entity(name = "cart")
 @Getter
@@ -38,7 +36,7 @@ public class CartEntity extends BaseTimeEntity {
     public CartDTO toDTO(){
         return CartDTO.builder()
                 .cartId(this.cartId)
-                .member(MemberDTO.toMemberDTO(this.member))
+                .member(ResponseMemberDTO.toMemberDTO(this.member))
                 .build();
     }
 

@@ -1,6 +1,6 @@
 package com.example.shopping.domain.cart;
 
-import com.example.shopping.domain.member.MemberDTO;
+import com.example.shopping.domain.member.ResponseMemberDTO;
 import com.example.shopping.entity.cart.CartEntity;
 import com.example.shopping.entity.member.MemberEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -18,12 +18,12 @@ public class CartDTO {
     @Schema(description = "장바구니번호")
     private Long cartId;
 
-    private MemberDTO member;
+    private ResponseMemberDTO member;
 
     private List<CartMainDTO> cartItem = new ArrayList<>();
 
     @Builder
-    public CartDTO(Long cartId, MemberDTO member, List<CartMainDTO> cartItem) {
+    public CartDTO(Long cartId, ResponseMemberDTO member, List<CartMainDTO> cartItem) {
         this.cartId = cartId;
         this.member = member;
         this.cartItem = cartItem;
@@ -40,7 +40,7 @@ public class CartDTO {
 
         return CartDTO.builder()
                 .cartId(this.cartId)
-                .member(MemberDTO.toMemberDTO(member))
+                .member(ResponseMemberDTO.toMemberDTO(member))
                 .cartItem(this.cartItem)
                 .build();
     }
