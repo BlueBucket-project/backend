@@ -24,33 +24,5 @@ import java.util.*;
 @RequiredArgsConstructor
 public class OrderController {
 
-    @Autowired
-    private final OrderService orderService;
-
-    @PostMapping(value = "/orderItem")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @Operation(summary = "상품주문", description = "상품을 주문하는 API입니다.")
-    public ResponseEntity<?> order(@RequestBody OrderMainDTO order, BindingResult result
-                                 ,@AuthenticationPrincipal UserDetails userDetails
-    ) {
-        OrderDTO orderItem;
-
-        try {
-            if (result.hasErrors()) {
-                log.error("bindingResult error : " + result.hasErrors());
-                return ResponseEntity.badRequest().body(result.getClass().getSimpleName());
-            }
-
-            String email = userDetails.getUsername();
-            orderItem = orderService.orderItem(order, email);
-            //test데이터 - 배포시 삭제
-            //orderItem = orderService.orderItem(order, "admin123@test.com");
-
-        } catch (Exception e) {
-            return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
-
-        return ResponseEntity.ok().body(orderItem);
-    }
 
 }

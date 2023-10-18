@@ -22,13 +22,19 @@ public class OrderItemDTO {
 
     @Schema(description = "주문결제일자")
     private LocalDateTime orderDate;
+    @Schema(description = "구매상품내역고유번호")
     private Long orderitemId;
+    @Schema(description = "구매상품가격")
     private int itemPrice;
+    @Schema(description = "구매상품수량")
     private Integer itemAmount;
+    @Schema(description = "구매자")
     private Long itemBuyer;
+    @Schema(description = "판매자")
     private Long itemSeller;
+    @Schema(description = "상품번호")
     private Long itemId;
-
+    @Schema(description = "상품번호")
     private ItemDTO item;
 
     public interface orderItemId{

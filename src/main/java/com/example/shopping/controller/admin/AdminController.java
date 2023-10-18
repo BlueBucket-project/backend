@@ -2,11 +2,15 @@ package com.example.shopping.controller.admin;
 
 import com.example.shopping.domain.Item.ItemDTO;
 import com.example.shopping.domain.Item.ItemSellStatus;
+import com.example.shopping.domain.order.OrderDTO;
+import com.example.shopping.domain.order.OrderMainDTO;
 import com.example.shopping.service.admin.AdminServiceImpl;
+import com.example.shopping.service.order.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -16,10 +20,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.EntityNotFoundException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -120,4 +126,30 @@ public class AdminController {
         }
     }
 
+
+    @PostMapping(value = "/orderItem")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @Operation(summary = "상품주문", description = "관리자가 상품을 최종 구매확정하는 API입니다.")
+    public ResponseEntity<?> order(@RequestBody List<OrderMainDTO> orders, BindingResult result
+            , @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        OrderDTO orderItem;
+
+        try {
+            if (result.hasErrors()) {
+                log.error("bindingResult error : " + result.hasErrors());
+                return ResponseEntity.badRequest().body(result.getClass().getSimpleName());
+            }
+
+            String email = userDetails.getUsername();
+            orderItem = adminService.orderItem(orders, email);
+            //test데이터 - 배포시 삭제
+            //orderItem = orderService.orderItem(orders, "admin123@test.com");
+
+        } catch (Exception e) {
+            return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+
+        return ResponseEntity.ok().body(orderItem);
+    }
 }
