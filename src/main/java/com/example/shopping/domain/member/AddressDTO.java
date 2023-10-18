@@ -16,12 +16,12 @@ public class AddressDTO {
     @Schema(description = "주소")
     private String memberAddrDetail;
     @Schema(description = "상세 주소")
-    private String memberAddrEtc;
+    private String memberZipCode;
 
     @Builder
-    public AddressDTO(String memberAddr, String memberAddrDetail, String memberAddrEtc) {
+    public AddressDTO(String memberAddr, String memberAddrDetail, String memberZipCode) {
         this.memberAddr = memberAddr;
         this.memberAddrDetail = memberAddrDetail;
-        this.memberAddrEtc = memberAddrEtc;
+        this.memberZipCode = memberZipCode;
     }
 }

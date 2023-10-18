@@ -16,12 +16,12 @@ import javax.persistence.Table;
 public class AddressEntity {
     private String memberAddr;
     private String memberAddrDetail;
-    private String memberAddrEtc;
+    private String memberZipCode;
 
     @Builder
-    public AddressEntity(String memberAddr, String memberAddrDetail, String memberAddrEtc) {
+    public AddressEntity(String memberAddr, String memberAddrDetail, String memberZipCode) {
         this.memberAddr = memberAddr;
         this.memberAddrDetail = memberAddrDetail;
-        this.memberAddrEtc = memberAddrEtc;
+        this.memberZipCode = memberZipCode;
     }
 }
