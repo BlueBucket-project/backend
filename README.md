@@ -166,14 +166,20 @@
 <img src="https://img.shields.io/badge/JaCoCo-181717?style=flat-square&logo=JaCoCo&logoColor=white"> 
 <img src="https://img.shields.io/badge/Swagger-85EA2D?style=flat-square&logo=Swagger&logoColor=white"> 
 <br/>
+
 #### 배포
 <img src="https://img.shields.io/badge/AWS-232F3E?style=flat-square&logo=AWS&logoColor=white">
 <img src="https://img.shields.io/badge/EC2-FF9900?style=flat-square&logo=EC2&logoColor=white">
- <img src="https://img.shields.io/badge/RDS-527FFF?style=flat-square&logo=RDS&logoColor=white"> 
- <br/>
- <img src="https://img.shields.io/badge/github-181717?style=flat-square&logo=github&logoColor=white">
- <img src="https://img.shields.io/badge/git-F05032?style=flat-square&logo=git&logoColor=white">
-  <img src="https://img.shields.io/badge/githubactions-2088FF?style=flat-square&logo=githubactions&logoColor=white">
-   <img src="https://img.shields.io/badge/IntelliJ IDEA-000000?style=flat-square&logo=IntelliJIDEA&logoColor=white">
+<img src="https://img.shields.io/badge/RDS-527FFF?style=flat-square&logo=RDS&logoColor=white"> 
+<img src="https://img.shields.io/badge/github Actions-2088FF?style=flat-square&logo=githubactions&logoColor=white">
+<br/>
+
+#### 협업
+<img src="https://img.shields.io/badge/github-181717?style=flat-square&logo=github&logoColor=white">
+<img src="https://img.shields.io/badge/git-F05032?style=flat-square&logo=git&logoColor=white">
+<img src="https://img.shields.io/badge/notion-000000?style=flat-square&logo=notion&logoColor=white">
+
+#### 사용 IDE
+<img src="https://img.shields.io/badge/IntelliJ IDEA-000000?style=flat-square&logo=IntelliJIDEA&logoColor=white">
  
 
