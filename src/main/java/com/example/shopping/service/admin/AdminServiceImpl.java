@@ -2,16 +2,26 @@ package com.example.shopping.service.admin;
 
 import com.example.shopping.domain.Item.ItemDTO;
 import com.example.shopping.domain.Item.ItemSellStatus;
+import com.example.shopping.domain.order.OrderDTO;
+import com.example.shopping.domain.order.OrderItemDTO;
+import com.example.shopping.domain.order.OrderMainDTO;
 import com.example.shopping.entity.board.BoardEntity;
 import com.example.shopping.entity.board.BoardImgEntity;
 import com.example.shopping.entity.comment.CommentEntity;
 import com.example.shopping.entity.item.ItemEntity;
 import com.example.shopping.entity.item.ItemImgEntity;
+import com.example.shopping.entity.member.MemberEntity;
+import com.example.shopping.entity.order.OrderItemEntity;
+import com.example.shopping.exception.item.ItemException;
+import com.example.shopping.exception.service.OutOfStockException;
 import com.example.shopping.repository.board.BoardImgRepository;
 import com.example.shopping.repository.board.BoardRepository;
 import com.example.shopping.repository.comment.CommentRepository;
 import com.example.shopping.repository.item.ItemImgRepository;
 import com.example.shopping.repository.item.ItemRepository;
+import com.example.shopping.repository.member.MemberRepository;
+import com.example.shopping.repository.order.OrderItemRepository;
+import com.example.shopping.repository.order.OrderRepository;
 import com.example.shopping.service.s3.S3ItemImgUploaderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -25,6 +35,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,6 +48,13 @@ public class AdminServiceImpl implements AdminService {
     // 상품 관련
     private final ItemRepository itemRepository;
     private final ItemImgRepository itemImgRepository;
+
+    private final MemberRepository memberRepository;
+
+    // 주문 관련
+    private final OrderRepository orderRepository;
+    private final OrderItemRepository orderItemRepository;
+
     private final S3ItemImgUploaderService s3ItemImgUploaderService;
     // 게시글 관련
     private final BoardRepository boardRepository;
@@ -229,5 +247,77 @@ public class AdminServiceImpl implements AdminService {
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
+    }
+
+
+    @Transactional
+    public OrderDTO orderItem(List<OrderMainDTO> orders, String adminEmail){
+
+        String reserver = orders.get(0).getItemReserver();
+        Long memberId = memberRepository.findByEmail(reserver).getMemberId();
+        Long adminId = memberRepository.findByEmail(adminEmail).getMemberId();
+
+        //구매하려는 상품템리스트
+        List<OrderItemDTO> itemList = new ArrayList<>();
+        //주문셋팅 DTO
+        OrderDTO orderInfo = null;
+        //최종 주문처리상품 DTO
+        OrderDTO savedOrder;
+
+        for(OrderMainDTO order : orders) {
+            ItemEntity item = itemRepository.findByItemId(order.getItemId());
+
+            if (item.getItemSellStatus() != ItemSellStatus.RESERVED) {
+                //throw 예약된 물품이 아니라 판매 못함
+                throw new ItemException("예약된 물품이 아니라 구매처리 할 수 없습니다.");
+            }
+
+            if(item.getItemReserver() != order.getItemReserver()){
+                //throw 구매자와 예약한사람이 달라 판매 못함
+                throw new ItemException("예약자와 현재 구매하려는 사람이 달라 구매처리 할 수 없습니다.");
+            }
+
+            if (item.getStockNumber() < order.getCount() || item.getStockNumber() == 0) {
+                throw new OutOfStockException(item.getItemName() + "의 재고가 부족합니다. 요청수량 : " + order.getCount() +
+                        " 재고 : " + item.getStockNumber());
+            }
+
+            // 구매처리 하려는 아이템 셋팅
+            OrderItemEntity orderItem = OrderItemEntity.setOrderItem(item, memberId, item.getMember().getMemberId(), order.getCount());
+            itemList.add(orderItem.toOrderItemDTO());
+
+            orderInfo = OrderDTO.createOrder(adminId, memberId, itemList);
+        }
+        // 주문처리
+        savedOrder = orderRepository.save(orderInfo);
+
+        for(OrderItemDTO savedItem : savedOrder.getOrderItem()) {
+
+            OrderItemDTO savedOrderItem = orderItemRepository.save(savedItem, savedOrder);
+
+            // Member-point 추가
+            MemberEntity member = memberRepository.findByEmail(reserver);
+            member.addPoint(savedOrderItem.getItemPrice() * savedOrderItem.getItemAmount());
+            memberRepository.save(member);
+
+            // Item-status 변경
+            ItemEntity updateItem = itemRepository.findById(savedItem.getItemId()).orElseThrow();
+            updateItem.itemSell(savedItem.getItemAmount(), ItemSellStatus.SOLD_OUT);
+            itemRepository.save(updateItem);
+
+            //아이템 이미지 삭제처리
+            List<ItemImgEntity> findImg = itemImgRepository.findByItemItemId(updateItem.getItemId());
+            for(ItemImgEntity img : findImg) {
+                String uploadFilePath = img.getUploadImgPath();
+                String uuidFileName = img.getUploadImgName();
+
+                // DB에서 이미지 삭제
+                itemImgRepository.deleteById(img.getItemImgId());
+                // S3에서 삭제
+                String result = s3ItemImgUploaderService.deleteFile(uploadFilePath, uuidFileName);
+                log.info(result);
+            }
+        }
+        return savedOrder;
     }
 }

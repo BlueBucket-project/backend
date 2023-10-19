@@ -36,13 +36,6 @@ public class OrderItemRepositoryImpl implements OrderItemRepository{
         return findOrderItem.toOrderItemDTO();
     }
 
-/*
-    @Override
-    public OrderItemDTO findByOrderId(Long orderId) {
-        OrderItemEntity findOrderItem = orderItemJpaRepository.findByOrderId(orderId);
-        return findOrderItem.toOrderItemDTO();
-    }
-*/
 
     @Override
     public OrderItemDTO findByItemSeller(Long memberId) {

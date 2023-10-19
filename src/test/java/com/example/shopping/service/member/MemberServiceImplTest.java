@@ -2,7 +2,7 @@ package com.example.shopping.service.member;
 
 import com.example.shopping.config.jwt.JwtProvider;
 import com.example.shopping.domain.member.AddressDTO;
-import com.example.shopping.domain.member.MemberDTO;
+import com.example.shopping.domain.member.ResponseMemberDTO;
 import com.example.shopping.domain.member.Role;
 import com.example.shopping.entity.member.AddressEntity;
 import com.example.shopping.entity.member.MemberEntity;
@@ -15,16 +15,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.annotation.Rollback;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @Log4j2
 @SpringBootTest
@@ -41,8 +35,8 @@ class MemberServiceImplTest {
     @Autowired
     private TokenRepository tokenRepository;
 
-    private MemberDTO createMemberInfo() {
-        return MemberDTO.builder()
+    private ResponseMemberDTO createMemberInfo() {
+        return ResponseMemberDTO.builder()
                 .email("zxzz11@naver.com")
                 .memberPw(passwordEncoder.encode("zxzz12"))
                 .memberName("테스터")
@@ -51,7 +45,7 @@ class MemberServiceImplTest {
                 .memberAddress(AddressDTO.builder()
                         .memberAddr("서울시 xxx")
                         .memberAddrDetail("xxx")
-                        .memberAddrEtc("101-1")
+                        .memberZipCode("101-1")
                         .build()).build();
     }
     // 테스트가 실행될 때마다 데이터 베이스를 비워준다.
@@ -75,7 +69,7 @@ class MemberServiceImplTest {
                     .address(AddressEntity.builder()
                             .memberAddr(createMemberInfo().getMemberAddress().getMemberAddr())
                             .memberAddrDetail(createMemberInfo().getMemberAddress().getMemberAddrDetail())
-                            .memberAddrEtc(createMemberInfo().getMemberAddress().getMemberAddrEtc())
+                            .memberZipCode(createMemberInfo().getMemberAddress().getMemberZipCode())
                             .build()).build();
 
             MemberEntity save = memberRepository.save(member);
@@ -88,8 +82,8 @@ class MemberServiceImplTest {
                     .isEqualTo(createMemberInfo().getMemberAddress().getMemberAddr());
             Assertions.assertThat(save.getAddress().getMemberAddrDetail())
                     .isEqualTo(createMemberInfo().getMemberAddress().getMemberAddrDetail());
-            Assertions.assertThat(save.getAddress().getMemberAddrEtc())
-                    .isEqualTo(createMemberInfo().getMemberAddress().getMemberAddrEtc());
+            Assertions.assertThat(save.getAddress().getMemberZipCode())
+                    .isEqualTo(createMemberInfo().getMemberAddress().getMemberZipCode());
         } else {
             log.error("이미 중복된 아이디입니다.");
         }
@@ -131,7 +125,7 @@ class MemberServiceImplTest {
                     .address(AddressEntity.builder()
                             .memberAddr(createMemberInfo().getMemberAddress().getMemberAddr())
                             .memberAddrDetail(createMemberInfo().getMemberAddress().getMemberAddrDetail())
-                            .memberAddrEtc(createMemberInfo().getMemberAddress().getMemberAddrEtc())
+                            .memberZipCode(createMemberInfo().getMemberAddress().getMemberZipCode())
                             .build()).build();
             MemberEntity save = memberRepository.save(member);
             Assertions.assertThat(save.getEmail()).isEqualTo(member.getEmail());
@@ -142,8 +136,8 @@ class MemberServiceImplTest {
                     .isEqualTo(member.getAddress().getMemberAddr());
             Assertions.assertThat(save.getAddress().getMemberAddrDetail())
                     .isEqualTo(member.getAddress().getMemberAddrDetail());
-            Assertions.assertThat(save.getAddress().getMemberAddrEtc())
-                    .isEqualTo(member.getAddress().getMemberAddrEtc());
+            Assertions.assertThat(save.getAddress().getMemberZipCode())
+                    .isEqualTo(member.getAddress().getMemberZipCode());
         }
     }
 

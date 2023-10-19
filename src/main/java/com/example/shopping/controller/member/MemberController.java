@@ -2,8 +2,9 @@ package com.example.shopping.controller.member;
 
 import com.example.shopping.domain.jwt.TokenDTO;
 import com.example.shopping.domain.member.LoginDTO;
-import com.example.shopping.domain.member.MemberDTO;
-import com.example.shopping.domain.member.ModifyDTO;
+import com.example.shopping.domain.member.RequestMemberDTO;
+import com.example.shopping.domain.member.ResponseMemberDTO;
+import com.example.shopping.domain.member.ModifyMemberDTO;
 import com.example.shopping.domain.order.OrderItemDTO;
 import com.example.shopping.service.jwt.TokenServiceImpl;
 import com.example.shopping.service.member.MemberServiceImpl;
@@ -43,7 +44,7 @@ public class MemberController {
     @Tag(name = "member")
     @Operation(summary = "회원가입", description = "회원가입하는 API입니다")
     // BindingResult 타입의 매개변수를 지정하면 BindingResult 매개 변수가 입력값 검증 예외를 처리한다.
-    public ResponseEntity<?> join(@Validated @RequestBody MemberDTO member,
+    public ResponseEntity<?> join(@Validated @RequestBody RequestMemberDTO member,
                                   BindingResult result) {
         try {
             // 입력값 검증 예외가 발생하면 예외 메시지를 응답한다.
@@ -64,9 +65,9 @@ public class MemberController {
     @GetMapping("/{memberId}")
     @Tag(name = "member")
     @Operation(summary = "회원 조회", description = "회원을 검색하는 API입니다.")
-    public ResponseEntity<MemberDTO> search(@PathVariable Long memberId) {
+    public ResponseEntity<ResponseMemberDTO> search(@PathVariable Long memberId) {
         try {
-            MemberDTO search = memberServiceImpl.search(memberId);
+            ResponseMemberDTO search = memberServiceImpl.search(memberId);
             return ResponseEntity.ok().body(search);
         } catch (EntityNotFoundException e) {
             return ResponseEntity.notFound().build();
@@ -111,12 +112,12 @@ public class MemberController {
     @Operation(summary = "수정 API", description = "유저 정보를 수정하는 API입니다.")
     @PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
     public ResponseEntity<?> update(@PathVariable Long memberId,
-                                    @RequestBody ModifyDTO modifyDTO,
+                                    @RequestBody ModifyMemberDTO modifyMemberDTO,
                                     @AuthenticationPrincipal UserDetails userDetails) {
         try {
             String email = userDetails.getUsername();
             log.info("email : " + email);
-            ResponseEntity<?> responseEntity = memberServiceImpl.updateUser(memberId, modifyDTO, email);
+            ResponseEntity<?> responseEntity = memberServiceImpl.updateUser(memberId, modifyMemberDTO, email);
             return ResponseEntity.ok().body(responseEntity);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("잘못된 요청");

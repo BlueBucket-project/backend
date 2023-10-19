@@ -14,7 +14,7 @@ import javax.validation.constraints.Pattern;
 @ToString
 @Getter
 @NoArgsConstructor
-public class MemberDTO {
+public class ResponseMemberDTO {
     @Schema(description = "유저 번호", example = "1", required = true)
     private Long memberId;
 
@@ -52,16 +52,16 @@ public class MemberDTO {
     private String memberPoint;
 
     @Builder
-    public MemberDTO(Long memberId,
-                     String email,
-                     String memberName,
-                     String nickName,
-                     String memberPw,
-                     Role memberRole,
-                     AddressDTO memberAddress,
-                     String provider,
-                     String providerId,
-                     String memberPoint) {
+    public ResponseMemberDTO(Long memberId,
+                             String email,
+                             String memberName,
+                             String nickName,
+                             String memberPw,
+                             Role memberRole,
+                             AddressDTO memberAddress,
+                             String provider,
+                             String providerId,
+                             String memberPoint) {
         this.memberId = memberId;
         this.email = email;
         this.memberName = memberName;
@@ -74,8 +74,8 @@ public class MemberDTO {
         this.memberPoint = memberPoint;
     }
 
-    public static MemberDTO toMemberDTO(MemberEntity member) {
-        return MemberDTO.builder()
+    public static ResponseMemberDTO toMemberDTO(MemberEntity member) {
+        return ResponseMemberDTO.builder()
                 .memberId(member.getMemberId())
                 .email(member.getEmail())
                 .memberPw(member.getMemberPw())
@@ -88,8 +88,8 @@ public class MemberDTO {
                                 ? null : member.getAddress().getMemberAddr())
                         .memberAddrDetail(member.getAddress() == null
                                 ? null : member.getAddress().getMemberAddrDetail())
-                        .memberAddrEtc(member.getAddress() == null
-                                ? null : member.getAddress().getMemberAddrEtc())
+                        .memberZipCode(member.getAddress() == null
+                                ? null : member.getAddress().getMemberZipCode())
                         .build()).build();
     }
 

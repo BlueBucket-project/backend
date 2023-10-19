@@ -2,8 +2,9 @@ package com.example.shopping.service.member;
 
 import com.example.shopping.config.jwt.JwtProvider;
 import com.example.shopping.domain.jwt.TokenDTO;
-import com.example.shopping.domain.member.MemberDTO;
-import com.example.shopping.domain.member.ModifyDTO;
+import com.example.shopping.domain.member.RequestMemberDTO;
+import com.example.shopping.domain.member.ResponseMemberDTO;
+import com.example.shopping.domain.member.ModifyMemberDTO;
 import com.example.shopping.domain.member.Role;
 import com.example.shopping.entity.jwt.TokenEntity;
 import com.example.shopping.entity.member.AddressEntity;
@@ -38,9 +39,9 @@ public class MemberServiceImpl implements MemberService{
 
     // 회원가입
     @Override
-    public ResponseEntity<?> signUp(MemberDTO memberDTO) {
+    public ResponseEntity<?> signUp(RequestMemberDTO responseMemberDTO) {
         try {
-            MemberEntity findEmail = memberRepository.findByEmail(memberDTO.getEmail());
+            MemberEntity findEmail = memberRepository.findByEmail(responseMemberDTO.getEmail());
 
 
             if(findEmail != null) {
@@ -49,21 +50,21 @@ public class MemberServiceImpl implements MemberService{
 
             // 아이디가 없다면 DB에 등록해줍니다.
             MemberEntity member = MemberEntity.builder()
-                    .email(memberDTO.getEmail())
-                    .memberPw(passwordEncoder.encode(memberDTO.getMemberPw()))
-                    .memberName(memberDTO.getMemberName())
-                    .nickName(memberDTO.getNickName())
-                    .memberRole(memberDTO.getMemberRole())
+                    .email(responseMemberDTO.getEmail())
+                    .memberPw(passwordEncoder.encode(responseMemberDTO.getMemberPw()))
+                    .memberName(responseMemberDTO.getMemberName())
+                    .nickName(responseMemberDTO.getNickName())
+                    .memberRole(responseMemberDTO.getMemberRole())
                     .address(AddressEntity.builder()
-                            .memberAddr(memberDTO.getMemberAddress().getMemberAddr())
-                            .memberAddrDetail(memberDTO.getMemberAddress().getMemberAddrDetail())
-                            .memberAddrEtc(memberDTO.getMemberAddress().getMemberAddrEtc())
+                            .memberAddr(responseMemberDTO.getMemberAddress().getMemberAddr())
+                            .memberAddrDetail(responseMemberDTO.getMemberAddress().getMemberAddrDetail())
+                            .memberZipCode(responseMemberDTO.getMemberAddress().getMemberZipCode())
                             .build()).build();
 
             log.info("member in service : " + member);
             MemberEntity saveMember = memberRepository.save(member);
 
-            MemberDTO coverMember = MemberDTO.toMemberDTO(saveMember);
+            ResponseMemberDTO coverMember = ResponseMemberDTO.toMemberDTO(saveMember);
             return ResponseEntity.ok().body(coverMember);
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -73,11 +74,11 @@ public class MemberServiceImpl implements MemberService{
 
     // 회원 조회
     @Override
-    public MemberDTO search(Long memberId) {
+    public ResponseMemberDTO search(Long memberId) {
         MemberEntity member = memberRepository.findById(memberId)
                 .orElseThrow(EntityNotFoundException::new);
 
-        return MemberDTO.toMemberDTO(member);
+        return ResponseMemberDTO.toMemberDTO(member);
     }
 
     // 회원 삭제
@@ -154,7 +155,7 @@ public class MemberServiceImpl implements MemberService{
 
     // 회원정보 수정
     @Override
-    public ResponseEntity<?> updateUser(Long memberId, ModifyDTO modifyDTO, String memberEmail) {
+    public ResponseEntity<?> updateUser(Long memberId, ModifyMemberDTO modifyMemberDTO, String memberEmail) {
         try {
             // 회원조회
             MemberEntity findUser = memberRepository.findByEmail(memberEmail);
@@ -164,19 +165,19 @@ public class MemberServiceImpl implements MemberService{
                 findUser = MemberEntity.builder()
                         .memberId(findUser.getMemberId())
                         .email(findUser.getEmail())
-                        .memberPw(passwordEncoder.encode(modifyDTO.getMemberPw()))
-                        .nickName(modifyDTO.getNickName())
+                        .memberPw(passwordEncoder.encode(modifyMemberDTO.getMemberPw()))
+                        .nickName(modifyMemberDTO.getNickName())
                         .memberRole(findUser.getMemberRole())
                         .memberPoint(findUser.getMemberPoint())
                         .address(AddressEntity.builder()
-                                .memberAddr(modifyDTO.getMemberAddress().getMemberAddr())
-                                .memberAddrDetail(modifyDTO.getMemberAddress().getMemberAddrDetail())
-                                .memberAddrEtc(modifyDTO.getMemberAddress().getMemberAddrEtc())
+                                .memberAddr(modifyMemberDTO.getMemberAddress().getMemberAddr())
+                                .memberAddrDetail(modifyMemberDTO.getMemberAddress().getMemberAddrDetail())
+                                .memberZipCode(modifyMemberDTO.getMemberAddress().getMemberZipCode())
                                 .build()).build();
 
                 MemberEntity updateUser = memberRepository.save(findUser);
-                MemberDTO toMemberDTO = MemberDTO.toMemberDTO(updateUser);
-                return ResponseEntity.ok().body(toMemberDTO);
+                ResponseMemberDTO toResponseMemberDTO = ResponseMemberDTO.toMemberDTO(updateUser);
+                return ResponseEntity.ok().body(toResponseMemberDTO);
             } else {
                 throw new EntityNotFoundException();
             }
