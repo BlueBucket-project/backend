@@ -53,7 +53,10 @@ dependencies {
     // AWS S3
     implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
 }
-
+jar {
+    // ~~plain.jar파일은 생성되지 않게
+    enabled = false
+}
 tasks.named('test') {
     useJUnitPlatform()
 }

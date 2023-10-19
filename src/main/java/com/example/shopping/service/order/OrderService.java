@@ -9,7 +9,8 @@ import java.util.List;
 
 public interface OrderService {
 
-    OrderDTO orderItem(OrderMainDTO order, String adminEmail);
+    //adminService로 이동
+    //OrderDTO orderItem(List<OrderMainDTO> order, String adminEmail);
 
     List<OrderItemDTO> getOrders(String email);
 

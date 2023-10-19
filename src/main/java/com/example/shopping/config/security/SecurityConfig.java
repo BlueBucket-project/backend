@@ -74,10 +74,6 @@ public class SecurityConfig {
                     .access("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
                 .antMatchers(HttpMethod.DELETE, "/api/v1/items/{itemId}")
                     .access("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
-                .antMatchers("/api/v1/orders/**")
-                    .access("hasRole('ROLE_ADMIN')")
-                .antMatchers(HttpMethod.POST, "/api/v1/orders/orderItem")
-                    .access("hasRole('ROLE_ADMIN')")
                 .antMatchers("/api/v1/cart/**")
                     .access("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
                 .antMatchers(HttpMethod.POST, "/api/v1/cart/**")
@@ -86,6 +82,8 @@ public class SecurityConfig {
                     .access("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
                 .antMatchers("/api/v1/admin/**")
                     .access("hasRole('ROLE_ADMIN')")
+                .antMatchers(HttpMethod.POST, "/api/v1/admin/orderItem")
+                .access("hasRole('ROLE_ADMIN')")
                 .antMatchers("/swagger-resources/**").permitAll()
                 .antMatchers("/swagger-ui/**").permitAll();
 
