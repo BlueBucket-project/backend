@@ -8,7 +8,7 @@ spring:
         - local
       prod:
         - prod
-    active: local
+    active: ${profile}
 
   # swagger
   mvc:
@@ -29,13 +29,13 @@ spring:
 logging:
   level:
     org.hibernate.SQL: debug
----
-spring:
-  config:
-    activate:
-      on-profile: local
----
-spring:
-  config:
-    activate:
-      on-profile: prod
+#---
+#spring:
+#  config:
+#    activate:
+#      on-profile: local
+#---
+#spring:
+#  config:
+#    activate:
+#      on-profile: prod
