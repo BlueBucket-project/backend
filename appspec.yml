@@ -12,8 +12,8 @@ permissions:
     group: ec2-user
 hooks:
   AfterInstall:
-    - location: Scripts/RunResourceTests.sh
+    - location: scripts/stop.sh
       timeout: 60
   ApplicationStart:
-    - location: Scripts/RunFunctionalTests.sh
+    - location: scripts/start.sh
       timeout: 60
