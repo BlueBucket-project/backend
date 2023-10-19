@@ -75,6 +75,7 @@ public class ItemServiceImpl implements ItemService{
                 itemImgEntities.add(saveImg);
             }
             item = ItemEntity.builder()
+                    .member(findUser)
                     .itemName(itemDTO.getItemName())
                     .itemDetail(itemDTO.getItemDetail())
                     .itemSellStatus(ItemSellStatus.SELL)
