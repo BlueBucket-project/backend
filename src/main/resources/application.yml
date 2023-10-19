@@ -9,6 +9,10 @@ spring:
       prod:
         - prod
     active: ${profile}
+  devtools:
+    livereload: true
+  restart:
+    enabled: true
 
   # swagger
   mvc:
