@@ -10,7 +10,8 @@ spring:
         - prod
     active: ${profile}
   devtools:
-    livereload: true
+    livereload:
+      enabled: true
   restart:
     enabled: true
 
