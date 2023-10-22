@@ -31,7 +31,7 @@ public class OrderEntity extends BaseTimeEntity {
     private Long orderMember;
 
     @OneToMany(mappedBy="order", cascade = CascadeType.ALL)
-    private List<OrderItemEntity> orderItem;
+    private List<OrderItemEntity> orderItem = new ArrayList<>();
 
     @Builder
 
@@ -39,7 +39,7 @@ public class OrderEntity extends BaseTimeEntity {
         this.orderId = orderId;
         this.orderAdmin = orderAdmin;
         this.orderMember = orderMember;
-        this.orderItem = orderItem;
+        this.orderItem = orderItem == null ? new ArrayList<>() : orderItem;
     }
 
     public OrderDTO toDTO(){
@@ -63,7 +63,5 @@ public class OrderEntity extends BaseTimeEntity {
                 .build();
     }
 */
-    public void addOrderItem(OrderItemEntity orderItem) {
-        this.orderItem.add(orderItem);
-    }
+
 }
