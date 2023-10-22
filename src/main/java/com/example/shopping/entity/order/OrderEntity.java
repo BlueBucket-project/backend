@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 public class OrderEntity extends BaseTimeEntity {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="order_id")
     private Long orderId;
 
