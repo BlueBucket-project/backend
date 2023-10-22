@@ -8,7 +8,7 @@ spring:
         - local
       prod:
         - prod
-    active: local #${profile}
+    active: ${profile}
   devtools:
     livereload:
       enabled: true
@@ -41,15 +41,5 @@ logging:
 spring:
   servlet:
     multipart:
-      max-file-size: 5MB;
-      max-request-size: 5MB;
-#---
-#spring:
-#  config:
-#    activate:
-#      on-profile: local
-#---
-#spring:
-#  config:
-#    activate:
-#      on-profile: prod
+      max-file-size: 5MB
+      max-request-size: 5MB
