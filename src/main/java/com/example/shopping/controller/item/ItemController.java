@@ -3,6 +3,7 @@ package com.example.shopping.controller.item;
 import com.example.shopping.domain.Item.ItemDTO;
 import com.example.shopping.domain.Item.ItemSellStatus;
 import com.example.shopping.domain.Item.ModifyItemDTO;
+import com.example.shopping.domain.Item.UpdateItemDTO;
 import com.example.shopping.service.item.ItemServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -43,8 +44,9 @@ public class ItemController {
     @Operation(summary = "상품 등록", description = "상품을 등록하는 API입니다.")
     public ResponseEntity<?> createItem(@RequestPart("key")ModifyItemDTO item,
                                         @RequestPart("files")List<MultipartFile>itemFiles,
-                                        BindingResult result,
-                                        @AuthenticationPrincipal UserDetails userDetails){
+                                        BindingResult result
+                                        ,@AuthenticationPrincipal UserDetails userDetails
+    ){
         try {
             if(result.hasErrors()) {
                 log.error("bindingResult error : " + result.hasErrors());
@@ -64,6 +66,8 @@ public class ItemController {
 
             String email = userDetails.getUsername();
             ResponseEntity<?> responseEntity = itemServiceImpl.saveItem(itemInfo, itemFiles, email);
+            //testData
+            //ResponseEntity<?> responseEntity = itemServiceImpl.saveItem(itemInfo, itemFiles, "mem123@test.com");
             return ResponseEntity.ok().body(responseEntity);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -91,13 +95,16 @@ public class ItemController {
     @Tag(name = "item")
     @Operation(summary = "상품 수정", description = "상품을 수정하는 API입니다.")
     public ResponseEntity<?> updateItem(@PathVariable Long itemId,
-                                        @RequestBody ModifyItemDTO itemDTO,
-                                        @RequestPart(value = "files") List<MultipartFile> itemFiles,
-                                        @AuthenticationPrincipal UserDetails userDetails) {
+                                        @RequestPart("key") UpdateItemDTO itemDTO,
+                                        @RequestPart("files") List<MultipartFile> itemFiles
+                                        ,@AuthenticationPrincipal UserDetails userDetails
+    ) {
         try {
             String email = userDetails.getUsername();
-            log.info("email : " + email);
             ResponseEntity<?> responseEntity = itemServiceImpl.updateItem(itemId, itemDTO, itemFiles, email);
+            //testData
+            //ResponseEntity<?> responseEntity = itemServiceImpl.updateItem(itemId, itemDTO, itemFiles, "mem123@test.com");
+
             return ResponseEntity.ok().body(responseEntity);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -109,12 +116,14 @@ public class ItemController {
     @PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
     @Tag(name = "item")
     @Operation(summary = "상품 삭제", description = "상품을 삭제하는 API입니다.")
-    public ResponseEntity<?> deleteItem(@PathVariable Long itemId,
-                                        @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<?> deleteItem(@PathVariable Long itemId
+                                        ,@AuthenticationPrincipal UserDetails userDetails
+    ) {
         try {
             String email = userDetails.getUsername();
-            log.info("email : " + email);
             String result = itemServiceImpl.removeItem(itemId, email);
+            //String result = itemServiceImpl.removeItem(itemId, "mem123@test.com");
+
             return ResponseEntity.ok().body(result);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("잘못된 요청입니다.");

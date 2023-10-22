@@ -84,7 +84,7 @@ public class ItemEntity extends BaseTimeEntity {
         this.stockNumber = stockNumber;
         this.itemDetail = itemDetail;
         this.itemSellStatus = itemSellStatus;
-        this.itemImgList = itemImgList;
+        this.itemImgList = itemImgList==null ? new ArrayList<>():itemImgList;
         this.itemPlace = itemPlace;
         this.itemRamount = itemRamount;
         this.itemReserver = itemReserver;
@@ -128,5 +128,21 @@ public class ItemEntity extends BaseTimeEntity {
                 .stockNumber(this.getStockNumber())
                 .itemRamount(this.getItemRamount())
                 .build();
+    }
+
+    public void addItemImgList(ItemImgEntity itemImg){
+        this.itemImgList.add(itemImg);
+    }
+
+    public void deleteItemImgList(ItemImgEntity itemImg){
+        int idx=0;
+
+        for(ItemImgEntity item:this.itemImgList){
+            if(item.getItemImgId() == itemImg.getItemImgId()){
+                break;
+            }
+            idx +=1;
+        }
+        this.itemImgList.remove(idx);
     }
 }
