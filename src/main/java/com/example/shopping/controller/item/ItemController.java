@@ -4,6 +4,7 @@ import com.example.shopping.domain.Item.ItemDTO;
 import com.example.shopping.domain.Item.ItemSellStatus;
 import com.example.shopping.domain.Item.ModifyItemDTO;
 import com.example.shopping.domain.Item.UpdateItemDTO;
+import com.example.shopping.entity.item.ItemEntity;
 import com.example.shopping.service.item.ItemServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -43,7 +44,7 @@ public class ItemController {
     @Tag(name = "item")
     @Operation(summary = "상품 등록", description = "상품을 등록하는 API입니다.")
     public ResponseEntity<?> createItem(@RequestPart("key")ModifyItemDTO item,
-                                        @RequestPart("files")List<MultipartFile>itemFiles,
+                                        @RequestPart(value = "files", required = false)List<MultipartFile>itemFiles,
                                         BindingResult result
                                         ,@AuthenticationPrincipal UserDetails userDetails
     ){
@@ -96,7 +97,7 @@ public class ItemController {
     @Operation(summary = "상품 수정", description = "상품을 수정하는 API입니다.")
     public ResponseEntity<?> updateItem(@PathVariable Long itemId,
                                         @RequestPart("key") UpdateItemDTO itemDTO,
-                                        @RequestPart("files") List<MultipartFile> itemFiles
+                                        @RequestPart(value = "files", required = false) List<MultipartFile> itemFiles
                                         ,@AuthenticationPrincipal UserDetails userDetails
     ) {
         try {
@@ -184,6 +185,48 @@ public class ItemController {
             return ResponseEntity.ok().body(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
+        }
+    }
+
+    // 상품조건 여러개의 경우 조회하기
+    @GetMapping("/search")
+    public ResponseEntity<?> searchItemsConditions(@PageableDefault(sort = "itemId", direction = Sort.Direction.DESC)
+                                                   Pageable pageable,
+                                                   @RequestParam(required = false) String itemName,
+                                                   @RequestParam(required = false) String itemDetail,
+                                                   @RequestParam(required = false) Long startPrice,
+                                                   @RequestParam(required = false) Long endPrice,
+                                                   @RequestParam(required = false) String itemPlace,
+                                                   @RequestParam(required = false) ItemSellStatus itemSellStatus
+    ){
+
+        Page<ItemDTO> items = null;
+
+        try{
+            items = itemServiceImpl.searchItemsConditions(pageable, itemName, itemDetail, startPrice, endPrice, itemPlace, null, itemSellStatus);
+
+            Map<String, Object> response = new HashMap<>();
+            // 현재 페이지의 아이템 목록
+            response.put("items", items.getContent());
+            // 현재 페이지 번호
+            response.put("nowPageNumber", items.getNumber());
+            // 전체 페이지 수
+            response.put("totalPage", items.getTotalPages());
+            // 한 페이지에 출력되는 데이터 개수
+            response.put("pageSize", items.getSize());
+            // 다음 페이지 존재 여부
+            response.put("hasNextPage", items.hasNext());
+            // 이전 페이지 존재 여부
+            response.put("hasPreviousPage", items.hasPrevious());
+            // 첫 번째 페이지 여부
+            response.put("isFirstPage", items.isFirst());
+            // 마지막 페이지 여부
+            response.put("isLastPage", items.isLast());
+
+            return ResponseEntity.ok().body(response);
+        }
+        catch (Exception e){
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 

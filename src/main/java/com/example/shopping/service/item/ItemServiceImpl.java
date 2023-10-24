@@ -11,8 +11,7 @@ import com.example.shopping.repository.member.MemberRepository;
 import com.example.shopping.service.s3.S3ItemImgUploaderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -22,6 +21,8 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.persistence.EntityNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -374,4 +375,54 @@ public class ItemServiceImpl implements ItemService{
         return searchItems.map(ItemDTO::toItemDTO);
     }
 
+    // 상품 검색 - 여러 조건으로 검색하기
+    @Transactional(readOnly = true)
+    public Page<ItemDTO> searchItemsConditions(Pageable pageable, String name, String detail, Long startP, Long endP, String place, String reserver, ItemSellStatus status){
+        //Pageable 값 셋팅 - List to Page
+        Pageable pageRequest = createPageRequestUsing(pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
+
+        try{
+
+            if (name==null || name.isEmpty()) name = null;
+            else name = "%" + name + "%";
+
+            if (detail==null || detail.isEmpty()) detail = null;
+            else detail = "%" + detail + "%";
+
+            if (Optional.ofNullable(startP).isEmpty()) startP = null;
+            if (Optional.ofNullable(endP).isEmpty()) endP = null;
+
+            if (place==null || place.isEmpty()) place = null;
+            else place = "%" + place + "%";
+
+            if (reserver==null || reserver.isEmpty()) reserver = null;
+            else reserver = "%" + reserver + "%";
+
+            String statusString = "";
+            if(status == null) statusString = "%";
+            else statusString = status.toString();
+
+            List<ItemDTO> items = itemRepository.findByConditions(name, detail, startP, endP, place, reserver, statusString).stream().map(ItemDTO::toItemDTO).collect(Collectors.toList());
+
+            if(items.isEmpty()){
+                throw new EntityNotFoundException("조건에 만족하는 상품이 없습니다.");
+            }
+
+            int start = (int) pageRequest.getOffset();
+            int end = Math.min((start + pageRequest.getPageSize()), items.size());
+
+            List<ItemDTO> subItems = items.subList(start, end);
+            return new PageImpl<>(subItems, pageRequest, items.size());
+        }
+        catch (EntityNotFoundException e){
+            throw e;
+        }
+        catch (Exception e){
+            throw new EntityNotFoundException("상품 조회에 실패하였습니다.");
+        }
+    }
+
+    private Pageable createPageRequestUsing(int page, int size, Sort sort) {
+        return PageRequest.of(page, size, sort);
+    }
 }
