@@ -16,11 +16,10 @@
 
 # 백엔드 소개
 
-  |          유요한         |       정다현         |       김민성                                                                                                                        
-|:---------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
- |                   <img width="160px" src="https://avatars.githubusercontent.com/u/110465572?v=4" />    |                 <img width="160px" src="https://avatars.githubusercontent.com/u/84078029?v=4"/>   | <img width="160px" src="https://avatars.githubusercontent.com/u/89964419?s=64&v=4"/>
- |    [@YuYoHan](https://github.com/YuYoHan)  | [@hyeonjin-OH](https://github.com/jDaHyun)  | [@rlaalstjd00](https://github.com/rlaalstjd00)  |
- | Back-end | Back-end | Back-end |
+  |          유요한         |       정다현                                                                                                                          
+|:---------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------: |
+ |                   <img width="160px" src="https://avatars.githubusercontent.com/u/110465572?v=4" />    |                 <img width="160px" src="https://avatars.githubusercontent.com/u/84078029?v=4"/>   |  [@YuYoHan](https://github.com/YuYoHan)  | [@hyeonjin-OH](https://github.com/jDaHyun)  |
+ | Back-end | Back-end | 
  
  프론트는 별도로 리드미를 꾸밀거기 때문에 프론트에 대해서는 작성하지 않았습니다. 
  
