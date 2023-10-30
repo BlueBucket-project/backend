@@ -1,5 +1,6 @@
 package com.example.shopping.entity.comment;
 
+import com.example.shopping.domain.comment.CommentDTO;
 import com.example.shopping.entity.Base.BaseEntity;
 import com.example.shopping.entity.board.BoardEntity;
 import com.example.shopping.entity.member.MemberEntity;
@@ -39,5 +40,17 @@ public class CommentEntity extends BaseEntity {
         this.comment = comment;
         this.member = member;
         this.board = board;
+    }
+
+    // 댓글 DTO를 엔티티로 변환
+    public static CommentEntity toCommentEntity(CommentDTO commentDTO,
+                                                MemberEntity member,
+                                                BoardEntity board) {
+        return CommentEntity.builder()
+                .commentId(commentDTO.getCommentId())
+                .comment(commentDTO.getComment())
+                .member(member)
+                .board(board)
+                .build();
     }
 }
