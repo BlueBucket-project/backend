@@ -1,5 +1,6 @@
 package com.example.shopping.entity.board;
 
+import com.example.shopping.domain.board.BoardImgDTO;
 import com.example.shopping.entity.Base.BaseEntity;
 import lombok.Builder;
 import lombok.Getter;
@@ -45,5 +46,20 @@ public class BoardImgEntity extends BaseEntity {
         this.uploadImgUrl = uploadImgUrl;
         this.repImgYn = repImgYn;
         this.board = board;
+    }
+
+    public static BoardImgEntity toBoardImgEntity(BoardImgDTO boardImgDTO) {
+        return BoardImgEntity.builder()
+                .boardImgId(boardImgDTO.getBoardImgId())
+                .uploadImgPath(boardImgDTO.getUploadImgPath())
+                .uploadImgName(boardImgDTO.getUploadImgName())
+                .oriImgName(boardImgDTO.getOriImgName())
+                .uploadImgUrl(boardImgDTO.getUploadImgUrl())
+                .repImgYn(boardImgDTO.getRepImgYn())
+                .build();
+    }
+
+    public void changeRepImg() {
+        this.repImgYn = "Y";
     }
 }
