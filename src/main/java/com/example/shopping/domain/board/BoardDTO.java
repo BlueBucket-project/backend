@@ -91,4 +91,5 @@ public class BoardDTO {
                 .regTime(LocalDateTime.now())
                 .build();
     }
+
 }
