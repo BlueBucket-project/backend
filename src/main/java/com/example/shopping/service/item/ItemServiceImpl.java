@@ -136,7 +136,20 @@ public class ItemServiceImpl implements ItemService{
                         .build();
 
                 //삭제할 이미지가 있다면 이미지만 삭제 - 삭제를 먼저해야 대표이미지가 없을 때 남은 것 중 대표이미지 셋팅가능
-                for(Long imgId : itemDTO.getDelImgId()){
+                //삭제 이미지 id받아오기에서 남아있는 이미지 id받아오기로 바뀌어서 해당 작업 추가
+                List<ItemImgEntity> itemImgs = itemImgRepository.findByItemItemId(itemId);
+                List<Long> itemImgIds = new ArrayList<>();
+                if(itemImgs != null){
+                    for(ItemImgEntity imgId : itemImgs){
+                        itemImgIds.add(imgId.getItemImgId());
+                    }
+                }
+
+                for(Long imgId : itemDTO.getDelImgId()) {
+                    itemImgIds.remove(imgId);
+                }
+
+                for(Long imgId : itemImgIds){
                     ItemImgEntity itemImg = itemImgRepository.findById(imgId).orElseThrow(EntityNotFoundException::new);
                     findItem.deleteItemImgList(itemImg);
                     String result = s3ItemImgUploaderService.deleteFile(itemImg.getUploadImgPath(), itemImg.getUploadImgName());
@@ -192,66 +205,6 @@ public class ItemServiceImpl implements ItemService{
                 ItemDTO toItemDTO = ItemDTO.toItemDTO(saveItem);
 
                 return ResponseEntity.ok().body(toItemDTO);
-
-                /* 기존로직
-                // 기존의 이미지를 가져오기
-                // Item 엔티티에 List로 담긴 이미지들을 가지고 옵니다.
-                List<ItemImgEntity> itemImgList = findItem.getItemImgList();
-                // 새로운 이미지 업로드
-                List<ItemImgDTO> products = s3ItemImgUploaderService.upload("product", itemFiles);
-
-                // 가지고 온 이미지가 비어있을 경우
-                // 새로운 이미지를 넣어준다.
-                if(itemImgList.isEmpty()) {
-                    for (int i = 0; i < products.size(); i++) {
-                        ItemImgDTO itemImgDTO = products.get(i);
-                        ItemImgEntity imgEntity = ItemImgEntity.builder()
-                                .oriImgName(itemImgDTO.getOriImgName())
-                                .uploadImgName(itemImgDTO.getUploadImgName())
-                                .uploadImgPath(itemImgDTO.getUploadImgPath())
-                                .uploadImgUrl(itemImgDTO.getUploadImgUrl())
-                                .repImgYn(i == 0 ? "Y" : "N")
-                                .item(findItem)
-                                .build();
-
-                        ItemImgEntity saveImg = itemImgRepository.save(imgEntity);
-                        itemImgList.add(saveImg);
-                    }
-                } else {
-                    // 가지고 온 이미지가 있는 경우
-                    // S3에서 생성한 이미지들을 가지고 온다.
-                    for (int i = 0; i < products.size(); i++) {
-                        ItemImgDTO itemImgDTO = products.get(i);
-                        ItemImgEntity imgEntity = ItemImgEntity.builder()
-                                .oriImgName(itemImgDTO.getOriImgName())
-                                .uploadImgPath(itemImgDTO.getUploadImgPath())
-                                .uploadImgUrl(itemImgDTO.getUploadImgUrl())
-                                .uploadImgName(itemImgDTO.getUploadImgName())
-                                .repImgYn("N")
-                                .item(findItem)
-                                .build();
-                        ItemImgEntity saveImg = itemImgRepository.save(imgEntity);
-                        log.info("img : " + saveImg);
-                        // 기존의 이미지에 추가시켜 준다.
-                        itemImgList.add(saveImg);
-                    }
-                }
-                // 위에서 진행한 것은 ItemImg를 처리하고 저장하는 것이다.
-                // 이제 상품에 List에 포함시켜서 저장해야한다.
-                findItem = ItemEntity.builder()
-                        .itemId(findItem.getItemId())
-                        .itemName(itemDTO.getItemName())
-                        .itemDetail(itemDTO.getItemDetail())
-                        .itemPlace(itemDTO.getSellPlace())
-                        .stockNumber(findItem.getStockNumber())
-                        .price(itemDTO.getPrice())
-                        .itemImgList(itemImgList)
-                        .build();
-
-                ItemEntity saveItem = itemRepository.save(findItem);
-                ItemDTO toItemDTO = ItemDTO.toItemDTO(saveItem);
-                return ResponseEntity.ok().body(toItemDTO);
-                 */
 
             } else {
                 return ResponseEntity.badRequest().body("이메일이 일치하지 않습니다.");

@@ -34,7 +34,8 @@ public class UpdateItemDTO {
     @NotNull(message = "판매지역을 입력해야 합니다.")
     private String sellPlace;
 
-    private List<Long> delImgId;
+    @Schema(description = "삭제이미지 관리")
+    private List<Long> delImgId = new ArrayList<>();
 
     @Builder
     public UpdateItemDTO(String itemName, int price, String itemDetail, int stockNumber, String sellPlace, List<Long> delImgId) {

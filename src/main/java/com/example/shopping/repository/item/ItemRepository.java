@@ -26,7 +26,7 @@ public interface ItemRepository extends JpaRepository<ItemEntity, Long> {
 
     //JPA Method로 사용할 수 없는 경우 nativeQuery를 사용해야하며 이는 sql문법대로 써야함
     @Query(value="select * from Item i where (:name is null or i.item_name like :name)" +
-            "and (:detail is null or i.item_detail가 like :detail)" +
+            "and (:detail is null or i.item_detail like :detail)" +
             "and (:startP is null or i.item_price between :startP and :endP)" +
             "and (:place is null or i.item_place like :place)" +
             "and (:reserver is null or i.item_reserver = :reserver)"+
