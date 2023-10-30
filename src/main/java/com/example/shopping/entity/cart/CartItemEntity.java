@@ -1,5 +1,6 @@
 package com.example.shopping.entity.cart;
 
+import com.example.shopping.domain.Item.ItemDTO;
 import com.example.shopping.domain.cart.CartItemDTO;
 import com.example.shopping.domain.cart.CartMainDTO;
 import com.example.shopping.domain.cart.CartUpdateDTO;
@@ -56,7 +57,7 @@ public class CartItemEntity extends BaseTimeEntity {
                 .cartId(this.cart.getCartId())
                 .cart(this.cart.toDTO())
                 .count(this.count)
-                .item(this.item.toItemInfoDTO())
+                .item(ItemDTO.toItemDTO(item))
                 .price(this.item.getPrice() * this.count)
                 .mbrId(this.cart.getMember().getMemberId())
                 .build();

@@ -49,7 +49,7 @@ public class OrderItemEntity {
 
     public OrderItemDTO toOrderItemDTO(){
         return OrderItemDTO.builder()
-                .item(item.toItemInfoDTO())
+                .item(ItemDTO.toItemDTO(item))
                 .itemAmount(this.count)
                 .itemBuyer(this.itemBuyer)
                 .itemSeller(this.itemSeller)

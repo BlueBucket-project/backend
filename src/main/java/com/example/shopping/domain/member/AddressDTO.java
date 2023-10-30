@@ -1,5 +1,6 @@
 package com.example.shopping.domain.member;
 
+import com.example.shopping.entity.member.AddressEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
@@ -23,5 +24,13 @@ public class AddressDTO {
         this.memberAddr = memberAddr;
         this.memberAddrDetail = memberAddrDetail;
         this.memberZipCode = memberZipCode;
+    }
+
+    public AddressEntity toEntity(){
+        return AddressEntity.builder()
+                .memberAddr(this.memberAddr)
+                .memberAddrDetail(this.memberAddrDetail)
+                .memberZipCode(this.memberZipCode)
+                .build();
     }
 }

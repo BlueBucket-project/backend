@@ -115,21 +115,6 @@ public class ItemEntity extends BaseTimeEntity {
         this.itemRamount = amount;
     }
 
-    public ItemDTO toItemInfoDTO(){
-        return ItemDTO.builder()
-                .itemReserver(this.itemReserver)
-                .itemName(this.itemName)
-                .itemDetail(this.itemDetail)
-                .itemId(this.itemId)
-                .itemSellStatus(this.itemSellStatus)
-                .regTime(this.getRegTime())
-                .sellPlace(this.itemPlace)
-                .price(this.getPrice())
-                .stockNumber(this.getStockNumber())
-                .itemRamount(this.getItemRamount())
-                .build();
-    }
-
     public void addItemImgList(ItemImgEntity itemImg){
         this.itemImgList.add(itemImg);
     }

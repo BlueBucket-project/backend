@@ -40,7 +40,7 @@ public class MemberEntity extends BaseTimeEntity {
 
     @Embedded
     private AddressEntity address;
-    private String memberPoint;
+    private int memberPoint;
 
     @Builder
     public MemberEntity(Long memberId,
@@ -52,7 +52,7 @@ public class MemberEntity extends BaseTimeEntity {
                         String provider,
                         String providerId,
                         AddressEntity address,
-                        String memberPoint) {
+                        int memberPoint) {
         this.memberId = memberId;
         this.memberName = memberName;
         this.email = email;
