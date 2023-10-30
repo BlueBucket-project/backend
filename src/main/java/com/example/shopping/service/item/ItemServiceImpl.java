@@ -139,14 +139,16 @@ public class ItemServiceImpl implements ItemService{
                 //삭제 이미지 id받아오기에서 남아있는 이미지 id받아오기로 바뀌어서 해당 작업 추가
                 List<ItemImgEntity> itemImgs = itemImgRepository.findByItemItemId(itemId);
                 List<Long> itemImgIds = new ArrayList<>();
-                if(itemImgs != null){
+
+                if(itemImgs != null && itemImgs.size() != 0){
+                    //기존 이미지들 확인후
                     for(ItemImgEntity imgId : itemImgs){
                         itemImgIds.add(imgId.getItemImgId());
                     }
-                }
-
-                for(Long imgId : itemDTO.getDelImgId()) {
-                    itemImgIds.remove(imgId);
+                    //남기는 이미지 제외 - 삭제할 이미지 아이디 추출과정
+                    for(Long imgId : itemDTO.getDelImgId()) {
+                        itemImgIds.remove(imgId);
+                    }
                 }
 
                 for(Long imgId : itemImgIds){
