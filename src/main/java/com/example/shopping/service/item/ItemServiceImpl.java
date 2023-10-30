@@ -5,6 +5,7 @@ import com.example.shopping.entity.item.ItemEntity;
 import com.example.shopping.entity.item.ItemImgEntity;
 import com.example.shopping.entity.member.MemberEntity;
 import com.example.shopping.exception.item.ItemException;
+import com.example.shopping.exception.member.UserException;
 import com.example.shopping.repository.item.ItemImgRepository;
 import com.example.shopping.repository.item.ItemRepository;
 import com.example.shopping.repository.member.MemberRepository;
@@ -36,7 +37,7 @@ public class ItemServiceImpl implements ItemService{
 
     // 상품 등록 메소드
     @Override
-    public ResponseEntity<?> saveItem(ItemDTO itemDTO,
+    public ItemDTO saveItem(ItemDTO itemDTO,
                                       List<MultipartFile> itemFiles,
                                       String memberEmail) throws Exception {
         MemberEntity findUser = memberRepository.findByEmail(memberEmail);
@@ -80,9 +81,10 @@ public class ItemServiceImpl implements ItemService{
             ItemEntity savedItem = itemRepository.save(item);
             ItemDTO toItemDTO = ItemDTO.toItemDTO(savedItem);
 
-            return ResponseEntity.ok().body(toItemDTO);
+            return toItemDTO;
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("회원이 없습니다.");
+            throw new UserException("회원이 없습니다.");
+            //return ResponseEntity.status(HttpStatus.NOT_FOUND).body("회원이 없습니다.");
         }
     }
 
@@ -91,21 +93,21 @@ public class ItemServiceImpl implements ItemService{
     // 이럴 경우 JPA가 더티체킹(변경감지)를 수행하지 않아서 성능을 향상 시킬 수 있다.
     @Transactional(readOnly = true)
     @Override
-    public ResponseEntity<ItemDTO> getItem(Long itemId) {
+    public ItemDTO getItem(Long itemId) {
         try {
             ItemEntity findItem = itemRepository.findById(itemId)
                     .orElseThrow(EntityNotFoundException::new);
 
             ItemDTO itemDTO = ItemDTO.toItemDTO(findItem);
-            return ResponseEntity.ok().body(itemDTO);
+            return itemDTO;
         } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            throw new EntityNotFoundException();
         }
     }
 
     // 상품 수정
     @Override
-    public ResponseEntity<?> updateItem(Long itemId,
+    public ItemDTO updateItem(Long itemId,
                                         UpdateItemDTO itemDTO,
                                         List<MultipartFile> itemFiles,
                                         String memberEmail) throws Exception {
@@ -206,13 +208,13 @@ public class ItemServiceImpl implements ItemService{
                 ItemEntity saveItem = itemRepository.save(findItem);
                 ItemDTO toItemDTO = ItemDTO.toItemDTO(saveItem);
 
-                return ResponseEntity.ok().body(toItemDTO);
+                return toItemDTO;
 
             } else {
-                return ResponseEntity.badRequest().body("이메일이 일치하지 않습니다.");
+                throw  new UserException("이메일이 일치하지 않습니다.");
             }
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            throw new ItemException("상품 저장 중 에러가 발생하였습니다.\n"+ e.getMessage());
         }
     }
 

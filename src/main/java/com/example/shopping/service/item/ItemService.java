@@ -12,14 +12,14 @@ import java.util.List;
 
 public interface ItemService {
     // 상품 등록
-    ResponseEntity<?> saveItem(ItemDTO itemDTO,
+    ItemDTO saveItem(ItemDTO itemDTO,
                                List<MultipartFile> itemFiles,
                                String memberEmail) throws Exception;
     // 상품 상세 정보
-    ResponseEntity<ItemDTO> getItem(Long itemId);
+    ItemDTO getItem(Long itemId);
 
     // 상품 수정
-    ResponseEntity<?> updateItem(Long itemId,
+    ItemDTO updateItem(Long itemId,
                                  UpdateItemDTO itemDTO,
                                  List<MultipartFile> itemFiles,
                                  String memberEmail) throws Exception;
