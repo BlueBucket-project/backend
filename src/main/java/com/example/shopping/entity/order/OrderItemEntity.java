@@ -35,6 +35,7 @@ public class OrderItemEntity {
     @Column(name="item_seller")
     private Long itemSeller;
 
+    @Column(name="item_amount")
     int count;
 
     @Builder
