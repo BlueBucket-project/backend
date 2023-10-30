@@ -105,7 +105,7 @@ public class ItemDTO {
                 .price(item.getPrice())
                 .itemDetail(item.getItemDetail())
                 .itemSellStatus(item.getItemSellStatus())
-                .regTime(LocalDateTime.now())
+                .regTime(item.getRegTime())
                 .memberNickName(item.getMember().getNickName())
                 .sellPlace(item.getItemPlace())
                 .stockNumber(item.getStockNumber())
@@ -117,7 +117,6 @@ public class ItemDTO {
 
     public ItemEntity toEntity(){
         return  ItemEntity.builder()
-                .itemId(this.itemId)
                 .itemDetail(this.itemDetail)
                 .itemName(this.itemName)
                 .itemPlace(this.sellPlace)

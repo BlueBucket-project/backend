@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 public class OrderItemEntity {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="id")
     private Long orderitemId;
 

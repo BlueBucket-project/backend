@@ -5,6 +5,7 @@ import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.example.shopping.domain.Item.ItemImgDTO;
+import com.example.shopping.exception.file.FileUploadException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
@@ -51,6 +52,7 @@ public class S3ItemImgUploaderService {
             } catch (IOException e) {
                 e.printStackTrace();
                 log.error("Filed upload failed", e);
+                throw new FileUploadException("Filed upload failed");
             }
 
             s3files.add(

@@ -1,5 +1,7 @@
 package com.example.shopping.entity.item;
 
+import com.example.shopping.domain.Item.ItemDTO;
+import com.example.shopping.domain.Item.ItemImgDTO;
 import com.example.shopping.entity.Base.BaseEntity;
 import lombok.Builder;
 import lombok.Getter;
@@ -7,10 +9,12 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import javax.persistence.*;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Entity(name = "item_img")
 @Table
-@ToString
+@ToString(exclude = "item")
 @Getter
 @NoArgsConstructor
 public class ItemImgEntity extends BaseEntity {
@@ -50,5 +54,9 @@ public class ItemImgEntity extends BaseEntity {
         this.uploadImgUrl = uploadImgUrl;
         this.repImgYn = repImgYn;
         this.item = item;
+    }
+
+    public void changeRepImgY(){
+        this.repImgYn = "Y";
     }
 }

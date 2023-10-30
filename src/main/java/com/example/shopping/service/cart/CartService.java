@@ -1,6 +1,8 @@
 package com.example.shopping.service.cart;
 
 import com.example.shopping.domain.cart.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.*;
 
@@ -13,7 +15,10 @@ public interface CartService {
     String updateCart(CartUpdateDTO cartItem, String email);
 
     String orderCart(List<CartOrderDTO> cartOrderList, String email);
+
     String cancelCartOrder(List<CartOrderDTO> cartOrderList, String email);
 
     List<CartItemDTO> getCartList(String email);
+
+    Page<CartItemDTO> getCartPage(Pageable pageable, String email);
 }

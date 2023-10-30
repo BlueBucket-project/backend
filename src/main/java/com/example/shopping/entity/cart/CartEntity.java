@@ -18,7 +18,7 @@ import javax.persistence.*;
 public class CartEntity extends BaseTimeEntity {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="cart_id")
     private Long cartId;
 
