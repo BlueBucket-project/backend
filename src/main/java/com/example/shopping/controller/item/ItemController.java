@@ -2,9 +2,8 @@ package com.example.shopping.controller.item;
 
 import com.example.shopping.domain.Item.ItemDTO;
 import com.example.shopping.domain.Item.ItemSellStatus;
-import com.example.shopping.domain.Item.ModifyItemDTO;
+import com.example.shopping.domain.Item.CreateItemDTO;
 import com.example.shopping.domain.Item.UpdateItemDTO;
-import com.example.shopping.entity.item.ItemEntity;
 import com.example.shopping.service.item.ItemServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,7 +19,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -43,7 +41,7 @@ public class ItemController {
     @PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
     @Tag(name = "item")
     @Operation(summary = "상품 등록", description = "상품을 등록하는 API입니다.")
-    public ResponseEntity<?> createItem(@RequestPart("key")ModifyItemDTO item,
+    public ResponseEntity<?> createItem(@RequestPart("key") CreateItemDTO item,
                                         @RequestPart(value = "files", required = false)List<MultipartFile>itemFiles,
                                         BindingResult result
                                         ,@AuthenticationPrincipal UserDetails userDetails
@@ -203,7 +201,15 @@ public class ItemController {
         Page<ItemDTO> items = null;
 
         try{
-            items = itemServiceImpl.searchItemsConditions(pageable, itemName, itemDetail, startPrice, endPrice, itemPlace, null, itemSellStatus);
+            items = itemServiceImpl.searchItemsConditions(
+                    pageable,
+                    itemName,
+                    itemDetail,
+                    startPrice,
+                    endPrice,
+                    itemPlace,
+                    null,
+                    itemSellStatus);
 
             Map<String, Object> response = new HashMap<>();
             // 현재 페이지의 아이템 목록
