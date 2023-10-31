@@ -25,7 +25,8 @@ public interface BoardService {
     // 이미지 삭제
 //    String removeImg(Long boardId, Long boardImgId, String memberEmail);
 
-
+    // 게시글 삭제
+    String removeBoard(Long boardId, String memberEmail);
 
 
 }
