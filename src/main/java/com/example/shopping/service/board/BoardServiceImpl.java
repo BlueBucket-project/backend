@@ -11,6 +11,8 @@ import com.example.shopping.repository.member.MemberRepository;
 import com.example.shopping.service.s3.S3BoardImgUploaderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -86,8 +88,12 @@ public class BoardServiceImpl implements BoardService {
         }
     }
 
-
-
-
-
+    // 전체 게시글 보기
+    @Transactional(readOnly = true)
+    @Override
+    public Page<BoardDTO> getBoards(Pageable pageable) {
+        Page<BoardEntity> allBoard = boardRepository.findAll(pageable);
+        log.info("모든 게시글 : {}", allBoard );
+        return allBoard.map(BoardDTO::toBoardDTO);
+    }
 }
