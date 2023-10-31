@@ -32,6 +32,7 @@ public class BoardServiceImpl implements BoardService {
     // 게시글 등록 메소드
     @Override
     public ResponseEntity<?> saveBoard(CreateBoardDTO boardDTO,
+//                                       List<MultipartFile> boardFiles,
                                        String memberEmail) throws Exception {
         // 회원 조회
         MemberEntity findUser = memberRepository.findByEmail(memberEmail);
@@ -40,6 +41,25 @@ public class BoardServiceImpl implements BoardService {
         if (findUser != null) {
             BoardEntity boardEntity = BoardEntity.createBoard(boardDTO, findUser);
 
+            /*  이미지를 추가할 경우를 대비해서 주석처리 */
+//            log.info("게시글 : " + boardEntity);
+//            List<BoardImgDTO> boardImg = s3BoardImgUploaderService.upload("board", boardFiles);
+//
+//            for (int i = 0; i < boardImg.size(); i++) {
+//                BoardImgDTO boardImgDTO = boardImg.get(i);
+//                log.info("게시글 이미지 : " + boardImgDTO);
+//
+//                BoardImgEntity boardImgEntity = BoardImgEntity.builder()
+//                        .oriImgName(boardImgDTO.getOriImgName())
+//                        .uploadImgUrl(boardImgDTO.getUploadImgUrl())
+//                        .uploadImgPath(boardImgDTO.getUploadImgPath())
+//                        .uploadImgName(boardImgDTO.getUploadImgName())
+//                        .board(boardEntity)
+//                        .repImgYn(i == 0 ? "Y" : "N")
+//                        .build();
+//
+//                boardEntity.getBoardImgEntityList().add(boardImgEntity);
+//            }
             BoardEntity saveBoard = boardRepository.save(boardEntity);
             BoardDTO returnBoard = BoardDTO.toBoardDTO(saveBoard);
             return ResponseEntity.ok().body(returnBoard);
@@ -47,6 +67,27 @@ public class BoardServiceImpl implements BoardService {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("회원이 없습니다.");
         }
     }
+
+    // 게시글 삭제
+    @Override
+    public String removeBoard(Long boardId, String memberEmail) {
+        // 게시글 조회
+        BoardEntity findBoard = boardRepository.findById(boardId)
+                .orElseThrow(EntityNotFoundException::new);
+        // 유저 조회
+        MemberEntity findUser = memberRepository.findByEmail(memberEmail);
+
+        if(findUser.getEmail().equals(findBoard.getMember().getEmail())) {
+            // 게시글 삭제
+            boardRepository.deleteById(boardId);
+            return "게시글을 삭제했습니다.";
+        } else {
+            return "일치하지 않습니다.";
+        }
+    }
+
+
+
 
 
 }
