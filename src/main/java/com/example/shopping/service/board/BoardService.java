@@ -13,5 +13,8 @@ public interface BoardService {
 //                                List<MultipartFile> boardFiles,
                                 String memberEmail) throws Exception;
 
+    // 게시글 상세정보
+    ResponseEntity<BoardDTO> getItem(Long boardId);
+
 
 }
