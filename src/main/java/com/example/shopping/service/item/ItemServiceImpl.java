@@ -40,7 +40,6 @@ public class ItemServiceImpl implements ItemService{
                                       List<MultipartFile> itemFiles,
                                       String memberEmail) throws Exception {
         MemberEntity findUser = memberRepository.findByEmail(memberEmail);
-        List<ItemImgEntity> itemImgEntities = new ArrayList<>();
 
         if(findUser != null) {
             // 상품 등록
@@ -76,7 +75,7 @@ public class ItemServiceImpl implements ItemService{
                     item.addItemImgList(imgEntity);
                 }
             }
-            //Cascade특징을 활용하여 ItemRepository.save만 진행해도 ItemImg도 같이 인서트됨
+            // Cascade특징을 활용하여 ItemRepository.save만 진행해도 ItemImg도 같이 인서트됨
             ItemEntity savedItem = itemRepository.save(item);
             ItemDTO toItemDTO = ItemDTO.toItemDTO(savedItem);
 
@@ -110,11 +109,14 @@ public class ItemServiceImpl implements ItemService{
                                         List<MultipartFile> itemFiles,
                                         String memberEmail) throws Exception {
         try {
+            // 상품 조회
             ItemEntity findItem = itemRepository.findById(itemId)
                     .orElseThrow(EntityNotFoundException::new);
             log.info("item : " + findItem);
+            // 유저 조회
             MemberEntity findMember = memberRepository.findByEmail(memberEmail);
             log.info("member : " + findMember);
+            // 상품 엔티티에 있는 List로 된 이미지들을 가져오기
             List<ItemImgEntity> itemImgList = findItem.getItemImgList();
 
             // 이메일을 userDetails에서 가져와서 조회한 다음
@@ -135,9 +137,10 @@ public class ItemServiceImpl implements ItemService{
                         .itemImgList(itemImgList)
                         .build();
 
-                //삭제할 이미지가 있다면 이미지만 삭제 - 삭제를 먼저해야 대표이미지가 없을 때 남은 것 중 대표이미지 셋팅가능
+                // 삭제할 이미지가 있다면 이미지만 삭제 - 삭제를 먼저해야 대표이미지가 없을 때 남은 것 중 대표이미지 셋팅가능
                 for(Long imgId : itemDTO.getDelImgId()){
-                    ItemImgEntity itemImg = itemImgRepository.findById(imgId).orElseThrow(EntityNotFoundException::new);
+                    ItemImgEntity itemImg = itemImgRepository.findById(imgId)
+                            .orElseThrow(EntityNotFoundException::new);
                     findItem.deleteItemImgList(itemImg);
                     String result = s3ItemImgUploaderService.deleteFile(itemImg.getUploadImgPath(), itemImg.getUploadImgName());
                 }
@@ -164,9 +167,9 @@ public class ItemServiceImpl implements ItemService{
                             findItem.addItemImgList(imgEntity);
                         }
                     }
-                    //기존 이미지가 있다면 추가할 이미지들의 대표이미지여부는 N
+                    // 기존 이미지가 있다면 추가할 이미지들의 대표이미지여부는 N
                     else{
-                        //기존 이미지 중에 대표이미지여부가 Y인 것이 있는지 확인 후
+                        // 기존 이미지 중에 대표이미지여부가 Y인 것이 있는지 확인 후
                         if(itemImgList.stream().filter(img->img.getRepImgYn().equals("Y")).count() == 0)
                         {
                             //하나도 없다면 첫번째 이미지의 대표이미지 플래그값 수정
@@ -192,67 +195,6 @@ public class ItemServiceImpl implements ItemService{
                 ItemDTO toItemDTO = ItemDTO.toItemDTO(saveItem);
 
                 return ResponseEntity.ok().body(toItemDTO);
-
-                /* 기존로직
-                // 기존의 이미지를 가져오기
-                // Item 엔티티에 List로 담긴 이미지들을 가지고 옵니다.
-                List<ItemImgEntity> itemImgList = findItem.getItemImgList();
-                // 새로운 이미지 업로드
-                List<ItemImgDTO> products = s3ItemImgUploaderService.upload("product", itemFiles);
-
-                // 가지고 온 이미지가 비어있을 경우
-                // 새로운 이미지를 넣어준다.
-                if(itemImgList.isEmpty()) {
-                    for (int i = 0; i < products.size(); i++) {
-                        ItemImgDTO itemImgDTO = products.get(i);
-                        ItemImgEntity imgEntity = ItemImgEntity.builder()
-                                .oriImgName(itemImgDTO.getOriImgName())
-                                .uploadImgName(itemImgDTO.getUploadImgName())
-                                .uploadImgPath(itemImgDTO.getUploadImgPath())
-                                .uploadImgUrl(itemImgDTO.getUploadImgUrl())
-                                .repImgYn(i == 0 ? "Y" : "N")
-                                .item(findItem)
-                                .build();
-
-                        ItemImgEntity saveImg = itemImgRepository.save(imgEntity);
-                        itemImgList.add(saveImg);
-                    }
-                } else {
-                    // 가지고 온 이미지가 있는 경우
-                    // S3에서 생성한 이미지들을 가지고 온다.
-                    for (int i = 0; i < products.size(); i++) {
-                        ItemImgDTO itemImgDTO = products.get(i);
-                        ItemImgEntity imgEntity = ItemImgEntity.builder()
-                                .oriImgName(itemImgDTO.getOriImgName())
-                                .uploadImgPath(itemImgDTO.getUploadImgPath())
-                                .uploadImgUrl(itemImgDTO.getUploadImgUrl())
-                                .uploadImgName(itemImgDTO.getUploadImgName())
-                                .repImgYn("N")
-                                .item(findItem)
-                                .build();
-                        ItemImgEntity saveImg = itemImgRepository.save(imgEntity);
-                        log.info("img : " + saveImg);
-                        // 기존의 이미지에 추가시켜 준다.
-                        itemImgList.add(saveImg);
-                    }
-                }
-                // 위에서 진행한 것은 ItemImg를 처리하고 저장하는 것이다.
-                // 이제 상품에 List에 포함시켜서 저장해야한다.
-                findItem = ItemEntity.builder()
-                        .itemId(findItem.getItemId())
-                        .itemName(itemDTO.getItemName())
-                        .itemDetail(itemDTO.getItemDetail())
-                        .itemPlace(itemDTO.getSellPlace())
-                        .stockNumber(findItem.getStockNumber())
-                        .price(itemDTO.getPrice())
-                        .itemImgList(itemImgList)
-                        .build();
-
-                ItemEntity saveItem = itemRepository.save(findItem);
-                ItemDTO toItemDTO = ItemDTO.toItemDTO(saveItem);
-                return ResponseEntity.ok().body(toItemDTO);
-                 */
-
             } else {
                 return ResponseEntity.badRequest().body("이메일이 일치하지 않습니다.");
             }
@@ -280,13 +222,17 @@ public class ItemServiceImpl implements ItemService{
         if(imgEntity.getItem().getItemId().equals(findItem.getItemId())) {
             // 상품 엔티티에 담아져 있는 유저의 이메일과 조회한 유저의 이메일과 일치하면 true
             if(findItem.getMember().getEmail().equals(findUser.getEmail())) {
+                // 상품이미지 DB 삭제
                 itemImgRepository.deleteById(imgEntity.getItemImgId());
+                // 상품이미지 S3 삭제
                 String result = s3ItemImgUploaderService.deleteFile(uploadFilePath, uuidFileName);
-                log.info("result : " + result);
+                log.info("S3 삭제 결과 : " + result);
 
                 // 상품 번호로 담겨져있는 이미지 불러옴
+                // 위에서 이미지를 삭제하는데 나머지가 있는지 불러온다.
                 List<ItemImgEntity> findItemIdImgList = itemImgRepository.findByItemItemId(itemId);
 
+                // 이미지를 전부 삭제하지 않았다면
                 if(!findItemIdImgList.isEmpty()) {
                     for (int i = 0; i < findItemIdImgList.size(); i++) {
                         ItemImgEntity itemImgEntity = findItemIdImgList.get(i);
@@ -314,6 +260,7 @@ public class ItemServiceImpl implements ItemService{
                         .itemPlace(findItem.getItemPlace())
                         .stockNumber(findItem.getStockNumber())
                         .price(findItem.getPrice())
+                        .member(findItem.getMember())
                         .itemImgList(findItemIdImgList)
                         .build();
                 ItemEntity saveItem = itemRepository.save(findItem);
@@ -382,7 +329,6 @@ public class ItemServiceImpl implements ItemService{
         Pageable pageRequest = createPageRequestUsing(pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
 
         try{
-
             if (name==null || name.isEmpty()) name = null;
             else name = "%" + name + "%";
 
@@ -402,7 +348,10 @@ public class ItemServiceImpl implements ItemService{
             if(status == null) statusString = "%";
             else statusString = status.toString();
 
-            List<ItemDTO> items = itemRepository.findByConditions(name, detail, startP, endP, place, reserver, statusString).stream().map(ItemDTO::toItemDTO).collect(Collectors.toList());
+            List<ItemDTO> items = itemRepository.findByConditions(name, detail, startP, endP, place, reserver, statusString)
+                    .stream()
+                    .map(ItemDTO::toItemDTO)
+                    .collect(Collectors.toList());
 
             if(items.isEmpty()){
                 throw new EntityNotFoundException("조건에 만족하는 상품이 없습니다.");

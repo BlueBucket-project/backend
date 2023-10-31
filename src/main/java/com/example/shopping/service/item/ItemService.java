@@ -1,7 +1,6 @@
 package com.example.shopping.service.item;
 
 import com.example.shopping.domain.Item.ItemDTO;
-import com.example.shopping.domain.Item.ModifyItemDTO;
 import com.example.shopping.domain.Item.UpdateItemDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
