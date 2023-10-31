@@ -105,4 +105,17 @@ public class BoardServiceImpl implements BoardService {
         log.info("검색한 게시글 : {}", searchBoard);
         return  searchBoard.map(BoardDTO::toBoardDTO);
     }
+
+
+    // 게시글 상세 정보
+    @Transactional(readOnly = true)
+    @Override
+    public ResponseEntity<BoardDTO> getBoard(Long boardId) {
+        // 게시글 조회
+        BoardEntity findBoard = boardRepository.findById(boardId)
+                .orElseThrow(EntityNotFoundException::new);
+        log.info("게시글 : " + findBoard);
+        BoardDTO boardDTO = BoardDTO.toBoardDTO(findBoard);
+        return ResponseEntity.ok().body(boardDTO);
+    }
 }
