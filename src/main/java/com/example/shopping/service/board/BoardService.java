@@ -33,5 +33,8 @@ public interface BoardService {
     // 전체 게시글 보여주기
     Page<BoardDTO> getBoards(Pageable pageable);
 
+    // 검색
+    Page<BoardDTO> getSearchBoards(Pageable pageable, String searchKeyword);
+
 
 }

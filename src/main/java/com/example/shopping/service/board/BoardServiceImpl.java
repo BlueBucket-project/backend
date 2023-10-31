@@ -96,4 +96,13 @@ public class BoardServiceImpl implements BoardService {
         log.info("모든 게시글 : {}", allBoard );
         return allBoard.map(BoardDTO::toBoardDTO);
     }
+
+    // 검색
+    @Transactional(readOnly = true)
+    @Override
+    public Page<BoardDTO> getSearchBoards(Pageable pageable, String searchKeyword) {
+        Page<BoardEntity> searchBoard = boardRepository.findByTitleContaining(pageable, searchKeyword);
+        log.info("검색한 게시글 : {}", searchBoard);
+        return  searchBoard.map(BoardDTO::toBoardDTO);
+    }
 }
