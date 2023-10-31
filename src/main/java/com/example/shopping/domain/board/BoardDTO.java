@@ -33,8 +33,8 @@ public class BoardDTO {
     @Schema(description = "게시글 작성 시간")
     private LocalDateTime regTime;
 
-    @Schema(description = "게시글 이미지 정보")
-    private List<BoardImgDTO> boardImgDTOList = new ArrayList<>();
+//    @Schema(description = "게시글 이미지 정보")
+//    private List<BoardImgDTO> boardImgDTOList = new ArrayList<>();
 
     @Schema(description = "댓글")
     private List<CommentDTO> commentDTOList = new ArrayList<>();
@@ -46,36 +46,36 @@ public class BoardDTO {
                     String content,
                     String nickName,
                     LocalDateTime regTime,
-                    List<BoardImgDTO> boardImgDTOList,
+//                    List<BoardImgDTO> boardImgDTOList,
                     List<CommentDTO> commentDTOList) {
         this.boardId = boardId;
         this.title = title;
         this.content = content;
         this.nickName = nickName;
         this.regTime = regTime;
-        this.boardImgDTOList = boardImgDTOList;
+//        this.boardImgDTOList = boardImgDTOList;
         this.commentDTOList = commentDTOList;
     }
 
     public static BoardDTO toBoardDTO(BoardEntity board) {
-        // 게시글 이미지 DTO 처리
-        List<BoardImgEntity> boardImgEntities = board.getBoardImgDTOList();
-        List<BoardImgDTO> boardImgDTOS = new ArrayList<>();
-
-        for(BoardImgEntity boardImgEntity : boardImgEntities) {
-            BoardImgDTO boardImgDTO = BoardImgDTO.toBoardImgDTO(boardImgEntity);
-
-            // DTO로 바꿔준 것을 다시 List형식으로 바꿈
-            // 다시 List로 해주는 이유는  private List<BoardImgDTO> boardImgDTOList = new ArrayList<>();
-            // 여기에 넣어주기 위한 것이다.
-            boardImgDTOS.add(boardImgDTO);
-        }
+//        // 게시글 이미지 DTO 처리
+//        List<BoardImgEntity> boardImgEntities = board.getBoardImgEntityList();
+//        List<BoardImgDTO> boardImgDTOS = new ArrayList<>();
+//
+//        for(BoardImgEntity boardImgEntity : boardImgEntities) {
+//            BoardImgDTO boardImgDTO = BoardImgDTO.toBoardImgDTO(boardImgEntity);
+//
+//            // DTO로 바꿔준 것을 다시 List형식으로 바꿈
+//            // 다시 List로 해주는 이유는  private List<BoardImgDTO> boardImgDTOList = new ArrayList<>();
+//            // 여기에 넣어주기 위한 것이다.
+//            boardImgDTOS.add(boardImgDTO);
+//        }
 
         // 게시글 댓글 처리
         List<CommentEntity> commentEntityList = board.getCommentEntityList();
         List<CommentDTO> commentDTOS = new ArrayList<>();
 
-        for(CommentEntity commentEntity : commentEntityList) {
+        for (CommentEntity commentEntity : commentEntityList) {
             CommentDTO commentDTO = CommentDTO.toCommentDTO(commentEntity);
             commentDTOS.add(commentDTO);
 
@@ -86,7 +86,7 @@ public class BoardDTO {
                 .title(board.getTitle())
                 .content(board.getContent())
                 .nickName(board.getMember().getNickName())
-                .boardImgDTOList(boardImgDTOS)
+//                .boardImgDTOList(boardImgDTOS)
                 .commentDTOList(commentDTOS)
                 .regTime(LocalDateTime.now())
                 .build();
