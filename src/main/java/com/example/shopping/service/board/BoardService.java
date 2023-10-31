@@ -16,5 +16,16 @@ public interface BoardService {
     // 게시글 상세정보
     ResponseEntity<BoardDTO> getItem(Long boardId);
 
+    // 게시글 수정
+    ResponseEntity<?> updateBoard(Long boardId,
+                                  CreateBoardDTO boardDTO,
+//                                  List<MultipartFile> boardFiles,
+                                  String memberEmail);
+
+    // 이미지 삭제
+//    String removeImg(Long boardId, Long boardImgId, String memberEmail);
+
+
+
 
 }
