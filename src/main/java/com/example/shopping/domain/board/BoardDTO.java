@@ -2,7 +2,6 @@ package com.example.shopping.domain.board;
 
 import com.example.shopping.domain.comment.CommentDTO;
 import com.example.shopping.entity.board.BoardEntity;
-import com.example.shopping.entity.board.BoardImgEntity;
 import com.example.shopping.entity.comment.CommentEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
