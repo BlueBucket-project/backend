@@ -14,7 +14,7 @@ import javax.validation.constraints.NotNull;
 @NoArgsConstructor
 @ToString
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
-public class ModifyItemDTO {
+public class CreateItemDTO {
     @Schema(description = "상품 이름")
     @NotBlank(message = "상품명은 필수 입력입니다.")
     private String itemName;     // 상품 명
@@ -36,7 +36,7 @@ public class ModifyItemDTO {
     private String sellPlace;
 
     @Builder
-    public ModifyItemDTO(String itemName,
+    public CreateItemDTO(String itemName,
                          int price,
                          int stockNumber,
                          String itemDetail,

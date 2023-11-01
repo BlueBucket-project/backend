@@ -2,7 +2,7 @@ package com.example.shopping.controller.item;
 
 import com.example.shopping.domain.Item.ItemDTO;
 import com.example.shopping.domain.Item.ItemSellStatus;
-import com.example.shopping.domain.Item.ModifyItemDTO;
+import com.example.shopping.domain.Item.CreateItemDTO;
 import com.example.shopping.domain.Item.UpdateItemDTO;
 import com.example.shopping.service.item.ItemServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
@@ -41,7 +41,7 @@ public class ItemController {
     @PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
     @Tag(name = "item")
     @Operation(summary = "상품 등록", description = "상품을 등록하는 API입니다.")
-    public ResponseEntity<?> createItem(@RequestPart("key")ModifyItemDTO item,
+    public ResponseEntity<?> createItem(@RequestPart("key") CreateItemDTO item,
                                         @RequestPart(value = "files", required = false)List<MultipartFile>itemFiles,
                                         BindingResult result
                                         ,@AuthenticationPrincipal UserDetails userDetails
@@ -77,9 +77,12 @@ public class ItemController {
     @GetMapping("/{itemId}")
     @Tag(name = "item")
     @Operation(summary = "상품 상세 정보 보기", description = "상품의 상세정보를 볼 수 있습니다.")
-    public ResponseEntity<?> itemDetail(@PathVariable Long itemId) {
+    public ResponseEntity<?> itemDetail(@PathVariable Long itemId,
+                                        Pageable pageable,
+                                        @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            ItemDTO item = itemServiceImpl.getItem(itemId);
+            String email = userDetails.getUsername();
+            ItemDTO item = itemServiceImpl.getItem(itemId, pageable, email);
             log.info("item : " + item);
             return ResponseEntity.ok().body(item);
         } catch (EntityNotFoundException e) {
@@ -201,7 +204,15 @@ public class ItemController {
         Page<ItemDTO> items = null;
 
         try{
-            items = itemServiceImpl.searchItemsConditions(pageable, itemName, itemDetail, startPrice, endPrice, itemPlace, null, itemSellStatus);
+            items = itemServiceImpl.searchItemsConditions(
+                    pageable,
+                    itemName,
+                    itemDetail,
+                    startPrice,
+                    endPrice,
+                    itemPlace,
+                    null,
+                    itemSellStatus);
 
             Map<String, Object> response = new HashMap<>();
             // 현재 페이지의 아이템 목록

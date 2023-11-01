@@ -26,6 +26,7 @@ public class AddressDTO {
         this.memberZipCode = memberZipCode;
     }
 
+    // 주소 엔티티 변환 추가
     public AddressEntity toEntity(){
         return AddressEntity.builder()
                 .memberAddr(this.memberAddr)

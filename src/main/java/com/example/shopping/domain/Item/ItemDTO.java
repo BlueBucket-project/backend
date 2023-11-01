@@ -1,6 +1,8 @@
 package com.example.shopping.domain.Item;
 
 import com.example.shopping.domain.member.ResponseMemberDTO;
+import com.example.shopping.domain.board.BoardDTO;
+import com.example.shopping.entity.board.BoardEntity;
 import com.example.shopping.entity.item.ItemEntity;
 import com.example.shopping.entity.item.ItemImgEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -64,6 +66,9 @@ public class ItemDTO {
 
     private ResponseMemberDTO member;
 
+    @Schema(description = "문의글")
+    private List<BoardDTO> boardDTOList = new ArrayList<>();
+
     @Builder
     public ItemDTO(Long itemId,
                    String itemName,
@@ -76,8 +81,9 @@ public class ItemDTO {
                    String sellPlace,
                    String itemReserver,
                    int itemRamount,
-                   List<ItemImgDTO> itemImgList,
-                   ResponseMemberDTO member) {
+                   ResponseMemberDTO member,
+                   List<BoardDTO> boardDTOList,
+                   List<ItemImgDTO> itemImgList) {
         this.itemId = itemId;
         this.itemName = itemName;
         this.price = price;
@@ -89,11 +95,13 @@ public class ItemDTO {
         this.sellPlace = sellPlace;
         this.itemReserver = itemReserver;
         this.itemRamount =itemRamount;
+        this.boardDTOList = boardDTOList;
         this.itemImgList = itemImgList;
         this.member =member;
     }
 
     public static ItemDTO toItemDTO(ItemEntity item) {
+        // 이미지 처리
         List<ItemImgEntity> itemImgEntities = item.getItemImgList();
         List<ItemImgDTO> itemImgDTOList = new ArrayList<>();
 
@@ -104,6 +112,17 @@ public class ItemDTO {
             }
         }
 
+        // 문의글 처리
+        List<BoardEntity> boardEntityList = item.getBoardEntityList();
+        List<BoardDTO> boardDTOS = new ArrayList<>();
+        if(!boardEntityList.isEmpty()) {
+            for (BoardEntity boardEntity : boardEntityList) {
+                BoardDTO boardDTO = BoardDTO.toBoardDTO(boardEntity);
+                boardDTOS.add(boardDTO);
+            }
+        }
+
+        // 상품 정보와 이미지 그리고 문의글을 리턴
         return ItemDTO.builder()
                 .itemId(item.getItemId())
                 .itemName(item.getItemName())
@@ -118,6 +137,7 @@ public class ItemDTO {
                 .itemRamount(item.getItemRamount())
                 .itemImgList(itemImgDTOList)
                 .member(ResponseMemberDTO.toMemberDTO(item.getMember()))
+                .boardDTOList(boardDTOS)
                 .build();
     }
 

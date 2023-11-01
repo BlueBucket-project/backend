@@ -76,7 +76,7 @@ public class AdminController {
         return result;
     }
 
-    // 관리자 페이지
+    // 관리자 상품 전체 보기 페이지
     @GetMapping("")
     @Tag(name = "admin")
     @PreAuthorize("hasRole('ROLE_ADMIN')")

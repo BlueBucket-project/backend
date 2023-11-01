@@ -13,26 +13,19 @@ import com.example.shopping.repository.item.ItemRepository;
 import com.example.shopping.repository.member.MemberRepository;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import java.util.*;
 
-@Builder
 @Service
 @RequiredArgsConstructor
 public class CartServiceImpl implements CartService{
 
-    @Autowired
     private final ItemRepository itemRepository;
-    @Autowired
     private final CartRepository cartRepository;
-    @Autowired
     private final CartItemRepository cartItemRepository;
-    @Autowired
     private final MemberRepository memberRepository;
 
     @Override
