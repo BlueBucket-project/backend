@@ -6,16 +6,17 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-import javax.persistence.Entity;
+import javax.validation.constraints.NotNull;
 
 @Getter
 @NoArgsConstructor
 @ToString
 public class CreateBoardDTO {
-    @Schema(description = "게시판 제목", required = true)
+    @Schema(description = "문의글 제목", required = true)
+    @NotNull(message = "문의글 제목은 필 수 입력입니다.")
     private String title;
 
-    @Schema(description = "게시판 본문")
+    @Schema(description = "문의글 본문")
     private String content;
 
     @Builder
