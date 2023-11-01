@@ -49,7 +49,7 @@ public class ResponseMemberDTO {
     private String providerId;
 
     @Schema(description = "포인트")
-    private String memberPoint;
+    private int memberPoint;
 
     @Builder
     public ResponseMemberDTO(Long memberId,
@@ -61,7 +61,7 @@ public class ResponseMemberDTO {
                              AddressDTO memberAddress,
                              String provider,
                              String providerId,
-                             String memberPoint) {
+                             int memberPoint) {
         this.memberId = memberId;
         this.email = email;
         this.memberName = memberName;
@@ -104,6 +104,7 @@ public class ResponseMemberDTO {
                 .memberRole(this.memberRole)
                 .provider(this.provider)
                 .providerId(this.providerId)
+                .address(this.memberAddress.toEntity())
                 .build();
     }
 }

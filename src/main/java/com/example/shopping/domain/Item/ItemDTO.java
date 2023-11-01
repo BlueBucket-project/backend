@@ -1,5 +1,6 @@
 package com.example.shopping.domain.Item;
 
+import com.example.shopping.domain.member.ResponseMemberDTO;
 import com.example.shopping.entity.item.ItemEntity;
 import com.example.shopping.entity.item.ItemImgEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -61,6 +62,8 @@ public class ItemDTO {
     // 상품 저장 후 수정할 때 상품 이미지 정보를 저장하는 리스트
     private List<ItemImgDTO> itemImgList = new ArrayList<>();
 
+    private ResponseMemberDTO member;
+
     @Builder
     public ItemDTO(Long itemId,
                    String itemName,
@@ -73,7 +76,8 @@ public class ItemDTO {
                    String sellPlace,
                    String itemReserver,
                    int itemRamount,
-                   List<ItemImgDTO> itemImgList) {
+                   List<ItemImgDTO> itemImgList,
+                   ResponseMemberDTO member) {
         this.itemId = itemId;
         this.itemName = itemName;
         this.price = price;
@@ -86,6 +90,7 @@ public class ItemDTO {
         this.itemReserver = itemReserver;
         this.itemRamount =itemRamount;
         this.itemImgList = itemImgList;
+        this.member =member;
     }
 
     public static ItemDTO toItemDTO(ItemEntity item) {
@@ -112,6 +117,7 @@ public class ItemDTO {
                 .itemReserver(item.getItemReserver())
                 .itemRamount(item.getItemRamount())
                 .itemImgList(itemImgDTOList)
+                .member(ResponseMemberDTO.toMemberDTO(item.getMember()))
                 .build();
     }
 
@@ -124,6 +130,7 @@ public class ItemDTO {
                 .itemReserver(this.itemReserver)
                 .itemSellStatus(this.itemSellStatus)
                 .price(this.price)
+                .member(this.member.toMemberInfoEntity())
                 .stockNumber(this.stockNumber)
                 .build();
     }

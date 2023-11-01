@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
 
 @Entity(name = "orderitem")
 @Getter
@@ -35,6 +34,7 @@ public class OrderItemEntity {
     @Column(name="item_seller")
     private Long itemSeller;
 
+    @Column(name="item_amount")
     int count;
 
     @Builder
@@ -49,7 +49,7 @@ public class OrderItemEntity {
 
     public OrderItemDTO toOrderItemDTO(){
         return OrderItemDTO.builder()
-                .item(item.toItemInfoDTO())
+                .item(ItemDTO.toItemDTO(item))
                 .itemAmount(this.count)
                 .itemBuyer(this.itemBuyer)
                 .itemSeller(this.itemSeller)

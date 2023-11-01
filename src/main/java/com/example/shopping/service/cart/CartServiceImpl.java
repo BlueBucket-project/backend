@@ -11,12 +11,11 @@ import com.example.shopping.repository.cart.CartItemRepository;
 import com.example.shopping.repository.cart.CartRepository;
 import com.example.shopping.repository.item.ItemRepository;
 import com.example.shopping.repository.member.MemberRepository;
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import java.util.*;
 
@@ -24,13 +23,9 @@ import java.util.*;
 @RequiredArgsConstructor
 public class CartServiceImpl implements CartService{
 
-    @Autowired
     private final ItemRepository itemRepository;
-    @Autowired
     private final CartRepository cartRepository;
-    @Autowired
     private final CartItemRepository cartItemRepository;
-    @Autowired
     private final MemberRepository memberRepository;
 
     @Override
@@ -53,8 +48,11 @@ public class CartServiceImpl implements CartService{
 
             //기존에 있는 아이템 추가 시
             if (savedCart != null) {
+
                 //수량증가
                 itemDetail = cartItemRepository.findByCartItemDTO(cart.getCartId(), savedCart.getItemId());
+
+                checkItemStock(cartItem.getItemId(), itemDetail.getCount() + cartItem.getCount());
                 itemDetail.modifyCount(cartItem.getCount());
                 savedCartItem = cartItemRepository.save(itemDetail);
                 //savedCart.addCount(cartItem.getCount());

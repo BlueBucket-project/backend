@@ -64,10 +64,10 @@ public class ItemController {
                         .build();
 
             String email = userDetails.getUsername();
-            ResponseEntity<?> responseEntity = itemServiceImpl.saveItem(itemInfo, itemFiles, email);
+            ItemDTO savedItem = itemServiceImpl.saveItem(itemInfo, itemFiles, email);
             //testData
-            //ResponseEntity<?> responseEntity = itemServiceImpl.saveItem(itemInfo, itemFiles, "mem123@test.com");
-            return ResponseEntity.ok().body(responseEntity);
+            //ItemDTO savedItem = itemServiceImpl.saveItem(itemInfo, itemFiles, "mem123@test.com");
+            return ResponseEntity.ok().body(savedItem);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -79,7 +79,7 @@ public class ItemController {
     @Operation(summary = "상품 상세 정보 보기", description = "상품의 상세정보를 볼 수 있습니다.")
     public ResponseEntity<?> itemDetail(@PathVariable Long itemId) {
         try {
-            ResponseEntity<ItemDTO> item = itemServiceImpl.getItem(itemId);
+            ItemDTO item = itemServiceImpl.getItem(itemId);
             log.info("item : " + item);
             return ResponseEntity.ok().body(item);
         } catch (EntityNotFoundException e) {
@@ -100,11 +100,11 @@ public class ItemController {
     ) {
         try {
             String email = userDetails.getUsername();
-            ResponseEntity<?> responseEntity = itemServiceImpl.updateItem(itemId, itemDTO, itemFiles, email);
+            ItemDTO updateItem = itemServiceImpl.updateItem(itemId, itemDTO, itemFiles, email);
             //testData
-            //ResponseEntity<?> responseEntity = itemServiceImpl.updateItem(itemId, itemDTO, itemFiles, "mem123@test.com");
+            //ItemDTO updateItem = itemServiceImpl.updateItem(itemId, itemDTO, itemFiles, "mem123@test.com");
 
-            return ResponseEntity.ok().body(responseEntity);
+            return ResponseEntity.ok().body(updateItem);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -188,7 +188,7 @@ public class ItemController {
 
     // 상품조건 여러개의 경우 조회하기
     @GetMapping("/search")
-    public ResponseEntity<?> searchItemsConditions(@PageableDefault(sort = "itemId", direction = Sort.Direction.DESC)
+    public ResponseEntity<?> searchItemsConditions(@PageableDefault(sort = "regTime", direction = Sort.Direction.DESC)
                                                    Pageable pageable,
                                                    @RequestParam(required = false) String itemName,
                                                    @RequestParam(required = false) String itemDetail,

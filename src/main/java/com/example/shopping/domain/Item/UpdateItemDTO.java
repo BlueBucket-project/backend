@@ -34,7 +34,6 @@ public class UpdateItemDTO {
     @NotNull(message = "판매지역을 입력해야 합니다.")
     private String sellPlace;
 
-    @Schema(description = "이미지 번호")
     private List<Long> delImgId;
 
     @Builder
