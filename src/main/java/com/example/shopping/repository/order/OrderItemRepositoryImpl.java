@@ -29,18 +29,18 @@ public class OrderItemRepositoryImpl implements OrderItemRepository{
 
 
     @Override
-    public OrderItemDTO findByOrderOrderId(Long orderId) {
-        OrderItemEntity findOrderItem = orderItemJpaRepository.findByOrderOrderId(orderId);
+    public List<OrderItemDTO> findByOrderOrderId(Long orderId) {
+        List<OrderItemEntity> findOrderItem = orderItemJpaRepository.findByOrderOrderId(orderId);
         if(findOrderItem == null)
             throw new EntityNotFoundException();
-        return findOrderItem.toOrderItemDTO();
+        return findOrderItem.stream().map(OrderItemEntity::toOrderItemDTO).collect(Collectors.toList());
     }
 
 
     @Override
-    public OrderItemDTO findByItemSeller(Long memberId) {
-        OrderItemEntity findSellerItem = orderItemJpaRepository.findByItemSeller(memberId);
-        return findSellerItem.toOrderItemDTO();
+    public List<OrderItemDTO> findByItemSeller(Long memberId) {
+        List<OrderItemEntity> findSellerItem = orderItemJpaRepository.findByItemSeller(memberId);
+        return findSellerItem.stream().map(OrderItemEntity::toOrderItemDTO).collect(Collectors.toList());
     }
 
 }

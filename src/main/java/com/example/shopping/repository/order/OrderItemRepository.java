@@ -8,9 +8,7 @@ public interface OrderItemRepository {
 
     OrderItemDTO save(OrderItemDTO orderItem, OrderDTO order);
 
-    OrderItemDTO findByOrderOrderId(Long orderId);
+    List<OrderItemDTO> findByOrderOrderId(Long orderId);
 
-    //OrderItemDTO findByOrderId(Long orderId);
-
-    OrderItemDTO findByItemSeller(Long memberId);
+    List<OrderItemDTO> findByItemSeller(Long memberId);
 }

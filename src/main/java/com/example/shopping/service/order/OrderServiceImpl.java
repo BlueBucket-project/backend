@@ -40,18 +40,28 @@ public class OrderServiceImpl implements  OrderService{
         if(member.getMemberRole() == Role.ADMIN) {
             orderList = orderRepository.findByOrderAdmin(member.getMemberId());
             for(OrderDTO order : orderList){
-                orderItemList.add(orderItemRepository.findByOrderOrderId(order.getOrderId()));
+                List<OrderItemDTO> itemList = orderItemRepository.findByOrderOrderId(order.getOrderId());
+                for(OrderItemDTO item : itemList)
+                {
+                    orderItemList.add(item);
+                }
             }
         }
         else{
             //구매자 기준 조회
             orderList = orderRepository.findByOrderMember(member.getMemberId());
             for(OrderDTO order : orderList) {
-                orderItemList.add(orderItemRepository.findByOrderOrderId(order.getOrderId()));
-            }
+                List<OrderItemDTO> itemList = orderItemRepository.findByOrderOrderId(order.getOrderId());
+                for(OrderItemDTO item : itemList)
+                {
+                    orderItemList.add(item);
+                }            }
             //판매자 기준 조회
-            orderItemList.add(orderItemRepository.findByItemSeller(member.getMemberId()));
-        }
+            List<OrderItemDTO> itemList = orderItemRepository.findByItemSeller(member.getMemberId());
+            for(OrderItemDTO item : itemList)
+            {
+                orderItemList.add(item);
+            }        }
         return orderItemList;
     }
 
@@ -70,17 +80,29 @@ public class OrderServiceImpl implements  OrderService{
         if(member.getMemberRole() == Role.ADMIN) {
             orderList = orderRepository.findByOrderAdmin(member.getMemberId());
             for(OrderDTO order : orderList){
-                orderItemList.add(orderItemRepository.findByOrderOrderId(order.getOrderId()));
+                List<OrderItemDTO> itemList = orderItemRepository.findByOrderOrderId(order.getOrderId());
+                for(OrderItemDTO item : itemList)
+                {
+                    orderItemList.add(item);
+                }
             }
         }
         else{
             //구매자 기준 조회
             orderList = orderRepository.findByOrderMember(member.getMemberId());
             for(OrderDTO order : orderList) {
-                orderItemList.add(orderItemRepository.findByOrderOrderId(order.getOrderId()));
+                List<OrderItemDTO> itemList = orderItemRepository.findByOrderOrderId(order.getOrderId());
+                for(OrderItemDTO item : itemList)
+                {
+                    orderItemList.add(item);
+                }
             }
             //판매자 기준 조회
-            orderItemList.add(orderItemRepository.findByItemSeller(member.getMemberId()));
+            List<OrderItemDTO> itemList = orderItemRepository.findByItemSeller(member.getMemberId());
+            for(OrderItemDTO item : itemList)
+            {
+                orderItemList.add(item);
+            }
         }
 
         if(orderItemList.isEmpty()){
