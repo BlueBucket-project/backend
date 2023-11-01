@@ -13,21 +13,18 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @ToString
 public class CommentDTO {
-    @Schema(description = "댓글 번호")
+    @Schema(description = "답변 번호")
     private Long commentId;
-    @Schema(description = "댓글")
+    @Schema(description = "답변")
     private String comment;
-    @Schema(description = "댓글 등록 시간")
+    @Schema(description = "답변 등록 시간")
     private LocalDateTime writeTime;
-    @Schema(description = "닉네임")
-    private String nickName;
 
     @Builder
-    public CommentDTO(Long commentId, String comment, LocalDateTime writeTime, String nickName) {
+    public CommentDTO(Long commentId, String comment, LocalDateTime writeTime) {
         this.commentId = commentId;
         this.comment = comment;
         this.writeTime = writeTime;
-        this.nickName = nickName;
     }
 
     public static CommentDTO toCommentDTO(CommentEntity commentEntity) {
@@ -35,7 +32,6 @@ public class CommentDTO {
                 .commentId(commentEntity.getCommentId())
                 .comment(commentEntity.getComment())
                 .writeTime(LocalDateTime.now())
-                .nickName(commentEntity.getMember().getNickName())
                 .build();
     }
 }

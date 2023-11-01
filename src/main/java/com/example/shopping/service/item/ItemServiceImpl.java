@@ -1,17 +1,25 @@
 package com.example.shopping.service.item;
 
 import com.example.shopping.domain.Item.*;
+import com.example.shopping.domain.board.BoardDTO;
+import com.example.shopping.domain.board.BoardSecret;
+import com.example.shopping.entity.board.BoardEntity;
 import com.example.shopping.entity.item.ItemEntity;
 import com.example.shopping.entity.item.ItemImgEntity;
 import com.example.shopping.entity.member.MemberEntity;
 import com.example.shopping.exception.item.ItemException;
+import com.example.shopping.repository.board.BoardRepository;
 import com.example.shopping.repository.item.ItemImgRepository;
 import com.example.shopping.repository.item.ItemRepository;
 import com.example.shopping.repository.member.MemberRepository;
+import com.example.shopping.service.board.BoardServiceImpl;
 import com.example.shopping.service.s3.S3ItemImgUploaderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.*;
+import org.springframework.data.support.PageableExecutionUtils;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -89,12 +97,57 @@ public class ItemServiceImpl implements ItemService{
     // 이럴 경우 JPA가 더티체킹(변경감지)를 수행하지 않아서 성능을 향상 시킬 수 있다.
     @Transactional(readOnly = true)
     @Override
-    public ItemDTO getItem(Long itemId) {
+    public ItemDTO getItem(Long itemId,
+                           Pageable pageable,
+                           String memberEmail) {
         try {
+            // 상품 조회
             ItemEntity findItem = itemRepository.findById(itemId)
                     .orElseThrow(EntityNotFoundException::new);
+            // 문의글을 가져옴
+            List<BoardEntity> boardEntityList = findItem.getBoardEntityList();
+            // 현재 사용자의 게시글과 다른 사용자의 게시글을 나눔
+            // 내 문의글
+            List<BoardEntity> myBoards = new ArrayList<>();
+            // 다른 사람 문의글
+            List<BoardEntity> otherBoards = new ArrayList<>();
 
+            // 가져온 문의글들에서 내가 작성한 글인지 구별하기 위해서
+            for (BoardEntity boardEntity : boardEntityList) {
+                if(boardEntity.getMember().getEmail().equals(memberEmail)) {
+                    boardEntity.changeSecret(BoardSecret.UN_ROCK);
+                    myBoards.add(boardEntity);
+                } else {
+                    boardEntity.changeSecret(BoardSecret.ROCK);
+                    otherBoards.add(boardEntity);
+                }
+            }
+
+            // 게시글 페이지 처리
+            Page<BoardEntity> myBoardPage = PageableExecutionUtils.getPage(
+                    myBoards, pageable, myBoards::size);
+
+            Page<BoardEntity> otherBoardPage = PageableExecutionUtils.getPage(
+                    otherBoards, pageable, otherBoards::size);
+
+            List<BoardDTO> myBoardDTOList = myBoardPage.getContent()
+                    .stream()
+                    .map(BoardDTO::toBoardDTO)
+                    .collect(Collectors.toList());
+
+            List<BoardDTO> otherBoardDTOList = otherBoardPage.getContent()
+                    .stream()
+                    .map(BoardDTO::toBoardDTO)
+                    .collect(Collectors.toList());
+
+            // DTO로 변환
             ItemDTO itemDTO = ItemDTO.toItemDTO(findItem);
+            // 현재 사용자의 게시글인 경우, 게시글 내용을 포함시킴
+            if(!myBoards.isEmpty()) {
+                itemDTO.getBoardDTOList().addAll(myBoardDTOList);
+            } else {
+                itemDTO.getBoardDTOList().addAll(otherBoardDTOList);
+            }
             return itemDTO;
         } catch (EntityNotFoundException e) {
             throw new ItemException("상품이 없습니다. {}, " + e.getMessage());
@@ -113,7 +166,11 @@ public class ItemServiceImpl implements ItemService{
             log.info("item : " + findItem);
             MemberEntity findMember = memberRepository.findByEmail(memberEmail);
             log.info("member : " + findMember);
+
+            // 상품 엔티티에 있는 List로 된 이미지들을 가져오기
             List<ItemImgEntity> itemImgList = findItem.getItemImgList();
+            List<BoardEntity> boardEntityList = findItem.getBoardEntityList();
+
 
             // 이메일을 userDetails에서 가져와서 조회한 다음
             // 회원 이메일과 상품에 담긴 member 엔티티의 이메일과 비교
@@ -131,6 +188,7 @@ public class ItemServiceImpl implements ItemService{
                         .itemRamount(findItem.getItemRamount())
                         .itemReserver(findItem.getItemReserver()==null?null:findItem.getItemReserver())
                         .itemImgList(itemImgList)
+                        .boardEntityList(boardEntityList)
                         .build();
 
                 //삭제할 이미지가 있다면 이미지만 삭제 - 삭제를 먼저해야 대표이미지가 없을 때 남은 것 중 대표이미지 셋팅가능

@@ -3,6 +3,7 @@ package com.example.shopping.entity.item;
 import com.example.shopping.domain.Item.ItemDTO;
 import com.example.shopping.domain.Item.ItemSellStatus;
 import com.example.shopping.entity.Base.BaseTimeEntity;
+import com.example.shopping.entity.board.BoardEntity;
 import com.example.shopping.entity.member.MemberEntity;
 import lombok.Builder;
 import lombok.Getter;
@@ -66,6 +67,10 @@ public class ItemEntity extends BaseTimeEntity {
     @JoinColumn(name = "member_id")
     private MemberEntity member;
 
+    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("boardId desc")
+    private List<BoardEntity> boardEntityList = new ArrayList<>();
+
     @Builder
     public ItemEntity(Long itemId,
                       String itemName,
@@ -77,6 +82,7 @@ public class ItemEntity extends BaseTimeEntity {
                       String itemPlace,
                       String itemReserver,
                       int itemRamount,
+                      List<BoardEntity> boardEntityList,
                       MemberEntity member) {
         this.itemId = itemId;
         this.itemName = itemName;
@@ -88,6 +94,7 @@ public class ItemEntity extends BaseTimeEntity {
         this.itemPlace = itemPlace;
         this.itemRamount = itemRamount;
         this.itemReserver = itemReserver;
+        this.boardEntityList = boardEntityList;
         this.member = member;
     }
 

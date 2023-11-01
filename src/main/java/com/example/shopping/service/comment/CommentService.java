@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 public interface CommentService {
     // 댓글 작성
     ResponseEntity<?> save(Long boardId,
-                           CommentDTO commentDTO,
+                           ModifyCommentDTO commentDTO,
                            String memberEmail);
 
     // 댓글 삭제

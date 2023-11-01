@@ -15,19 +15,19 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/comments")
+@RequestMapping("/api/v1/{itemId}/boards/{boardId}/comments")
 @Log4j2
 @Tag(name = "comment", description = "댓글 API")
 public class CommentController {
     private final CommentServiceImpl commentService;
 
     // 댓글 작성
-    @PostMapping("/{boardId}")
-    @PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
+    @PostMapping("")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Tag(name = "comment")
     @Operation(summary = "댓글 등록", description = "댓글을 등록하는 API입니다.")
     public ResponseEntity<?> saveComment(@PathVariable Long boardId,
-                                         @RequestBody CommentDTO commentDTO,
+                                         @RequestBody ModifyCommentDTO commentDTO,
                                          @AuthenticationPrincipal UserDetails userDetails) {
         String email = userDetails.getUsername();
         log.info("email : " + email);
@@ -36,8 +36,8 @@ public class CommentController {
     }
 
     // 댓글 삭제
-    @DeleteMapping("/{boardId}/{commentId}")
-    @PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
+    @DeleteMapping("/{commentId}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Tag(name = "comment")
     @Operation(summary = "댓글 삭제", description = "댓글을 삭제하는 API입니다.")
     public String removeComment(@PathVariable Long boardId,
@@ -49,8 +49,8 @@ public class CommentController {
     }
 
     // 댓글 수정
-    @PutMapping("/{boardId}/{commentId}")
-    @PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
+    @PutMapping("/{commentId}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Tag(name = "comment")
     @Operation(summary = "댓글 수정", description = "댓글을 수정하는 API입니다.")
     public ResponseEntity<?> updateComment(@PathVariable Long boardId,

@@ -4,9 +4,11 @@ import com.example.shopping.domain.comment.CommentDTO;
 import com.example.shopping.domain.comment.ModifyCommentDTO;
 import com.example.shopping.entity.board.BoardEntity;
 import com.example.shopping.entity.comment.CommentEntity;
+import com.example.shopping.entity.item.ItemEntity;
 import com.example.shopping.entity.member.MemberEntity;
 import com.example.shopping.repository.board.BoardRepository;
 import com.example.shopping.repository.comment.CommentRepository;
+import com.example.shopping.repository.item.ItemRepository;
 import com.example.shopping.repository.member.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -28,37 +30,29 @@ public class CommentServiceImpl implements CommentService{
 
     // 댓글 등록
     @Override
-    public ResponseEntity<?> save(Long boardId, CommentDTO commentDTO, String memberEmail) {
+    public ResponseEntity<?> save(Long boardId,
+                                  ModifyCommentDTO commentDTO,
+                                  String memberEmail) {
         try {
             // 회원 조회
             MemberEntity findUser = memberRepository.findByEmail(memberEmail);
+            log.info("유저 : " + findUser);
             // 게시글 조회
             BoardEntity findBoard = boardRepository.findById(boardId)
                     .orElseThrow(EntityNotFoundException::new);
+            log.info("게시글 : {}", findBoard);
 
-            // 게시글에 list로 넣기위해서 list 생성
-            List<CommentEntity> commentEntityList = new ArrayList<>();
             if(findUser != null) {
-                CommentEntity commentEntity = CommentEntity.builder()
-                        .comment(commentDTO.getComment())
-                        .member(findUser)
-                        .board(findBoard)
-                        .build();
-                CommentEntity saveComment = commentRepository.save(commentEntity);
-                commentEntityList.add(saveComment);
-                findBoard = BoardEntity.builder()
-                        .boardId(findBoard.getBoardId())
-                        .content(findBoard.getContent())
-                        .boardImgDTOList(findBoard.getBoardImgDTOList())
-                        .title(findBoard.getTitle())
-                        .member(findBoard.getMember())
-                        .commentEntityList(commentEntityList)
-                        .build();
+                // 댓글 생성
+                CommentEntity comment = CommentEntity.createComment(commentDTO, findUser, findBoard);
+                // 게시글 엔티티안에 있는 댓글 리스트에 추가
+                findBoard.getCommentEntityList().add(comment);
+                log.info("댓글 : " + comment);
+                // DB에 저장
+                // 게시글과 연관관계를 맺었기 때문에 게시글만 저장해도 댓글이 저장된다.
                 BoardEntity saveBoard = boardRepository.save(findBoard);
                 log.info("board : " + saveBoard);
-                CommentDTO returnComment = CommentDTO.toCommentDTO(saveComment);
-                log.info("comment : " + returnComment);
-                return ResponseEntity.ok().body(returnComment);
+                return ResponseEntity.ok().body("댓글 생성 완료");
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("회원이 없습니다.");
             }
@@ -115,29 +109,20 @@ public class CommentServiceImpl implements CommentService{
             boolean equalsEmail = findUser.getEmail().equals(findComment.getMember().getEmail());
             boolean equalsId = findComment.getBoard().getBoardId().equals(findBoard.getBoardId());
 
-            List<CommentEntity> commentEntityList = new ArrayList<>();
             // 해당 유저인지 체크하고 댓글을 작성한 게시글 id인지 체크
             if(equalsEmail && equalsId) {
+                // 댓글 수정
                 findComment = CommentEntity.builder()
                         .commentId(findComment.getCommentId())
                         .comment(commentDTO.getComment())
-                        .member(findUser)
-                        .board(findBoard)
+                        .member(findComment.getMember())
+                        .board(findComment.getBoard())
                         .build();
-                CommentEntity updateComment = commentRepository.save(findComment);
-                commentEntityList.add(updateComment);
-
-                findBoard = BoardEntity.builder()
-                        .boardId(findBoard.getBoardId())
-                        .content(findBoard.getContent())
-                        .boardImgDTOList(findBoard.getBoardImgDTOList())
-                        .title(findBoard.getTitle())
-                        .member(findBoard.getMember())
-                        .commentEntityList(commentEntityList)
-                        .build();
+                // 게시글 엔티티안에 있는 댓글 리스트에 추가
+                findBoard.getCommentEntityList().add(findComment);
+                log.info("댓글 : " + findComment);
                 boardRepository.save(findBoard);
-                CommentDTO returnComment = CommentDTO.toCommentDTO(updateComment);
-                return ResponseEntity.ok().body(returnComment);
+                return ResponseEntity.ok().body("댓글이 수정되었습니다.");
             } else {
                 return ResponseEntity.badRequest().body("일치하지 않습니다.");
             }

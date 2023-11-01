@@ -15,7 +15,7 @@ public interface ItemService {
                      String memberEmail) throws Exception;
 
     // 상품 상세 정보
-    ItemDTO getItem(Long itemId);
+    ItemDTO getItem(Long itemId, Pageable pageable, String memberEmail);
 
     // 상품 수정
     ItemDTO updateItem(Long itemId,
