@@ -1,10 +1,12 @@
 package com.example.shopping.entity.board;
 
 import com.example.shopping.domain.board.BoardDTO;
+import com.example.shopping.domain.board.BoardSecret;
 import com.example.shopping.domain.board.CreateBoardDTO;
 import com.example.shopping.domain.comment.CommentDTO;
 import com.example.shopping.entity.Base.BaseEntity;
 import com.example.shopping.entity.comment.CommentEntity;
+import com.example.shopping.entity.item.ItemEntity;
 import com.example.shopping.entity.member.MemberEntity;
 import lombok.Builder;
 import lombok.Getter;
@@ -34,6 +36,13 @@ public class BoardEntity extends BaseEntity {
     @JoinColumn(name = "member_id")
     private MemberEntity member;
 
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "item_id")
+    private ItemEntity item;
+
+    @Enumerated(EnumType.STRING)
+    private BoardSecret boardSecret;
+
     // 게시판 이미지
     // 게시글을 수정하면 게시글 속 이미지들도 함께 수정되어야 하기 때문에
     // 여기에 적용해야 합니다. 보통 게시물을 삭제해야 이미지가 삭제되므로
@@ -54,33 +63,27 @@ public class BoardEntity extends BaseEntity {
                        String title,
                        String content,
                        MemberEntity member,
-//                       List<BoardImgEntity> boardImgEntityList,
+                       ItemEntity item,
+                       BoardSecret boardSecret,
                        List<CommentEntity> commentEntityList) {
         this.boardId = boardId;
         this.title = title;
         this.content = content;
         this.member = member;
-//        this.boardImgEntityList = boardImgEntityList;
+        this.item = item;
+        this.boardSecret = boardSecret;
         this.commentEntityList = commentEntityList;
     }
 
     // 게시글 DTO를 엔티티로 변환
-    public static BoardEntity toBoardEntity(BoardDTO board, MemberEntity member) {
+    public static BoardEntity toBoardEntity(BoardDTO board, MemberEntity member, ItemEntity item) {
         BoardEntity boardEntity = BoardEntity.builder()
                 .boardId(board.getBoardId())
                 .title(board.getTitle())
                 .content(board.getContent())
                 .member(member)
+                .item(item)
                 .build();
-
-        // 이미지 처리
-//        List<BoardImgDTO> boardImgDTOList = board.getBoardImgDTOList();
-
-//        for(BoardImgDTO boardImgDTO : boardImgDTOList) {
-//            // 이미지 DTO를 엔티티로 변환
-//            BoardImgEntity boardImgEntity = BoardImgEntity.toBoardImgEntity(boardImgDTO);
-//            boardEntity.boardImgEntityList.add(boardImgEntity);
-//        }
 
         // 댓글 처리
         List<CommentDTO> commentDTOList = board.getCommentDTOList();
@@ -94,24 +97,28 @@ public class BoardEntity extends BaseEntity {
 
     /* 비즈니스 로직 */
     // 게시글 작성
-    public static BoardEntity createBoard(CreateBoardDTO boardDTO, MemberEntity member) {
+    public static BoardEntity createBoard(CreateBoardDTO boardDTO, MemberEntity member, ItemEntity item) {
         return BoardEntity.builder()
                 .title(boardDTO.getTitle())
                 .content(boardDTO.getContent())
                 .member(member)
+                .item(item)
                 .build();
     }
 
     // 게시글 수정
-    public static BoardEntity updateBoard(CreateBoardDTO boardDTO, MemberEntity member
-//                                          List<BoardImgEntity> boardImg
+    public static BoardEntity updateBoard(CreateBoardDTO boardDTO, MemberEntity member, ItemEntity item
     ) {
         return BoardEntity.builder()
                 .title(boardDTO.getTitle())
                 .content(boardDTO.getContent())
-//                .boardImgEntityList(boardImg)
                 .member(member)
+                .item(item)
                 .build();
+    }
+
+    public void changeSecret(BoardSecret secret) {
+        this.boardSecret = secret;
     }
 
 
