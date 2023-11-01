@@ -8,6 +8,7 @@ import com.example.shopping.entity.item.ItemEntity;
 import com.example.shopping.entity.item.ItemImgEntity;
 import com.example.shopping.entity.member.MemberEntity;
 import com.example.shopping.exception.item.ItemException;
+import com.example.shopping.exception.member.UserException;
 import com.example.shopping.repository.board.BoardRepository;
 import com.example.shopping.repository.item.ItemImgRepository;
 import com.example.shopping.repository.item.ItemRepository;
@@ -88,7 +89,7 @@ public class ItemServiceImpl implements ItemService{
 
             return toItemDTO;
         } else {
-            return null;
+            throw new UserException("회원이 없습니다.");
         }
     }
 
@@ -192,7 +193,20 @@ public class ItemServiceImpl implements ItemService{
                         .build();
 
                 //삭제할 이미지가 있다면 이미지만 삭제 - 삭제를 먼저해야 대표이미지가 없을 때 남은 것 중 대표이미지 셋팅가능
-                for(Long imgId : itemDTO.getDelImgId()){
+                //삭제 이미지 id받아오기에서 남아있는 이미지 id받아오기로 바뀌어서 해당 작업 추가
+                List<ItemImgEntity> itemImgs = itemImgRepository.findByItemItemId(itemId);
+                List<Long> itemImgIds = new ArrayList<>();
+                if(itemImgs != null && itemImgs.size() != 0){
+                    //기존 이미지들 확인후
+                    for(ItemImgEntity imgId : itemImgs){
+                        itemImgIds.add(imgId.getItemImgId());
+                    }
+                    //남기는 이미지 제외 - 삭제할 이미지 아이디 추출과정
+                    for(Long imgId : itemDTO.getDelImgId()) {
+                        itemImgIds.remove(imgId);
+                    }
+                }
+                for(Long imgId : itemImgIds){
                     ItemImgEntity itemImg = itemImgRepository.findById(imgId).orElseThrow(EntityNotFoundException::new);
                     findItem.deleteItemImgList(itemImg);
                     String result = s3ItemImgUploaderService.deleteFile(itemImg.getUploadImgPath(), itemImg.getUploadImgName());
@@ -251,7 +265,7 @@ public class ItemServiceImpl implements ItemService{
 
 
             } else {
-                return null;
+                throw  new UserException("이메일이 일치하지 않습니다.");
             }
         } catch (Exception e) {
             throw new ItemException("상품 수정하는 작업을 실패했습니다.");
