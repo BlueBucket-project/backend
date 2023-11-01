@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,25 +18,26 @@ import java.util.List;
 @ToString
 @NoArgsConstructor
 public class BoardDTO {
-    @Schema(description = "게시판 번호", example = "1", required = true)
+    @Schema(description = "문의글 번호", example = "1", required = true)
     private Long boardId;
 
-    @Schema(description = "게시판 제목", required = true)
+    @Schema(description = "문의글 제목", required = true)
+    @NotNull(message = "문의글 제목은 필 수 입력입니다.")
     private String title;
 
-    @Schema(description = "게시판 본문")
+    @Schema(description = "문의글 본문")
     private String content;
 
     @Schema(description = "유저 닉네임")
     private String nickName;
 
-    @Schema(description = "게시글 작성 시간")
+    @Schema(description = "문의글 작성 시간")
     private LocalDateTime regTime;
 
 //    @Schema(description = "게시글 이미지 정보")
 //    private List<BoardImgDTO> boardImgDTOList = new ArrayList<>();
 
-    @Schema(description = "댓글")
+    @Schema(description = "관리자 답변")
     private List<CommentDTO> commentDTOList = new ArrayList<>();
 
 
