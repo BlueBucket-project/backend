@@ -4,7 +4,6 @@ import com.example.shopping.domain.Item.ItemDTO;
 import com.example.shopping.domain.Item.ItemSellStatus;
 import com.example.shopping.entity.Base.BaseTimeEntity;
 import com.example.shopping.entity.board.BoardEntity;
-import com.example.shopping.entity.member.MemberEntity;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,6 +12,7 @@ import lombok.ToString;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity(name = "item")
 @Table
@@ -63,9 +63,11 @@ public class ItemEntity extends BaseTimeEntity {
     // 상품 저장 후 수정할 때 상품 이미지 정보를 저장하는 리스트
     private List<ItemImgEntity> itemImgList = new ArrayList<>();
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
-    private MemberEntity member;
+    //@ManyToOne(fetch = FetchType.LAZY)
+    //@JoinColumn(name = "member_id")
+    //private MemberEntity member;
+    @Column(name="item_seller")
+    private Long itemSeller;
 
     @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("boardId desc")
@@ -82,8 +84,8 @@ public class ItemEntity extends BaseTimeEntity {
                       String itemPlace,
                       String itemReserver,
                       int itemRamount,
-                      List<BoardEntity> boardEntityList,
-                      MemberEntity member) {
+                      Long itemSeller,
+                      List<BoardEntity> boardEntityList) {
         this.itemId = itemId;
         this.itemName = itemName;
         this.price = price;
@@ -95,7 +97,7 @@ public class ItemEntity extends BaseTimeEntity {
         this.itemRamount = itemRamount;
         this.itemReserver = itemReserver;
         this.boardEntityList = boardEntityList;
-        this.member = member;
+        this.itemSeller = itemSeller;
     }
 
     public void itemSell(int cnt, ItemSellStatus status){

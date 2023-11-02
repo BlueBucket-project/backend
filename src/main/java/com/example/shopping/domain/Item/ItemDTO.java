@@ -1,6 +1,5 @@
 package com.example.shopping.domain.Item;
 
-import com.example.shopping.domain.member.ResponseMemberDTO;
 import com.example.shopping.domain.board.BoardDTO;
 import com.example.shopping.entity.board.BoardEntity;
 import com.example.shopping.entity.item.ItemEntity;
@@ -16,6 +15,7 @@ import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @ToString
 @Getter
@@ -64,7 +64,8 @@ public class ItemDTO {
     // 상품 저장 후 수정할 때 상품 이미지 정보를 저장하는 리스트
     private List<ItemImgDTO> itemImgList = new ArrayList<>();
 
-    private ResponseMemberDTO member;
+    @Schema(description = "상품 판매자 아이디")
+    private Long itemSeller;
 
     @Schema(description = "문의글")
     private List<BoardDTO> boardDTOList = new ArrayList<>();
@@ -81,7 +82,7 @@ public class ItemDTO {
                    String sellPlace,
                    String itemReserver,
                    int itemRamount,
-                   ResponseMemberDTO member,
+                   Long itemSeller,
                    List<BoardDTO> boardDTOList,
                    List<ItemImgDTO> itemImgList) {
         this.itemId = itemId;
@@ -97,7 +98,7 @@ public class ItemDTO {
         this.itemRamount =itemRamount;
         this.boardDTOList = boardDTOList;
         this.itemImgList = itemImgList;
-        this.member =member;
+        this.itemSeller = itemSeller;
     }
 
     public static ItemDTO toItemDTO(ItemEntity item) {
@@ -115,7 +116,7 @@ public class ItemDTO {
         // 문의글 처리
         List<BoardEntity> boardEntityList = item.getBoardEntityList();
         List<BoardDTO> boardDTOS = new ArrayList<>();
-        if(!boardEntityList.isEmpty()) {
+        if(boardEntityList != null) {
             for (BoardEntity boardEntity : boardEntityList) {
                 BoardDTO boardDTO = BoardDTO.toBoardDTO(boardEntity);
                 boardDTOS.add(boardDTO);
@@ -130,18 +131,32 @@ public class ItemDTO {
                 .itemDetail(item.getItemDetail())
                 .itemSellStatus(item.getItemSellStatus())
                 .regTime(item.getRegTime())
-                .memberNickName(item.getMember().getNickName())
                 .sellPlace(item.getItemPlace())
                 .stockNumber(item.getStockNumber())
                 .itemReserver(item.getItemReserver())
                 .itemRamount(item.getItemRamount())
                 .itemImgList(itemImgDTOList)
-                .member(ResponseMemberDTO.toMemberDTO(item.getMember()))
+                .itemSeller(item.getItemSeller())
                 .boardDTOList(boardDTOS)
                 .build();
     }
 
+    public void setMemberNickName(String nickName){
+        this.memberNickName = nickName;
+    }
+
     public ItemEntity toEntity(){
+/*
+        List<BoardEntity> boardEntityList = new ArrayList<>();
+        List<BoardDTO> boardDTOS = this.boardDTOList;
+        if(boardDTOS!=null || !boardDTOS.isEmpty()) {
+            for (BoardDTO boardDTO : boardDTOS) {
+                BoardEntity boardEntity = BoardEntity.toBoardEntity(boardDTO);
+                boardEntityList.add(boardEntity);
+            }
+        }
+ */
+
         return  ItemEntity.builder()
                 .itemDetail(this.itemDetail)
                 .itemName(this.itemName)
@@ -150,8 +165,9 @@ public class ItemDTO {
                 .itemReserver(this.itemReserver)
                 .itemSellStatus(this.itemSellStatus)
                 .price(this.price)
-                .member(this.member.toMemberInfoEntity())
+                .itemSeller(this.itemSeller)
                 .stockNumber(this.stockNumber)
+                //.boardEntityList(boardEntityList)
                 .build();
     }
 }

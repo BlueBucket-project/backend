@@ -197,7 +197,12 @@ public class AdminServiceImpl implements AdminService {
                     Page<ItemEntity> items =
                             itemRepository.findByItemSellStatus(pageable, itemSellStatus);
                     log.info("items : {}", items);
-                    return items.map(ItemDTO::toItemDTO);
+
+                    Page<ItemDTO> itemDTO = items.map(ItemDTO::toItemDTO);
+                    for(ItemDTO item : itemDTO){
+                        item.setMemberNickName(memberRepository.findById(item.getItemSeller()).orElseThrow().getNickName());
+                    }
+                    return itemDTO;
                 }
             }
             return null;
@@ -228,6 +233,7 @@ public class AdminServiceImpl implements AdminService {
                 // 존재하는 권한이 관리자인지 체크
                 if (role.equals("ADMIN") || role.equals("ROLE_ADMIN")) {
                     ItemDTO itemDTO = ItemDTO.toItemDTO(findItem);
+                    itemDTO.setMemberNickName(memberRepository.findById(itemDTO.getItemSeller()).orElseThrow().getNickName());
                     return ResponseEntity.ok().body(itemDTO);
                 }
             }
@@ -271,7 +277,7 @@ public class AdminServiceImpl implements AdminService {
             }
 
             // 구매처리 하려는 아이템 셋팅
-            OrderItemEntity orderItem = OrderItemEntity.setOrderItem(item, memberId, item.getMember().getMemberId(), order.getCount());
+            OrderItemEntity orderItem = OrderItemEntity.setOrderItem(item, memberId, item.getItemSeller(), order.getCount());
             itemList.add(orderItem.toOrderItemDTO());
 
             orderInfo = OrderDTO.createOrder(adminId, memberId, itemList);

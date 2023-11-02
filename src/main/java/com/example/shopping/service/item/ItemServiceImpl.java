@@ -47,12 +47,11 @@ public class ItemServiceImpl implements ItemService{
                                       List<MultipartFile> itemFiles,
                                       String memberEmail) throws Exception {
         MemberEntity findUser = memberRepository.findByEmail(memberEmail);
-        List<ItemImgEntity> itemImgEntities = new ArrayList<>();
 
         if(findUser != null) {
             // 상품 등록
             ItemEntity item = ItemEntity.builder()
-                    .member(findUser)
+                    .itemSeller(findUser.getMemberId())
                     .itemName(itemDTO.getItemName())
                     .itemDetail(itemDTO.getItemDetail())
                     // 처음 상품을 등록하면 무조건 SELL 상태 - controller에서 셋팅해서 넘겨줌
@@ -86,7 +85,7 @@ public class ItemServiceImpl implements ItemService{
             //Cascade특징을 활용하여 ItemRepository.save만 진행해도 ItemImg도 같이 인서트됨
             ItemEntity savedItem = itemRepository.save(item);
             ItemDTO toItemDTO = ItemDTO.toItemDTO(savedItem);
-
+            toItemDTO.setMemberNickName(findUser.getNickName());
             return toItemDTO;
         } else {
             throw new UserException("회원이 없습니다.");
@@ -149,6 +148,7 @@ public class ItemServiceImpl implements ItemService{
             } else {
                 itemDTO.getBoardDTOList().addAll(otherBoardDTOList);
             }
+            itemDTO.setMemberNickName(memberRepository.findById(itemDTO.getItemSeller()).orElseThrow().getNickName());
             return itemDTO;
         } catch (EntityNotFoundException e) {
             throw new ItemException("상품이 없습니다. {}, " + e.getMessage());
@@ -174,8 +174,8 @@ public class ItemServiceImpl implements ItemService{
 
 
             // 이메일을 userDetails에서 가져와서 조회한 다음
-            // 회원 이메일과 상품에 담긴 member 엔티티의 이메일과 비교
-            if(findMember.getEmail().equals(findItem.getMember().getEmail())) {
+            // 회원 id와 상품에 담긴 member 엔티티의 id 비교
+            if(findMember.getMemberId().equals(findItem.getItemSeller())) {
                 // 상품 정보 수정
                 findItem = ItemEntity.builder()
                         .itemId(findItem.getItemId())
@@ -185,7 +185,7 @@ public class ItemServiceImpl implements ItemService{
                         .itemSellStatus(findItem.getItemSellStatus())
                         .stockNumber(findItem.getStockNumber())
                         .price(itemDTO.getPrice())
-                        .member(findMember)
+                        .itemSeller(findMember.getMemberId())
                         .itemRamount(findItem.getItemRamount())
                         .itemReserver(findItem.getItemReserver()==null?null:findItem.getItemReserver())
                         .itemImgList(itemImgList)
@@ -260,7 +260,7 @@ public class ItemServiceImpl implements ItemService{
                 }
                 ItemEntity saveItem = itemRepository.save(findItem);
                 ItemDTO toItemDTO = ItemDTO.toItemDTO(saveItem);
-
+                toItemDTO.setMemberNickName(findMember.getNickName());
                 return toItemDTO;
 
 
@@ -289,8 +289,8 @@ public class ItemServiceImpl implements ItemService{
 
         // 이미지 엔티티에 있는 Item엔티티에 담겨있는 id와 조회한 Item엔티티 id와 일치하면 true
         if(imgEntity.getItem().getItemId().equals(findItem.getItemId())) {
-            // 상품 엔티티에 담아져 있는 유저의 이메일과 조회한 유저의 이메일과 일치하면 true
-            if(findItem.getMember().getEmail().equals(findUser.getEmail())) {
+            // SellerId와 MemberId 일치 시 true
+            if(findItem.getItemSeller().equals(findUser.getMemberId())) {
                 itemImgRepository.deleteById(imgEntity.getItemImgId());
                 String result = s3ItemImgUploaderService.deleteFile(uploadFilePath, uuidFileName);
                 log.info("result : " + result);
@@ -346,7 +346,7 @@ public class ItemServiceImpl implements ItemService{
         // 회원 조회
         MemberEntity findUser = memberRepository.findByEmail(memberEmail);
 
-        if(findUser.getEmail().equals(findItem.getMember().getEmail())) {
+        if(findUser.getMemberId().equals(findItem.getItemSeller())) {
             for(ItemImgEntity img : findImg) {
                 String uploadFilePath = img.getUploadImgPath();
                 String uuidFileName = img.getUploadImgName();
@@ -374,7 +374,12 @@ public class ItemServiceImpl implements ItemService{
         Page<ItemEntity> allItem = itemRepository.findAll(pageable);
         // 각 아이템 엔티티를 ItemDTO로 변환합니다.
         // 이 변환은 ItemDTO::toItemDTO 메서드를 사용하여 수행됩니다.
-        return allItem.map(ItemDTO::toItemDTO);
+        Page<ItemDTO> allItemDTO =  allItem.map(ItemDTO::toItemDTO);
+        for(ItemDTO item : allItemDTO){
+            item.setMemberNickName(memberRepository.findById(item.getItemSeller()).orElseThrow().getNickName());
+        }
+
+        return allItemDTO;
     }
 
     // 검색
@@ -413,10 +418,15 @@ public class ItemServiceImpl implements ItemService{
             if(status == null) statusString = "%";
             else statusString = status.toString();
 
-            List<ItemDTO> items = itemRepository.findByConditions(name, detail, startP, endP, place, reserver, statusString).stream().map(ItemDTO::toItemDTO).collect(Collectors.toList());
+            List<ItemDTO> items = itemRepository.findByConditions(name, detail, startP, endP, place, reserver, statusString)
+                                    .stream().map(ItemDTO::toItemDTO).collect(Collectors.toList());
 
             if(items.isEmpty()){
                 throw new EntityNotFoundException("조건에 만족하는 상품이 없습니다.");
+            }
+
+            for(ItemDTO item : items){
+                item.setMemberNickName(memberRepository.findById(item.getItemSeller()).orElseThrow().getNickName());
             }
 
             int start = (int) pageRequest.getOffset();
