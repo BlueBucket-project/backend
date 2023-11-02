@@ -63,25 +63,28 @@ public class ItemServiceImpl implements ItemService{
                     .itemRamount(itemDTO.getItemRamount())
                     .build();
 
-            //업로드할 이미지가 없다면 업로드 안하기 위한 로직
-            if((itemFiles.get(0)).getSize() != 0){
-                // S3에 업로드
-                List<ItemImgDTO> productImg = s3ItemImgUploaderService.upload("product", itemFiles);
+            if(itemFiles.size() != 0){
+                //업로드할 이미지가 없다면 업로드 안하기 위한 로직
+                if((itemFiles.get(0)).getSize() != 0){
+                    // S3에 업로드
+                    List<ItemImgDTO> productImg = s3ItemImgUploaderService.upload("product", itemFiles);
 
-                for (int i = 0; i < productImg.size(); i++) {
-                    ItemImgDTO itemImgDTO = productImg.get(i);
-                    ItemImgEntity imgEntity = ItemImgEntity.builder()
-                            .oriImgName(itemImgDTO.getOriImgName())
-                            .uploadImgPath(itemImgDTO.getUploadImgPath())
-                            .uploadImgUrl(itemImgDTO.getUploadImgUrl())
-                            .uploadImgName(itemImgDTO.getUploadImgName())
-                            .item(item)
-                            .repImgYn(i == 0 ? "Y" : "N")
-                            .build();
+                    for (int i = 0; i < productImg.size(); i++) {
+                        ItemImgDTO itemImgDTO = productImg.get(i);
+                        ItemImgEntity imgEntity = ItemImgEntity.builder()
+                                .oriImgName(itemImgDTO.getOriImgName())
+                                .uploadImgPath(itemImgDTO.getUploadImgPath())
+                                .uploadImgUrl(itemImgDTO.getUploadImgUrl())
+                                .uploadImgName(itemImgDTO.getUploadImgName())
+                                .item(item)
+                                .repImgYn(i == 0 ? "Y" : "N")
+                                .build();
 
-                    item.addItemImgList(imgEntity);
+                        item.addItemImgList(imgEntity);
+                    }
                 }
             }
+
             //Cascade특징을 활용하여 ItemRepository.save만 진행해도 ItemImg도 같이 인서트됨
             ItemEntity savedItem = itemRepository.save(item);
             ItemDTO toItemDTO = ItemDTO.toItemDTO(savedItem);
@@ -183,7 +186,7 @@ public class ItemServiceImpl implements ItemService{
                         .itemDetail(itemDTO.getItemDetail())
                         .itemPlace(itemDTO.getSellPlace())
                         .itemSellStatus(findItem.getItemSellStatus())
-                        .stockNumber(findItem.getStockNumber())
+                        .stockNumber(itemDTO.getStockNumber())
                         .price(itemDTO.getPrice())
                         .itemSeller(findMember.getMemberId())
                         .itemRamount(findItem.getItemRamount())
@@ -211,53 +214,55 @@ public class ItemServiceImpl implements ItemService{
                     findItem.deleteItemImgList(itemImg);
                     String result = s3ItemImgUploaderService.deleteFile(itemImg.getUploadImgPath(), itemImg.getUploadImgName());
                 }
+                if(itemFiles.size() != 0){
+                    //추가 업로드 할 이미지가 있다면 업로드
+                    if((itemFiles.get(0)).getSize() != 0){
+                        List<ItemImgDTO> products = s3ItemImgUploaderService.upload("product", itemFiles);
 
-                //추가 업로드 할 이미지가 있다면 업로드
-                if((itemFiles.get(0)).getSize() != 0){
-                    List<ItemImgDTO> products = s3ItemImgUploaderService.upload("product", itemFiles);
+                        itemImgList = findItem.getItemImgList();
 
-                    itemImgList = findItem.getItemImgList();
+                        //기존 이미지가 없다면 첫 번째 추가 이미지를 대표이미지로 설정
+                        if(itemImgList.isEmpty()){
+                            for (int i = 0; i < products.size(); i++) {
+                                ItemImgDTO itemImgDTO = products.get(i);
+                                ItemImgEntity imgEntity = ItemImgEntity.builder()
+                                        .oriImgName(itemImgDTO.getOriImgName())
+                                        .uploadImgName(itemImgDTO.getUploadImgName())
+                                        .uploadImgPath(itemImgDTO.getUploadImgPath())
+                                        .uploadImgUrl(itemImgDTO.getUploadImgUrl())
+                                        .repImgYn(i == 0 ? "Y" : "N")
+                                        .item(findItem)
+                                        .build();
 
-                    //기존 이미지가 없다면 첫 번째 추가 이미지를 대표이미지로 설정
-                    if(itemImgList.isEmpty()){
-                        for (int i = 0; i < products.size(); i++) {
-                            ItemImgDTO itemImgDTO = products.get(i);
-                            ItemImgEntity imgEntity = ItemImgEntity.builder()
-                                    .oriImgName(itemImgDTO.getOriImgName())
-                                    .uploadImgName(itemImgDTO.getUploadImgName())
-                                    .uploadImgPath(itemImgDTO.getUploadImgPath())
-                                    .uploadImgUrl(itemImgDTO.getUploadImgUrl())
-                                    .repImgYn(i == 0 ? "Y" : "N")
-                                    .item(findItem)
-                                    .build();
-
-                            findItem.addItemImgList(imgEntity);
+                                findItem.addItemImgList(imgEntity);
+                            }
                         }
-                    }
-                    //기존 이미지가 있다면 추가할 이미지들의 대표이미지여부는 N
-                    else{
-                        //기존 이미지 중에 대표이미지여부가 Y인 것이 있는지 확인 후
-                        if(itemImgList.stream().filter(img->img.getRepImgYn().equals("Y")).count() == 0)
-                        {
-                            //하나도 없다면 첫번째 이미지의 대표이미지 플래그값 수정
-                            itemImgList.get(0).changeRepImgY();
-                        }
+                        //기존 이미지가 있다면 추가할 이미지들의 대표이미지여부는 N
+                        else{
+                            //기존 이미지 중에 대표이미지여부가 Y인 것이 있는지 확인 후
+                            if(itemImgList.stream().filter(img->img.getRepImgYn().equals("Y")).count() == 0)
+                            {
+                                //하나도 없다면 첫번째 이미지의 대표이미지 플래그값 수정
+                                itemImgList.get(0).changeRepImgY();
+                            }
 
-                        for (int i = 0; i < products.size(); i++) {
-                            ItemImgDTO itemImgDTO = products.get(i);
-                            ItemImgEntity imgEntity = ItemImgEntity.builder()
-                                    .oriImgName(itemImgDTO.getOriImgName())
-                                    .uploadImgPath(itemImgDTO.getUploadImgPath())
-                                    .uploadImgUrl(itemImgDTO.getUploadImgUrl())
-                                    .uploadImgName(itemImgDTO.getUploadImgName())
-                                    .repImgYn("N")
-                                    .item(findItem)
-                                    .build();
+                            for (int i = 0; i < products.size(); i++) {
+                                ItemImgDTO itemImgDTO = products.get(i);
+                                ItemImgEntity imgEntity = ItemImgEntity.builder()
+                                        .oriImgName(itemImgDTO.getOriImgName())
+                                        .uploadImgPath(itemImgDTO.getUploadImgPath())
+                                        .uploadImgUrl(itemImgDTO.getUploadImgUrl())
+                                        .uploadImgName(itemImgDTO.getUploadImgName())
+                                        .repImgYn("N")
+                                        .item(findItem)
+                                        .build();
 
-                            findItem.addItemImgList(imgEntity);
+                                findItem.addItemImgList(imgEntity);
+                            }
                         }
                     }
                 }
+
                 ItemEntity saveItem = itemRepository.save(findItem);
                 ItemDTO toItemDTO = ItemDTO.toItemDTO(saveItem);
                 toItemDTO.setMemberNickName(findMember.getNickName());
@@ -265,9 +270,13 @@ public class ItemServiceImpl implements ItemService{
 
 
             } else {
-                throw  new UserException("이메일이 일치하지 않습니다.");
+                throw  new UserException("상품을 등록한 본인이 아닙니다.");
             }
-        } catch (Exception e) {
+        }
+        catch(UserException e){
+            throw e;
+        }
+        catch (Exception e) {
             throw new ItemException("상품 수정하는 작업을 실패했습니다.");
         }
     }
@@ -275,64 +284,76 @@ public class ItemServiceImpl implements ItemService{
     // 이미지 삭제
     @Override
     public String removeImg(Long itemId, Long itemImgId, String memberEmail) {
-        // 이미지 조회
-        ItemImgEntity imgEntity = itemImgRepository.findById(itemImgId)
-                .orElseThrow(EntityNotFoundException::new);
-        // 회원 조회
-        MemberEntity findUser = memberRepository.findByEmail(memberEmail);
-        // 상품 조회
-        ItemEntity findItem = itemRepository.findById(itemId)
-                .orElseThrow(EntityNotFoundException::new);
+        try{
+            // 이미지 조회
+            ItemImgEntity imgEntity = itemImgRepository.findById(itemImgId)
+                    .orElseThrow(EntityNotFoundException::new);
+            // 회원 조회
+            MemberEntity findUser = memberRepository.findByEmail(memberEmail);
+            // 상품 조회
+            ItemEntity findItem = itemRepository.findById(itemId)
+                    .orElseThrow(EntityNotFoundException::new);
 
-        String uploadFilePath = imgEntity.getUploadImgPath();
-        String uuidFileName = imgEntity.getUploadImgName();
+            String uploadFilePath = imgEntity.getUploadImgPath();
+            String uuidFileName = imgEntity.getUploadImgName();
 
-        // 이미지 엔티티에 있는 Item엔티티에 담겨있는 id와 조회한 Item엔티티 id와 일치하면 true
-        if(imgEntity.getItem().getItemId().equals(findItem.getItemId())) {
-            // SellerId와 MemberId 일치 시 true
-            if(findItem.getItemSeller().equals(findUser.getMemberId())) {
-                itemImgRepository.deleteById(imgEntity.getItemImgId());
-                String result = s3ItemImgUploaderService.deleteFile(uploadFilePath, uuidFileName);
-                log.info("result : " + result);
+            // 이미지 엔티티에 있는 Item엔티티에 담겨있는 id와 조회한 Item엔티티 id와 일치하면 true
+            if(imgEntity.getItem().getItemId().equals(findItem.getItemId())) {
+                // SellerId와 MemberId 일치 시 true
+                if(findItem.getItemSeller().equals(findUser.getMemberId())) {
+                    itemImgRepository.deleteById(imgEntity.getItemImgId());
+                    String result = s3ItemImgUploaderService.deleteFile(uploadFilePath, uuidFileName);
+                    log.info("result : " + result);
 
-                // 상품 번호로 담겨져있는 이미지 불러옴
-                List<ItemImgEntity> findItemIdImgList = itemImgRepository.findByItemItemId(itemId);
+                    // 상품 번호로 담겨져있는 이미지 불러옴
+                    List<ItemImgEntity> findItemIdImgList = itemImgRepository.findByItemItemId(itemId);
 
-                if(!findItemIdImgList.isEmpty()) {
-                    for (int i = 0; i < findItemIdImgList.size(); i++) {
-                        ItemImgEntity itemImgEntity = findItemIdImgList.get(i);
-                        ItemImgEntity itemImg = ItemImgEntity.builder()
-                                .itemImgId(itemImgEntity.getItemImgId())
-                                .oriImgName(itemImgEntity.getOriImgName())
-                                .uploadImgPath(itemImgEntity.getUploadImgPath())
-                                .uploadImgUrl(itemImgEntity.getUploadImgUrl())
-                                .uploadImgName(itemImgEntity.getUploadImgName())
-                                .repImgYn(i == 0 ? "Y" : "N")
-                                .item(findItem)
-                                .build();
-                        ItemImgEntity saveImg = itemImgRepository.save(itemImg);
-                        log.info("img : " + saveImg);
-                        findItemIdImgList.add(saveImg);
+                    if(!findItemIdImgList.isEmpty()) {
+                        for (int i = 0; i < findItemIdImgList.size(); i++) {
+                            ItemImgEntity itemImgEntity = findItemIdImgList.get(i);
+                            ItemImgEntity itemImg = ItemImgEntity.builder()
+                                    .itemImgId(itemImgEntity.getItemImgId())
+                                    .oriImgName(itemImgEntity.getOriImgName())
+                                    .uploadImgPath(itemImgEntity.getUploadImgPath())
+                                    .uploadImgUrl(itemImgEntity.getUploadImgUrl())
+                                    .uploadImgName(itemImgEntity.getUploadImgName())
+                                    .repImgYn(i == 0 ? "Y" : "N")
+                                    .item(findItem)
+                                    .build();
+                            ItemImgEntity saveImg = itemImgRepository.save(itemImg);
+                            log.info("img : " + saveImg);
+                            findItemIdImgList.add(saveImg);
+                        }
+                    } else {
+                        // 모든 이미지를 삭제했으므로 상품의 이미지 목록을 비웁니다.
+                        findItemIdImgList = new ArrayList<>();
                     }
-                } else {
-                    // 모든 이미지를 삭제했으므로 상품의 이미지 목록을 비웁니다.
-                    findItemIdImgList = new ArrayList<>();
+                    findItem = ItemEntity.builder()
+                            .itemId(findItem.getItemId())
+                            .itemName(findItem.getItemName())
+                            .itemDetail(findItem.getItemDetail())
+                            .itemPlace(findItem.getItemPlace())
+                            .stockNumber(findItem.getStockNumber())
+                            .price(findItem.getPrice())
+                            .itemImgList(findItemIdImgList)
+                            .build();
+                    ItemEntity saveItem = itemRepository.save(findItem);
+                    log.info("item : " +saveItem);
+                    return result;
                 }
-                findItem = ItemEntity.builder()
-                        .itemId(findItem.getItemId())
-                        .itemName(findItem.getItemName())
-                        .itemDetail(findItem.getItemDetail())
-                        .itemPlace(findItem.getItemPlace())
-                        .stockNumber(findItem.getStockNumber())
-                        .price(findItem.getPrice())
-                        .itemImgList(findItemIdImgList)
-                        .build();
-                ItemEntity saveItem = itemRepository.save(findItem);
-                log.info("item : " +saveItem);
-                return result;
+            }
+            else{
+                throw  new UserException("상품을 등록한 본인이 아닙니다.");
             }
         }
-        return "삭제를 실패했습니다.";
+        catch(UserException e){
+            throw e;
+        }
+        catch (Exception e) {
+            throw new ItemException("상품 삭제에 실패했습니다.");
+        }
+
+        return "상품삭제에 성공하였습니다.";
     }
 
     // 상품 삭제
