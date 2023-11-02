@@ -76,7 +76,7 @@ public class OrderServiceTest {
             .stockNumber(3)
             .itemImgList(null)
             .boardEntityList(new ArrayList<>())
-            .member(member)
+            .itemSeller(1L)
             .build();
 
     ItemEntity newItem2 = ItemEntity.builder()
@@ -90,7 +90,7 @@ public class OrderServiceTest {
             .price(30000)
             .stockNumber(3)
             .itemImgList(null)
-            .member(member)
+            .itemSeller(1L)
             .boardEntityList(new ArrayList<>())
             .build();
 
@@ -105,7 +105,7 @@ public class OrderServiceTest {
             .price(30000)
             .stockNumber(1)
             .itemImgList(null)
-            .member(member)
+            .itemSeller(1L)
             .boardEntityList(new ArrayList<>())
             .build();
 
@@ -120,7 +120,7 @@ public class OrderServiceTest {
             .price(30000)
             .stockNumber(1)
             .itemImgList(null)
-            .member(member2)
+            .itemSeller(2L)
             .boardEntityList(new ArrayList<>())
             .build();
 

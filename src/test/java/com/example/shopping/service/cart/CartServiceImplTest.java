@@ -46,6 +46,7 @@ public class CartServiceImplTest {
     void mockMemberRepositoryTest(){
 
         MemberEntity member = MemberEntity.builder()
+                .memberId(1L)
                 .memberName("테스트유저")
                 .memberPw("test123!@#")
                 .email("test123@test.com")
@@ -85,7 +86,7 @@ public class CartServiceImplTest {
             .price(10000)
             .stockNumber(3)
             .itemImgList(null)
-            .member(member)
+            .itemSeller(1L)
             .build();
 
     ItemEntity newItem2 = ItemEntity.builder()
@@ -99,7 +100,7 @@ public class CartServiceImplTest {
             .price(30000)
             .stockNumber(3)
             .itemImgList(null)
-            .member(member)
+            .itemSeller(1L)
             .build();
 
     ItemEntity newItem3 = ItemEntity.builder()
@@ -113,7 +114,7 @@ public class CartServiceImplTest {
             .price(30000)
             .stockNumber(1)
             .itemImgList(null)
-            .member(member)
+            .itemSeller(1L)
             .build();
 
     //구매자 장바구니
