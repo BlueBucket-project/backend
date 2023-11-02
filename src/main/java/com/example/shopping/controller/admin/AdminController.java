@@ -4,7 +4,9 @@ import com.example.shopping.domain.Item.ItemDTO;
 import com.example.shopping.domain.Item.ItemSellStatus;
 import com.example.shopping.domain.order.OrderDTO;
 import com.example.shopping.domain.order.OrderMainDTO;
+import com.example.shopping.entity.item.ItemEntity;
 import com.example.shopping.service.admin.AdminServiceImpl;
+import com.example.shopping.service.item.ItemServiceImpl;
 import com.example.shopping.service.order.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -35,6 +37,7 @@ import java.util.Map;
 @Tag(name = "admin", description = "관리자 API입니다.")
 public class AdminController {
     private final AdminServiceImpl adminService;
+    private final ItemServiceImpl itemService;
 
     // 상품 삭제
     @DeleteMapping("/{itemId}")
@@ -73,7 +76,7 @@ public class AdminController {
         return result;
     }
 
-    // 관리자 페이지
+    // 관리자 상품 전체 보기 페이지
     @GetMapping("")
     @Tag(name = "admin")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
@@ -151,5 +154,46 @@ public class AdminController {
         }
 
         return ResponseEntity.ok().body(orderItem);
+    }
+
+    // 관리자 기준 상품 조건으로 보기
+    @GetMapping("/search")
+    @Tag(name = "admin")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<?> searchItemsConditions(@PageableDefault(sort = "itemId", direction = Sort.Direction.DESC)
+                                                   Pageable pageable,
+                                                   @RequestParam(required = false) String itemName,
+                                                   @RequestParam(required = false) String itemPlace,
+                                                   @RequestParam(required = false) String itemReserver,
+                                                   @RequestParam(required = false) ItemSellStatus itemSellStatus
+    ){
+
+        Page<ItemDTO> items = null;
+
+        try{
+            items = itemService.searchItemsConditions(pageable, itemName, null, null, null, itemPlace, itemReserver, itemSellStatus);
+            Map<String, Object> response = new HashMap<>();
+            // 현재 페이지의 아이템 목록
+            response.put("items", items.getContent());
+            // 현재 페이지 번호
+            response.put("nowPageNumber", items.getNumber());
+            // 전체 페이지 수
+            response.put("totalPage", items.getTotalPages());
+            // 한 페이지에 출력되는 데이터 개수
+            response.put("pageSize", items.getSize());
+            // 다음 페이지 존재 여부
+            response.put("hasNextPage", items.hasNext());
+            // 이전 페이지 존재 여부
+            response.put("hasPreviousPage", items.hasPrevious());
+            // 첫 번째 페이지 여부
+            response.put("isFirstPage", items.isFirst());
+            // 마지막 페이지 여부
+            response.put("isLastPage", items.isLast());
+
+            return ResponseEntity.ok().body(response);
+        }
+        catch (Exception e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }

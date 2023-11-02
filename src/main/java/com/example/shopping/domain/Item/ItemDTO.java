@@ -1,5 +1,7 @@
 package com.example.shopping.domain.Item;
 
+import com.example.shopping.domain.board.BoardDTO;
+import com.example.shopping.entity.board.BoardEntity;
 import com.example.shopping.entity.item.ItemEntity;
 import com.example.shopping.entity.item.ItemImgEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -13,6 +15,7 @@ import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @ToString
 @Getter
@@ -61,6 +64,12 @@ public class ItemDTO {
     // 상품 저장 후 수정할 때 상품 이미지 정보를 저장하는 리스트
     private List<ItemImgDTO> itemImgList = new ArrayList<>();
 
+    @Schema(description = "상품 판매자 아이디")
+    private Long itemSeller;
+
+    @Schema(description = "문의글")
+    private List<BoardDTO> boardDTOList = new ArrayList<>();
+
     @Builder
     public ItemDTO(Long itemId,
                    String itemName,
@@ -73,6 +82,8 @@ public class ItemDTO {
                    String sellPlace,
                    String itemReserver,
                    int itemRamount,
+                   Long itemSeller,
+                   List<BoardDTO> boardDTOList,
                    List<ItemImgDTO> itemImgList) {
         this.itemId = itemId;
         this.itemName = itemName;
@@ -85,10 +96,13 @@ public class ItemDTO {
         this.sellPlace = sellPlace;
         this.itemReserver = itemReserver;
         this.itemRamount =itemRamount;
+        this.boardDTOList = boardDTOList;
         this.itemImgList = itemImgList;
+        this.itemSeller = itemSeller;
     }
 
     public static ItemDTO toItemDTO(ItemEntity item) {
+        // 이미지 처리
         List<ItemImgEntity> itemImgEntities = item.getItemImgList();
         List<ItemImgDTO> itemImgDTOList = new ArrayList<>();
 
@@ -99,25 +113,51 @@ public class ItemDTO {
             }
         }
 
+        // 문의글 처리
+        List<BoardEntity> boardEntityList = item.getBoardEntityList();
+        List<BoardDTO> boardDTOS = new ArrayList<>();
+        if(boardEntityList != null) {
+            for (BoardEntity boardEntity : boardEntityList) {
+                BoardDTO boardDTO = BoardDTO.toBoardDTO(boardEntity);
+                boardDTOS.add(boardDTO);
+            }
+        }
+
+        // 상품 정보와 이미지 그리고 문의글을 리턴
         return ItemDTO.builder()
                 .itemId(item.getItemId())
                 .itemName(item.getItemName())
                 .price(item.getPrice())
                 .itemDetail(item.getItemDetail())
                 .itemSellStatus(item.getItemSellStatus())
-                .regTime(LocalDateTime.now())
-                .memberNickName(item.getMember().getNickName())
+                .regTime(item.getRegTime())
                 .sellPlace(item.getItemPlace())
                 .stockNumber(item.getStockNumber())
                 .itemReserver(item.getItemReserver())
                 .itemRamount(item.getItemRamount())
                 .itemImgList(itemImgDTOList)
+                .itemSeller(item.getItemSeller())
+                .boardDTOList(boardDTOS)
                 .build();
     }
 
+    public void setMemberNickName(String nickName){
+        this.memberNickName = nickName;
+    }
+
     public ItemEntity toEntity(){
+/*
+        List<BoardEntity> boardEntityList = new ArrayList<>();
+        List<BoardDTO> boardDTOS = this.boardDTOList;
+        if(boardDTOS!=null || !boardDTOS.isEmpty()) {
+            for (BoardDTO boardDTO : boardDTOS) {
+                BoardEntity boardEntity = BoardEntity.toBoardEntity(boardDTO);
+                boardEntityList.add(boardEntity);
+            }
+        }
+ */
+
         return  ItemEntity.builder()
-                .itemId(this.itemId)
                 .itemDetail(this.itemDetail)
                 .itemName(this.itemName)
                 .itemPlace(this.sellPlace)
@@ -125,7 +165,9 @@ public class ItemDTO {
                 .itemReserver(this.itemReserver)
                 .itemSellStatus(this.itemSellStatus)
                 .price(this.price)
+                .itemSeller(this.itemSeller)
                 .stockNumber(this.stockNumber)
+                //.boardEntityList(boardEntityList)
                 .build();
     }
 }

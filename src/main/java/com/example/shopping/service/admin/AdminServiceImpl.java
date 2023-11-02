@@ -6,7 +6,6 @@ import com.example.shopping.domain.order.OrderDTO;
 import com.example.shopping.domain.order.OrderItemDTO;
 import com.example.shopping.domain.order.OrderMainDTO;
 import com.example.shopping.entity.board.BoardEntity;
-import com.example.shopping.entity.board.BoardImgEntity;
 import com.example.shopping.entity.comment.CommentEntity;
 import com.example.shopping.entity.item.ItemEntity;
 import com.example.shopping.entity.item.ItemImgEntity;
@@ -14,7 +13,6 @@ import com.example.shopping.entity.member.MemberEntity;
 import com.example.shopping.entity.order.OrderItemEntity;
 import com.example.shopping.exception.item.ItemException;
 import com.example.shopping.exception.service.OutOfStockException;
-import com.example.shopping.repository.board.BoardImgRepository;
 import com.example.shopping.repository.board.BoardRepository;
 import com.example.shopping.repository.comment.CommentRepository;
 import com.example.shopping.repository.item.ItemImgRepository;
@@ -58,7 +56,6 @@ public class AdminServiceImpl implements AdminService {
     private final S3ItemImgUploaderService s3ItemImgUploaderService;
     // 게시글 관련
     private final BoardRepository boardRepository;
-    private final BoardImgRepository boardImgRepository;
     // 댓글 관련
     private final CommentRepository commentRepository;
 
@@ -121,25 +118,16 @@ public class AdminServiceImpl implements AdminService {
             // 게시글 조회
             BoardEntity findBoard = boardRepository.findById(boardId)
                     .orElseThrow(EntityNotFoundException::new);
-            // 게시글 이미지 조회
-            List<BoardImgEntity> findBoardImg = boardImgRepository.findByBoardBoardId(boardId);
 
             // 권한이 있는지 체크
             if (!collectAuthorities.isEmpty()) {
                 for (String role : collectAuthorities) {
                     // 존재하는 권한이 관리자인지 체크
                     if (role.equals("ADMIN") || role.equals("ROLE_ADMIN")) {
-                        // 삭제하는데 이미지를 풀어놓는 이유는
-                        // S3에 삭제할 때 넘겨줘야 할 매개변수때문이다.
-                        for (BoardImgEntity boardImgEntity : findBoardImg) {
-                            String uploadImgPath = boardImgEntity.getUploadImgPath();
-                            String uploadImgName = boardImgEntity.getUploadImgName();
-
-                            // 게시글 정보 삭제
-                            boardRepository.deleteByBoardId(findBoard.getBoardId());
-                            // S3에서 이미지 삭제
-                            return "상품을 삭제 했습니다.";
-                        }
+                        // 게시글 정보 삭제
+                        boardRepository.deleteByBoardId(findBoard.getBoardId());
+                        // S3에서 이미지 삭제
+                        return "게시글을 삭제 했습니다.";
                     }
                 }
             }
@@ -209,7 +197,12 @@ public class AdminServiceImpl implements AdminService {
                     Page<ItemEntity> items =
                             itemRepository.findByItemSellStatus(pageable, itemSellStatus);
                     log.info("items : {}", items);
-                    return items.map(ItemDTO::toItemDTO);
+
+                    Page<ItemDTO> itemDTO = items.map(ItemDTO::toItemDTO);
+                    for(ItemDTO item : itemDTO){
+                        item.setMemberNickName(memberRepository.findById(item.getItemSeller()).orElseThrow().getNickName());
+                    }
+                    return itemDTO;
                 }
             }
             return null;
@@ -240,6 +233,7 @@ public class AdminServiceImpl implements AdminService {
                 // 존재하는 권한이 관리자인지 체크
                 if (role.equals("ADMIN") || role.equals("ROLE_ADMIN")) {
                     ItemDTO itemDTO = ItemDTO.toItemDTO(findItem);
+                    itemDTO.setMemberNickName(memberRepository.findById(itemDTO.getItemSeller()).orElseThrow().getNickName());
                     return ResponseEntity.ok().body(itemDTO);
                 }
             }
@@ -283,7 +277,7 @@ public class AdminServiceImpl implements AdminService {
             }
 
             // 구매처리 하려는 아이템 셋팅
-            OrderItemEntity orderItem = OrderItemEntity.setOrderItem(item, memberId, item.getMember().getMemberId(), order.getCount());
+            OrderItemEntity orderItem = OrderItemEntity.setOrderItem(item, memberId, item.getItemSeller(), order.getCount());
             itemList.add(orderItem.toOrderItemDTO());
 
             orderInfo = OrderDTO.createOrder(adminId, memberId, itemList);

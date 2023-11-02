@@ -10,7 +10,8 @@ spring:
         - prod
     active: ${profile}
   devtools:
-    livereload: true
+    livereload:
+      enabled: true
   restart:
     enabled: true
 
@@ -33,13 +34,12 @@ spring:
 logging:
   level:
     org.hibernate.SQL: debug
-#---
-#spring:
-#  config:
-#    activate:
-#      on-profile: local
-#---
-#spring:
-#  config:
-#    activate:
-#      on-profile: prod
+
+---
+#multipart upload파일 용량설정
+#default : 1MB
+spring:
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
