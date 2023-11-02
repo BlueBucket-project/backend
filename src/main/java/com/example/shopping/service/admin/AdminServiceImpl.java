@@ -6,7 +6,6 @@ import com.example.shopping.domain.order.OrderDTO;
 import com.example.shopping.domain.order.OrderItemDTO;
 import com.example.shopping.domain.order.OrderMainDTO;
 import com.example.shopping.entity.board.BoardEntity;
-import com.example.shopping.entity.comment.CommentEntity;
 import com.example.shopping.entity.item.ItemEntity;
 import com.example.shopping.entity.item.ItemImgEntity;
 import com.example.shopping.entity.member.MemberEntity;
@@ -14,7 +13,6 @@ import com.example.shopping.entity.order.OrderItemEntity;
 import com.example.shopping.exception.item.ItemException;
 import com.example.shopping.exception.service.OutOfStockException;
 import com.example.shopping.repository.board.BoardRepository;
-import com.example.shopping.repository.comment.CommentRepository;
 import com.example.shopping.repository.item.ItemImgRepository;
 import com.example.shopping.repository.item.ItemRepository;
 import com.example.shopping.repository.member.MemberRepository;
@@ -47,6 +45,7 @@ public class AdminServiceImpl implements AdminService {
     private final ItemRepository itemRepository;
     private final ItemImgRepository itemImgRepository;
 
+    // 유저 관련
     private final MemberRepository memberRepository;
 
     // 주문 관련
@@ -56,8 +55,6 @@ public class AdminServiceImpl implements AdminService {
     private final S3ItemImgUploaderService s3ItemImgUploaderService;
     // 게시글 관련
     private final BoardRepository boardRepository;
-    // 댓글 관련
-    private final CommentRepository commentRepository;
 
     // 상품 삭제
     @Override
@@ -137,44 +134,6 @@ public class AdminServiceImpl implements AdminService {
         }
     }
 
-    // 댓글 삭제
-    @Override
-    public String removeComment(Long boardId, Long commentId, UserDetails userDetails) {
-        try {
-            // 삭제할 권한이 있는지 확인
-            // userDetails에서 권한을 가져오기
-            Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
-            // GrantedAuthority 타입의 권한을 List<String>으로 담아줌
-            List<String> collectAuthorities = authorities.stream()
-                    .map(GrantedAuthority::getAuthority)
-                    .collect(Collectors.toList());
-
-            // 게시글 조회
-            BoardEntity findBoard = boardRepository.deleteByBoardId(boardId);
-
-            // 댓글 조회
-            CommentEntity findComment = commentRepository.findById(commentId)
-                    .orElseThrow(EntityNotFoundException::new);
-
-            // 권한이 있는지 체크
-            if (!collectAuthorities.isEmpty()) {
-                for (String role : collectAuthorities) {
-                    // 존재하는 권한이 관리자인지 체크
-                    if (role.equals("ADMIN") || role.equals("ROLE_ADMIN")) {
-                        // 댓글에 담긴 게시글의 아이디와 게시글 자체 아이디가 일치할 때 true
-                        if(findComment.getBoard().getBoardId().equals(findBoard.getBoardId())) {
-                            commentRepository.deleteById(findComment.getCommentId());
-                            return "댓글을 삭제했습니다.";
-                        }
-                    }
-                }
-            }
-            return "댓글 삭제 권한이 없습니다.";
-        } catch (Exception e) {
-            return e.getMessage();
-        }
-    }
-
 
     // 상품 전체 페이지 조회
     @Override
@@ -243,8 +202,6 @@ public class AdminServiceImpl implements AdminService {
         }
     }
 
-
-    @Transactional
     public OrderDTO orderItem(List<OrderMainDTO> orders, String adminEmail){
 
         String reserver = orders.get(0).getItemReserver();

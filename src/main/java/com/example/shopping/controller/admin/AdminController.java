@@ -4,15 +4,12 @@ import com.example.shopping.domain.Item.ItemDTO;
 import com.example.shopping.domain.Item.ItemSellStatus;
 import com.example.shopping.domain.order.OrderDTO;
 import com.example.shopping.domain.order.OrderMainDTO;
-import com.example.shopping.entity.item.ItemEntity;
 import com.example.shopping.service.admin.AdminServiceImpl;
 import com.example.shopping.service.item.ItemServiceImpl;
-import com.example.shopping.service.order.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -59,19 +56,6 @@ public class AdminController {
     public String removeBoard(@PathVariable Long boardId,
                              @AuthenticationPrincipal UserDetails userDetails) {
         String result = adminService.removeBoard(boardId, userDetails);
-        log.info("result : " + result);
-        return result;
-    }
-
-    // 댓글 삭제
-    @DeleteMapping("/{boardId}/{commentId}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @Tag(name = "admin")
-    @Operation(summary = "댓글 삭제", description = "관리자가 댓글을 삭제하는 API입니다.")
-    public String removeComment(@PathVariable Long boardId,
-                                @PathVariable Long commentId,
-                                @AuthenticationPrincipal UserDetails userDetails) {
-        String result = adminService.removeComment(boardId, commentId, userDetails);
         log.info("result : " + result);
         return result;
     }

@@ -16,6 +16,4 @@ public interface AdminService {
     Page<ItemDTO> superitendItem(Pageable pageable, UserDetails userDetails, ItemSellStatus itemSellStatus);
     // 상품 보기
     ResponseEntity<ItemDTO> getItem(Long itemId, UserDetails userDetails);
-    // 댓글 삭제
-    String removeComment(Long boardId, Long commentId, UserDetails userDetails);
 }
