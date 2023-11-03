@@ -52,6 +52,8 @@ dependencies {
     implementation 'io.springfox:springfox-boot-starter:3.0.0'
     // AWS S3
     implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+    // 테스트용 h2 가상 메모리
+    runtimeOnly 'com.h2database:h2'
 }
 jar {
     // ~~plain.jar파일은 생성되지 않게
