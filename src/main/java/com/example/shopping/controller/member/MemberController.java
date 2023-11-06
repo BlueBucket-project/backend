@@ -168,7 +168,8 @@ public class MemberController {
             ,@AuthenticationPrincipal UserDetails userDetails) {
         List<OrderItemDTO> orders = new ArrayList<>();
         try {
-            orders = orderService.getOrders(findEmail);
+            String email = userDetails.getUsername();
+            orders = orderService.getOrders(findEmail, email);
 
         } catch (Exception e) {
             return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);

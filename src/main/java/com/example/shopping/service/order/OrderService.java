@@ -14,7 +14,7 @@ public interface OrderService {
     //adminService로 이동
     //OrderDTO orderItem(List<OrderMainDTO> order, String adminEmail);
 
-    List<OrderItemDTO> getOrders(String email);
+    List<OrderItemDTO> getOrders(String email, String user);
 
     Page<OrderItemDTO> getOrdersPage(Pageable pageable, String email);
 

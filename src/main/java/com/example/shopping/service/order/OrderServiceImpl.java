@@ -6,6 +6,7 @@ import com.example.shopping.domain.order.OrderItemDTO;
 
 import com.example.shopping.entity.member.MemberEntity;
 
+import com.example.shopping.exception.member.UserException;
 import com.example.shopping.repository.member.MemberRepository;
 import com.example.shopping.repository.order.OrderItemRepository;
 import com.example.shopping.repository.order.OrderRepository;
@@ -30,7 +31,11 @@ public class OrderServiceImpl implements  OrderService{
 
     //회원 주문조회
     @Override
-    public List<OrderItemDTO> getOrders(String email) {
+    public List<OrderItemDTO> getOrders(String email, String user) {
+        MemberEntity authUser = memberRepository.findByEmail(user);
+        if(authUser == null)
+            throw new UserException("유저가 등록되어 있지 않습니다.");
+
         //email로 order_id조회하여 판매된 내역 보여줌
         MemberEntity member = memberRepository.findByEmail(email);
 
