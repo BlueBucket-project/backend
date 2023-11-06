@@ -227,11 +227,7 @@ public class AdminServiceImpl implements AdminService {
                 throw new ItemException("예약된 물품이 아니라 구매처리 할 수 없습니다.");
             }
 
-<<<<<<< HEAD
-            if (item.getItemReserver() != order.getItemReserver()) {
-=======
             if(item.getItemReserver() != orderMember.getEmail()){
->>>>>>> 559703ff86ac3e10dae9d10a317a13249399a834
                 //throw 구매자와 예약한사람이 달라 판매 못함
                 throw new ItemException("예약자와 현재 구매하려는 사람이 달라 구매처리 할 수 없습니다.");
             }
