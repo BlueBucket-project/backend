@@ -1,6 +1,7 @@
 package com.example.shopping.service.board;
 
 import com.example.shopping.domain.board.BoardDTO;
+import com.example.shopping.domain.board.BoardSecret;
 import com.example.shopping.domain.board.CreateBoardDTO;
 import com.example.shopping.entity.board.BoardEntity;
 import com.example.shopping.entity.comment.CommentEntity;
@@ -11,6 +12,7 @@ import com.example.shopping.repository.item.ItemRepository;
 import com.example.shopping.repository.member.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -46,9 +48,15 @@ public class BoardServiceImpl implements BoardService {
         if (findUser != null) {
             // 작성할 문의글(제목, 내용), 유저 정보, 해당 상품의 정보를 넘겨준다.
             BoardEntity boardEntity = BoardEntity.createBoard(boardDTO, findUser, findItem);
+            // 게시글은 상품의 상세페이지에 있으므로 연관관계 맺은 상품에 넣어줘야 한다.
+            findItem.getBoardEntityList().add(boardEntity);
+            itemRepository.save(findItem);
 
-            BoardEntity saveBoard = boardRepository.save(boardEntity);
-            BoardDTO returnBoard = BoardDTO.toBoardDTO(saveBoard);
+            // id도 프론트에 반환하기 위해서 조회해서 가져온다.
+            BoardEntity search = boardRepository.find(boardEntity);
+            // 리턴해줄 DTO로 변환
+            BoardDTO returnBoard = BoardDTO.toBoardDTO(search);
+
             return ResponseEntity.ok().body(returnBoard);
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("회원이 없습니다.");
@@ -64,7 +72,7 @@ public class BoardServiceImpl implements BoardService {
         // 유저 조회
         MemberEntity findUser = memberRepository.findByEmail(memberEmail);
 
-        if(findUser.getEmail().equals(findBoard.getMember().getEmail())) {
+        if (findUser.getEmail().equals(findBoard.getMember().getEmail())) {
             // 게시글 삭제
             boardRepository.deleteById(boardId);
             return "게시글을 삭제했습니다.";
@@ -87,7 +95,7 @@ public class BoardServiceImpl implements BoardService {
                 .orElseThrow(EntityNotFoundException::new);
 
         // 문의글을 작성할 때 등록된 이메일이 받아온 이메일이 맞아야 true
-        if(findUser.getEmail().equals(findBoard.getMember().getEmail())) {
+        if (findUser.getEmail().equals(findBoard.getMember().getEmail())) {
             BoardDTO boardDTO = BoardDTO.toBoardDTO(findBoard);
             return ResponseEntity.ok().body(boardDTO);
         } else {
@@ -108,21 +116,11 @@ public class BoardServiceImpl implements BoardService {
             // 유저 조회
             MemberEntity findUser = memberRepository.findByEmail(memberEmail);
             log.info("유저 : " + findUser);
-            // 댓글 가져오기
-            List<CommentEntity> commentEntityList = findBoard.getCommentEntityList();
 
             // 게시글을 등록한 이메일이 맞다면 true
             if (findUser.getEmail().equals(findBoard.getMember().getEmail())) {
-                for (CommentEntity commentEntity : commentEntityList) {
-                    // 수정할 내용, 유저정보, 게시글을 작성할 때 받은 상품의 정보를 넘겨준다.
-                    findBoard = BoardEntity.updateBoard(boardDTO, findUser, findBoard.getItem());
-                    if(commentEntity != null) {
-                        // 댓글을 추가해준다.
-                        findBoard.getCommentEntityList().add(commentEntity);
-                    } else {
-                        findBoard.getCommentEntityList().add(null);
-                    }
-                }
+                // 수정할 내용, 유저정보, 게시글을 작성할 때 받은 상품의 정보를 넘겨준다.
+                findBoard = BoardEntity.updateBoard(boardDTO, findUser, findBoard.getItem());
             }
             BoardEntity saveBoard = boardRepository.save(findBoard);
             BoardDTO returnBoard = BoardDTO.toBoardDTO(saveBoard);
@@ -132,5 +130,21 @@ public class BoardServiceImpl implements BoardService {
         }
     }
 
+    // 작성자의 문의글 보기
+    @Transactional(readOnly = true)
+    @Override
+    public Page<BoardDTO> getBoards(String memberEmail, Pageable pageable, String searchKeyword) {
+
+        Page<BoardEntity> findAllBoards;
+        if(StringUtils.isNotBlank(searchKeyword)) {
+            // 작성자의 문의글을 조회해온다.
+            findAllBoards = boardRepository.findByMemberEmailAndTitleContaining(memberEmail, pageable, searchKeyword);
+        } else {
+            findAllBoards = boardRepository.findAllByMemberEmail(memberEmail, pageable);
+        }
+        // 작성자의 모든 글은 본인 글이니 볼 수 있도록 상태를 바꿔준다.
+        findAllBoards.forEach(board -> board.changeSecret(BoardSecret.UN_ROCK));
+        return findAllBoards.map(BoardDTO::toBoardDTO);
+    }
 
 }
