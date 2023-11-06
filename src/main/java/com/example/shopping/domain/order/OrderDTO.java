@@ -27,7 +27,7 @@ public class OrderDTO {
     @Schema(description = "주문결제자")
     private Long orderAdmin;
 
-    @Schema(description = "구매자닉네임")
+    @Schema(description = "구매자아이디")
     private Long orderMember;
 
     private List<OrderItemDTO> orderItem;

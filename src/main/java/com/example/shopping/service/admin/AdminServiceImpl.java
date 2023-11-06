@@ -204,8 +204,8 @@ public class AdminServiceImpl implements AdminService {
 
     public OrderDTO orderItem(List<OrderMainDTO> orders, String adminEmail){
 
-        String reserver = orders.get(0).getItemReserver();
-        Long memberId = memberRepository.findByEmail(reserver).getMemberId();
+        Long memberId = orders.get(0).getItemReserver();
+        MemberEntity orderMember = memberRepository.findById(memberId).orElseThrow();
         Long adminId = memberRepository.findByEmail(adminEmail).getMemberId();
 
         //구매하려는 상품템리스트
@@ -223,7 +223,7 @@ public class AdminServiceImpl implements AdminService {
                 throw new ItemException("예약된 물품이 아니라 구매처리 할 수 없습니다.");
             }
 
-            if(item.getItemReserver() != order.getItemReserver()){
+            if(item.getItemReserver() != orderMember.getEmail()){
                 //throw 구매자와 예약한사람이 달라 판매 못함
                 throw new ItemException("예약자와 현재 구매하려는 사람이 달라 구매처리 할 수 없습니다.");
             }
@@ -247,7 +247,7 @@ public class AdminServiceImpl implements AdminService {
             OrderItemDTO savedOrderItem = orderItemRepository.save(savedItem, savedOrder);
 
             // Member-point 추가
-            MemberEntity member = memberRepository.findByEmail(reserver);
+            MemberEntity member = memberRepository.findByEmail(orderMember.getEmail());
             member.addPoint(savedOrderItem.getItemPrice() * savedOrderItem.getItemAmount());
             memberRepository.save(member);
 
