@@ -1,7 +1,10 @@
 package com.example.shopping.service.admin;
 
+import com.example.shopping.config.jwt.JwtAuthenticationEntryPoint;
 import com.example.shopping.domain.Item.ItemDTO;
 import com.example.shopping.domain.Item.ItemSellStatus;
+import com.example.shopping.domain.board.BoardDTO;
+import com.example.shopping.domain.board.BoardSecret;
 import com.example.shopping.domain.order.OrderDTO;
 import com.example.shopping.domain.order.OrderItemDTO;
 import com.example.shopping.domain.order.OrderMainDTO;
@@ -21,6 +24,7 @@ import com.example.shopping.repository.order.OrderRepository;
 import com.example.shopping.service.s3.S3ItemImgUploaderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -139,8 +143,8 @@ public class AdminServiceImpl implements AdminService {
     @Override
     @Transactional(readOnly = true)
     public Page<ItemDTO> superitendItem(Pageable pageable,
-                                                  UserDetails userDetails,
-                                                  ItemSellStatus itemSellStatus) {
+                                        UserDetails userDetails,
+                                        ItemSellStatus itemSellStatus) {
         try {
             // userDetails에서 권한을 가져오기
             Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
@@ -158,7 +162,7 @@ public class AdminServiceImpl implements AdminService {
                     log.info("items : {}", items);
 
                     Page<ItemDTO> itemDTO = items.map(ItemDTO::toItemDTO);
-                    for(ItemDTO item : itemDTO){
+                    for (ItemDTO item : itemDTO) {
                         item.setMemberNickName(memberRepository.findById(item.getItemSeller()).orElseThrow().getNickName());
                     }
                     return itemDTO;
@@ -202,7 +206,7 @@ public class AdminServiceImpl implements AdminService {
         }
     }
 
-    public OrderDTO orderItem(List<OrderMainDTO> orders, String adminEmail){
+    public OrderDTO orderItem(List<OrderMainDTO> orders, String adminEmail) {
 
         String reserver = orders.get(0).getItemReserver();
         Long memberId = memberRepository.findByEmail(reserver).getMemberId();
@@ -215,7 +219,7 @@ public class AdminServiceImpl implements AdminService {
         //최종 주문처리상품 DTO
         OrderDTO savedOrder;
 
-        for(OrderMainDTO order : orders) {
+        for (OrderMainDTO order : orders) {
             ItemEntity item = itemRepository.findByItemId(order.getItemId());
 
             if (item.getItemSellStatus() != ItemSellStatus.RESERVED) {
@@ -223,7 +227,7 @@ public class AdminServiceImpl implements AdminService {
                 throw new ItemException("예약된 물품이 아니라 구매처리 할 수 없습니다.");
             }
 
-            if(item.getItemReserver() != order.getItemReserver()){
+            if (item.getItemReserver() != order.getItemReserver()) {
                 //throw 구매자와 예약한사람이 달라 판매 못함
                 throw new ItemException("예약자와 현재 구매하려는 사람이 달라 구매처리 할 수 없습니다.");
             }
@@ -242,7 +246,7 @@ public class AdminServiceImpl implements AdminService {
         // 주문처리
         savedOrder = orderRepository.save(orderInfo);
 
-        for(OrderItemDTO savedItem : savedOrder.getOrderItem()) {
+        for (OrderItemDTO savedItem : savedOrder.getOrderItem()) {
 
             OrderItemDTO savedOrderItem = orderItemRepository.save(savedItem, savedOrder);
 
@@ -258,7 +262,7 @@ public class AdminServiceImpl implements AdminService {
 
             //아이템 이미지 삭제처리
             List<ItemImgEntity> findImg = itemImgRepository.findByItemItemId(updateItem.getItemId());
-            for(ItemImgEntity img : findImg) {
+            for (ItemImgEntity img : findImg) {
                 String uploadFilePath = img.getUploadImgPath();
                 String uuidFileName = img.getUploadImgName();
 
@@ -271,4 +275,63 @@ public class AdminServiceImpl implements AdminService {
         }
         return savedOrder;
     }
+
+    // 모든 문의글 보기
+    @Transactional(readOnly = true)
+    @Override
+    public Page<BoardDTO> getAllBoards(Pageable pageable, String searchKeyword, UserDetails userDetails)  {
+        // userDetails에서 권한을 가져오기
+        Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
+        // GrantedAuthority 타입의 권한을 List<String>으로 담아줌
+        List<String> collectAuthorities = authorities.stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
+
+        Page<BoardEntity> allBoards;
+        for (String role : collectAuthorities) {
+            // 존재하는 권한이 관리자인지 체크
+            if (role.equals("ADMIN") || role.equals("ROLE_ADMIN")) {
+                if(StringUtils.isNotBlank(searchKeyword)) {
+                    allBoards = boardRepository.findByTitleContaining(pageable, searchKeyword);
+                } else {
+                    allBoards = boardRepository.findAll(pageable);
+                }
+                allBoards.forEach(board -> board.changeSecret(BoardSecret.UN_ROCK));
+                return allBoards.map(BoardDTO::toBoardDTO);
+            }
+        }
+        return null;
+    }
+
+
+    // 관리자가 해당 유저의 모든 문의글 보기
+    @Transactional(readOnly = true)
+    @Override
+    public Page<BoardDTO> getBoardsByNiickName(UserDetails userDetails,
+                                    Pageable pageable,
+                                    String nickName,
+                                    String searchKeyword) {
+        // userDetails에서 권한을 가져오기
+        Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
+        // GrantedAuthority 타입의 권한을 List<String>으로 담아줌
+        List<String> collectAuthorities = authorities.stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
+
+        Page<BoardEntity> allByNickName;
+        for (String role : collectAuthorities) {
+            // 존재하는 권한이 관리자인지 체크
+            if (role.equals("ADMIN") || role.equals("ROLE_ADMIN")) {
+                if(StringUtils.isNotBlank(searchKeyword)) {
+                    allByNickName = boardRepository.findByMemberNickNameAndTitleContaining(nickName, pageable, searchKeyword);
+                } else {
+                    allByNickName = boardRepository.findAllByMemberNickName(nickName, pageable);
+                }
+                allByNickName.forEach(board -> board.changeSecret(BoardSecret.UN_ROCK));
+                return allByNickName.map(BoardDTO::toBoardDTO);
+            }
+        }
+        return null;
+    }
+
 }

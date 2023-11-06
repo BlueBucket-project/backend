@@ -1,10 +1,13 @@
 package com.example.shopping.controller.admin;
 
+import com.example.shopping.config.jwt.JwtAuthenticationEntryPoint;
 import com.example.shopping.domain.Item.ItemDTO;
 import com.example.shopping.domain.Item.ItemSellStatus;
+import com.example.shopping.domain.board.BoardDTO;
 import com.example.shopping.domain.order.OrderDTO;
 import com.example.shopping.domain.order.OrderMainDTO;
 import com.example.shopping.service.admin.AdminServiceImpl;
+import com.example.shopping.service.board.BoardServiceImpl;
 import com.example.shopping.service.item.ItemServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -35,6 +38,7 @@ import java.util.Map;
 public class AdminController {
     private final AdminServiceImpl adminService;
     private final ItemServiceImpl itemService;
+    private final BoardServiceImpl boardService;
 
     // 상품 삭제
     @DeleteMapping("/{itemId}")
@@ -61,7 +65,7 @@ public class AdminController {
     }
 
     // 관리자 상품 전체 보기 페이지
-    @GetMapping("")
+    @GetMapping("/items")
     @Tag(name = "admin")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Operation(summary = "전체 페이지 보기", description = "관리자가 예약 & 전부 팔린 상품을 보는 API입니다.")
@@ -113,6 +117,83 @@ public class AdminController {
         }
     }
 
+    // 모든 문의글 보기
+    @GetMapping("/boards")
+    @Tag(name = "admin")
+    @Operation(summary = "전체 문의글 보기", description = "모든 문의글을 보여주는 API입니다.")
+    public ResponseEntity<?> getBoards(
+            // SecuritConfig에 Page 설정을 한 페이지에 10개 보여주도록
+            // 설정을 해서 여기서는 할 필요가 없다.
+            @PageableDefault(sort = "boardId", direction = Sort.Direction.DESC)
+            Pageable pageable,
+            String searchKeyword,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            // 검색하지 않을 때는 모든 글을 보여준다.
+            Page<BoardDTO> boards = adminService.getAllBoards(pageable, searchKeyword, userDetails);
+
+            Map<String, Object> response = new HashMap<>();
+            // 현재 페이지의 아이템 목록
+            response.put("items", boards.getContent());
+            // 현재 페이지 번호
+            response.put("nowPageNumber", boards.getNumber());
+            // 전체 페이지 수
+            response.put("totalPage", boards.getTotalPages());
+            // 한 페이지에 출력되는 데이터 개수
+            response.put("pageSize", boards.getSize());
+            // 다음 페이지 존재 여부
+            response.put("hasNextPage", boards.hasNext());
+            // 이전 페이지 존재 여부
+            response.put("hasPreviousPage", boards.hasPrevious());
+            // 첫 번째 페이지 여부
+            response.put("isFirstPage", boards.isFirst());
+            // 마지막 페이지 여부
+            response.put("isLastPage", boards.isLast());
+
+            return ResponseEntity.ok().body(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    // 회원 문의글 보기
+    @GetMapping("/boards/{nickName}")
+    @Tag(name = "admin")
+    @Operation(summary = "전체 문의글 보기", description = "모든 문의글을 보여주는 API입니다.")
+    public ResponseEntity<?> getUserBoards(
+            // SecuritConfig에 Page 설정을 한 페이지에 10개 보여주도록
+            // 설정을 해서 여기서는 할 필요가 없다.
+            @PageableDefault(sort = "boardId", direction = Sort.Direction.DESC)
+            Pageable pageable,
+            String searchKeyword,
+            @PathVariable(name = "nickName") String nickName,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            // 검색하지 않을 때는 모든 글을 보여준다.
+            Page<BoardDTO> boards = adminService.getBoardsByNiickName(userDetails,pageable,nickName,searchKeyword);
+            Map<String, Object> response = new HashMap<>();
+            // 현재 페이지의 아이템 목록
+            response.put("items", boards.getContent());
+            // 현재 페이지 번호
+            response.put("nowPageNumber", boards.getNumber());
+            // 전체 페이지 수
+            response.put("totalPage", boards.getTotalPages());
+            // 한 페이지에 출력되는 데이터 개수
+            response.put("pageSize", boards.getSize());
+            // 다음 페이지 존재 여부
+            response.put("hasNextPage", boards.hasNext());
+            // 이전 페이지 존재 여부
+            response.put("hasPreviousPage", boards.hasPrevious());
+            // 첫 번째 페이지 여부
+            response.put("isFirstPage", boards.isFirst());
+            // 마지막 페이지 여부
+            response.put("isLastPage", boards.isLast());
+
+            return ResponseEntity.ok().body(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
 
     @PostMapping(value = "/orderItem")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
