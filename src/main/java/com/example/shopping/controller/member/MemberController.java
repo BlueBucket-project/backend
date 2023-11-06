@@ -15,7 +15,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import net.bytebuddy.TypeCache;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -180,7 +179,8 @@ public class MemberController {
             ,@AuthenticationPrincipal UserDetails userDetails) {
         List<OrderItemDTO> orders = new ArrayList<>();
         try {
-            orders = orderService.getOrders(findEmail);
+            String email = userDetails.getUsername();
+            orders = orderService.getOrders(findEmail, email);
 
         } catch (Exception e) {
             return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);

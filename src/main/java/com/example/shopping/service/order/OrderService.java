@@ -1,11 +1,8 @@
 package com.example.shopping.service.order;
 
-import com.example.shopping.domain.order.OrderDTO;
 import com.example.shopping.domain.order.OrderItemDTO;
-import com.example.shopping.domain.order.OrderMainDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
@@ -14,7 +11,7 @@ public interface OrderService {
     //adminService로 이동
     //OrderDTO orderItem(List<OrderMainDTO> order, String adminEmail);
 
-    List<OrderItemDTO> getOrders(String email);
+    List<OrderItemDTO> getOrders(String email, String user);
 
     Page<OrderItemDTO> getOrdersPage(Pageable pageable, String email);
 

@@ -15,7 +15,6 @@ import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @ToString
 @Getter
@@ -54,7 +53,7 @@ public class ItemDTO {
     @NotNull(message = "판매지역을 입력해야 합니다.")
     private String sellPlace;
 
-    @Schema(description = "상품을 예약한 사람")
+    @Schema(description = "상품 예약자 이메일")
     private String itemReserver;
 
     @Schema(description = "예약 수량")
