@@ -1,11 +1,13 @@
 package com.example.shopping.controller.member;
 
+import com.example.shopping.domain.board.BoardDTO;
 import com.example.shopping.domain.jwt.TokenDTO;
 import com.example.shopping.domain.member.LoginDTO;
 import com.example.shopping.domain.member.RequestMemberDTO;
 import com.example.shopping.domain.member.ResponseMemberDTO;
 import com.example.shopping.domain.member.ModifyMemberDTO;
 import com.example.shopping.domain.order.OrderItemDTO;
+import com.example.shopping.service.board.BoardServiceImpl;
 import com.example.shopping.service.jwt.TokenServiceImpl;
 import com.example.shopping.service.member.MemberServiceImpl;
 import com.example.shopping.service.order.OrderService;
@@ -13,6 +15,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,7 +30,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.EntityNotFoundException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 // @Slf4j를 사용하지 않고 Log4j2를 사용하는 이유는
@@ -38,6 +46,7 @@ public class MemberController {
     private final MemberServiceImpl memberServiceImpl;
     private final TokenServiceImpl tokenServiceImpl;
     private final OrderService orderService;
+    private final BoardServiceImpl boardService;
 
     // 회원가입
     @PostMapping("/")
@@ -161,18 +170,61 @@ public class MemberController {
         return result;
     }
 
+    // 주문 조회
     @GetMapping(value = "/order/{findEmail}")
+    @Tag(name = "member")
     @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
     @Operation(summary = "주문내역조회", description = "주문내역을 조회하는 API입니다.")
     public ResponseEntity<?> getOrders(@PathVariable String findEmail
             ,@AuthenticationPrincipal UserDetails userDetails) {
         List<OrderItemDTO> orders = new ArrayList<>();
         try {
-            orders = orderService.getOrders(findEmail);
+            String email = userDetails.getUsername();
+            orders = orderService.getOrders(findEmail, email);
 
         } catch (Exception e) {
             return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
         return ResponseEntity.ok().body(orders);
     }
+
+    // 나의 문의글 확인
+    @GetMapping("/myboards")
+    @Tag(name = "member")
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
+    @Operation(summary = "문의글 보기", description = "자신이 문의한 게시글을 보는 API입니다.")
+    public ResponseEntity<?> getBoards(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PageableDefault(sort = "boardId", direction = Sort.Direction.DESC)
+            Pageable pageable,
+            String searchKeyword) {
+        try {
+            String email = userDetails.getUsername();
+            log.info("유저 : " + email);
+
+            Page<BoardDTO> boards = boardService.getBoards(email, pageable, searchKeyword);
+            Map<String, Object> response = new HashMap<>();
+            // 현재 페이지의 아이템 목록
+            response.put("items", boards.getContent());
+            // 현재 페이지 번호
+            response.put("nowPageNumber", boards.getNumber());
+            // 전체 페이지 수
+            response.put("totalPage", boards.getTotalPages());
+            // 한 페이지에 출력되는 데이터 개수
+            response.put("pageSize", boards.getSize());
+            // 다음 페이지 존재 여부
+            response.put("hasNextPage", boards.hasNext());
+            // 이전 페이지 존재 여부
+            response.put("hasPreviousPage", boards.hasPrevious());
+            // 첫 번째 페이지 여부
+            response.put("isFirstPage", boards.isFirst());
+            // 마지막 페이지 여부
+            response.put("isLastPage", boards.isLast());
+            return ResponseEntity.ok().body(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+
 }

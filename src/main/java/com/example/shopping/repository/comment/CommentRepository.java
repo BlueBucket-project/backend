@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CommentRepository extends JpaRepository<CommentEntity, Long> {
-    void deleteByBoardBoardId(Long boardId);
+    CommentEntity find(CommentEntity commentEntity);
 }

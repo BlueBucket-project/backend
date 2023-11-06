@@ -1,11 +1,13 @@
 package com.example.shopping.domain.order;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Builder;
 import lombok.Getter;
 
 import javax.validation.constraints.Min;
 
 @Getter
+@Builder
 public class OrderMainDTO {
     private Long itemId;
 
@@ -13,6 +15,6 @@ public class OrderMainDTO {
     private int count;
 
     @Schema(description = "구매자 아이디")
-    private String itemReserver;
+    private Long itemReserver;
 
 }

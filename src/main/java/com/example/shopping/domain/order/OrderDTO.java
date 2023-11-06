@@ -1,15 +1,12 @@
 package com.example.shopping.domain.order;
 
 import com.example.shopping.entity.order.OrderEntity;
-import com.example.shopping.entity.order.OrderItemEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-import javax.persistence.Column;
-import javax.persistence.OneToMany;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,7 +24,7 @@ public class OrderDTO {
     @Schema(description = "주문결제자")
     private Long orderAdmin;
 
-    @Schema(description = "구매자닉네임")
+    @Schema(description = "구매자아이디")
     private Long orderMember;
 
     private List<OrderItemDTO> orderItem;

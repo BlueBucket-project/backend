@@ -34,11 +34,11 @@ public class BoardDTO {
     @Schema(description = "문의글 작성 시간")
     private LocalDateTime regTime;
 
-//    @Schema(description = "게시글 이미지 정보")
-//    private List<BoardImgDTO> boardImgDTOList = new ArrayList<>();
-
     @Schema(description = "관리자 답변")
     private List<CommentDTO> commentDTOList = new ArrayList<>();
+
+    @Schema(description = "문의글이 본인글인지 확인")
+    private BoardSecret boardSecret;
 
 
     @Builder
@@ -47,39 +47,27 @@ public class BoardDTO {
                     String content,
                     String nickName,
                     LocalDateTime regTime,
-//                    List<BoardImgDTO> boardImgDTOList,
-                    List<CommentDTO> commentDTOList) {
+                    List<CommentDTO> commentDTOList,
+                    BoardSecret boardSecret) {
         this.boardId = boardId;
         this.title = title;
         this.content = content;
         this.nickName = nickName;
         this.regTime = regTime;
-//        this.boardImgDTOList = boardImgDTOList;
         this.commentDTOList = commentDTOList;
+        this.boardSecret = boardSecret;
     }
 
+    // 엔티티를 DTO로 변환하는 작업
     public static BoardDTO toBoardDTO(BoardEntity board) {
-//        // 게시글 이미지 DTO 처리
-//        List<BoardImgEntity> boardImgEntities = board.getBoardImgEntityList();
-//        List<BoardImgDTO> boardImgDTOS = new ArrayList<>();
-//
-//        for(BoardImgEntity boardImgEntity : boardImgEntities) {
-//            BoardImgDTO boardImgDTO = BoardImgDTO.toBoardImgDTO(boardImgEntity);
-//
-//            // DTO로 바꿔준 것을 다시 List형식으로 바꿈
-//            // 다시 List로 해주는 이유는  private List<BoardImgDTO> boardImgDTOList = new ArrayList<>();
-//            // 여기에 넣어주기 위한 것이다.
-//            boardImgDTOS.add(boardImgDTO);
-//        }
-
         // 게시글 댓글 처리
         List<CommentEntity> commentEntityList = board.getCommentEntityList();
         List<CommentDTO> commentDTOS = new ArrayList<>();
 
+        // 엔티티 댓글을 DTO 리스트에 담아주는 작업을 진행하고 있다.
         for (CommentEntity commentEntity : commentEntityList) {
             CommentDTO commentDTO = CommentDTO.toCommentDTO(commentEntity);
             commentDTOS.add(commentDTO);
-
         }
 
         return BoardDTO.builder()
@@ -87,9 +75,9 @@ public class BoardDTO {
                 .title(board.getTitle())
                 .content(board.getContent())
                 .nickName(board.getMember().getNickName())
-//                .boardImgDTOList(boardImgDTOS)
                 .commentDTOList(commentDTOS)
                 .regTime(LocalDateTime.now())
+                .boardSecret(board.getBoardSecret())
                 .build();
     }
 

@@ -2,6 +2,7 @@ package com.example.shopping.service.admin;
 
 import com.example.shopping.domain.Item.ItemDTO;
 import com.example.shopping.domain.Item.ItemSellStatus;
+import com.example.shopping.domain.board.BoardDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,8 @@ public interface AdminService {
     Page<ItemDTO> superitendItem(Pageable pageable, UserDetails userDetails, ItemSellStatus itemSellStatus);
     // 상품 보기
     ResponseEntity<ItemDTO> getItem(Long itemId, UserDetails userDetails);
-    // 댓글 삭제
-    String removeComment(Long boardId, Long commentId, UserDetails userDetails);
+    // 문의글 전체 보기
+    Page<BoardDTO> getAllBoards(Pageable pageable, String searchKeyword, UserDetails userDetails);
+    // 작성자의 문의글 보기
+    Page<BoardDTO> getBoardsByNiickName(UserDetails userDetails, Pageable pageable, String nickName, String searchKeyword);
 }

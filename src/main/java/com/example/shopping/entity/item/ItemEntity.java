@@ -1,6 +1,5 @@
 package com.example.shopping.entity.item;
 
-import com.example.shopping.domain.Item.ItemDTO;
 import com.example.shopping.domain.Item.ItemSellStatus;
 import com.example.shopping.entity.Base.BaseTimeEntity;
 import com.example.shopping.entity.board.BoardEntity;
@@ -12,7 +11,6 @@ import lombok.ToString;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Entity(name = "item")
 @Table

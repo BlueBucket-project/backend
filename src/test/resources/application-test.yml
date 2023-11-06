@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:test # h2 support in-memory-db
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        format_sql: true # log
+        
+logging:
+  level:
+    org.hibernate.SQL: debug

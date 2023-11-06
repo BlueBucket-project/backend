@@ -87,6 +87,8 @@ public class BoardController {
     }
 
     // 문의 상세 보기
+    // 상품 안에 있는 문의글은 게시글 형태로 되어 있기 때문에  상세보기로 들어가야 한다.
+    // 해당 상세보기 기능은 유저를 가리지 않고 그 상품에 관한 문의글이다.
     @GetMapping("/{boardId}")
     @PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
     @Tag(name = "board")
