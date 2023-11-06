@@ -47,16 +47,13 @@ public class CommentServiceImpl implements CommentService{
                 CommentEntity comment = CommentEntity.createComment(commentDTO, findUser, findBoard);
                 // 게시글 엔티티안에 있는 댓글 리스트에 추가
                 findBoard.getCommentEntityList().add(comment);
+                log.info("댓글 : " + comment);
                 // DB에 저장
                 // 게시글과 연관관계를 맺었기 때문에 게시글만 저장해도 댓글이 저장된다.
                 BoardEntity saveBoard = boardRepository.save(findBoard);
                 log.info("board : " + saveBoard);
 
-                CommentEntity commentEntity = commentRepository.find(comment);
-                CommentDTO returnComment = CommentDTO.toCommentDTO(commentEntity);
-                log.info("댓글 : " + returnComment);
-
-                return ResponseEntity.ok().body(returnComment);
+                return ResponseEntity.ok().body("댓글을 작성했습니다.");
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("회원이 없습니다.");
             }

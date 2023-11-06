@@ -52,12 +52,7 @@ public class BoardServiceImpl implements BoardService {
             findItem.getBoardEntityList().add(boardEntity);
             itemRepository.save(findItem);
 
-            // id도 프론트에 반환하기 위해서 조회해서 가져온다.
-            BoardEntity search = boardRepository.find(boardEntity);
-            // 리턴해줄 DTO로 변환
-            BoardDTO returnBoard = BoardDTO.toBoardDTO(search);
-
-            return ResponseEntity.ok().body(returnBoard);
+            return ResponseEntity.ok().body("문의글 작성했습니다.");
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("회원이 없습니다.");
         }

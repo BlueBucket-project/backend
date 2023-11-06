@@ -19,6 +19,4 @@ public interface BoardRepository extends JpaRepository<BoardEntity, Long>{
 
     Page<BoardEntity> findAllByMemberNickName(String nickName, Pageable pageable);
     Page<BoardEntity> findByMemberNickNameAndTitleContaining(String nickName, Pageable pageable, String searchKeyword);
-
-    BoardEntity find(BoardEntity board);
 }
