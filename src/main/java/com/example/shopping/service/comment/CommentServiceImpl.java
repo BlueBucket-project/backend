@@ -47,12 +47,16 @@ public class CommentServiceImpl implements CommentService{
                 CommentEntity comment = CommentEntity.createComment(commentDTO, findUser, findBoard);
                 // 게시글 엔티티안에 있는 댓글 리스트에 추가
                 findBoard.getCommentEntityList().add(comment);
-                log.info("댓글 : " + comment);
                 // DB에 저장
                 // 게시글과 연관관계를 맺었기 때문에 게시글만 저장해도 댓글이 저장된다.
                 BoardEntity saveBoard = boardRepository.save(findBoard);
                 log.info("board : " + saveBoard);
-                return ResponseEntity.ok().body("댓글 생성 완료");
+
+                CommentEntity commentEntity = commentRepository.find(comment);
+                CommentDTO returnComment = CommentDTO.toCommentDTO(commentEntity);
+                log.info("댓글 : " + returnComment);
+
+                return ResponseEntity.ok().body(returnComment);
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("회원이 없습니다.");
             }
@@ -118,11 +122,10 @@ public class CommentServiceImpl implements CommentService{
                         .member(findComment.getMember())
                         .board(findComment.getBoard())
                         .build();
-                // 게시글 엔티티안에 있는 댓글 리스트에 추가
-                findBoard.getCommentEntityList().add(findComment);
-                log.info("댓글 : " + findComment);
-                boardRepository.save(findBoard);
-                return ResponseEntity.ok().body("댓글이 수정되었습니다.");
+                CommentEntity updateComment = commentRepository.save(findComment);
+                log.info("댓글 : " + updateComment);
+                CommentDTO returnComment = CommentDTO.toCommentDTO(updateComment);
+                return ResponseEntity.ok().body(returnComment);
             } else {
                 return ResponseEntity.badRequest().body("일치하지 않습니다.");
             }
