@@ -133,7 +133,7 @@ public class ItemController {
     }
 
     // 이미지 삭제
-    @DeleteMapping("/{itemId}/{itemImgId}")
+    @DeleteMapping("/{itemId}/img/{itemImgId}")
     public String removeImg(@PathVariable Long itemId,
                             @PathVariable Long itemImgId,
                             @AuthenticationPrincipal UserDetails userDetails) {
