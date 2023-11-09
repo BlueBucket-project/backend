@@ -134,7 +134,7 @@ public class MemberController {
     }
 
     // 중복체크
-    @GetMapping("/{memberEmail}")
+    @GetMapping("/email/{memberEmail}")
     @Tag(name = "member")
     @Operation(summary = "중복체크 API", description = "userEmail이 중복인지 체크하는 API입니다.")
     public String emailCheck(@PathVariable String memberEmail) {
@@ -161,7 +161,7 @@ public class MemberController {
     }
 
     // 닉네임 조회
-    @GetMapping("/{nickName}")
+    @GetMapping("/nickName/{nickName}")
     @Tag(name = "member")
     @Operation(summary = "닉네임 조회", description = "중복된 닉네임이 있는지 확인하는 API입니다.")
     public String nickNameCheck(@PathVariable String nickName) {
