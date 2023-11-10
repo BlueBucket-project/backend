@@ -9,7 +9,7 @@ spring:
       prod:
         - prod
 #    active: local
-      active: ${profile}
+    active: ${profile}
   devtools:
     livereload:
       enabled: true
