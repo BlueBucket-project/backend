@@ -1,5 +1,6 @@
 package com.example.shopping.domain.jwt;
 
+import com.example.shopping.entity.jwt.TokenEntity;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -34,5 +35,17 @@ public class TokenDTO {
         this.memberEmail = memberEmail;
         this.accessTokenTime = accessTokenTime;
         this.refreshTokenTime = refreshTokenTime;
+    }
+
+    public static TokenDTO toTokenDTO(TokenEntity tokenEntity) {
+        return TokenDTO.builder()
+                .id(tokenEntity.getId())
+                .grantType(tokenEntity.getGrantType())
+                .accessToken(tokenEntity.getAccessToken())
+                .accessTokenTime(tokenEntity.getAccessTokenTime())
+                .refreshToken(tokenEntity.getRefreshToken())
+                .refreshTokenTime(tokenEntity.getAccessTokenTime())
+                .memberEmail(tokenEntity.getMemberEmail())
+                .build();
     }
 }
