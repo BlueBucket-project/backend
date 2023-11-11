@@ -17,11 +17,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -128,7 +133,7 @@ public class BoardServiceImpl implements BoardService {
     // 작성자의 문의글 보기
     @Transactional(readOnly = true)
     @Override
-    public Page<BoardDTO> getBoards(String memberEmail, Pageable pageable, String searchKeyword) {
+    public Page<BoardDTO> getMyBoards(String memberEmail, Pageable pageable, String searchKeyword) {
 
         Page<BoardEntity> findAllBoards;
         if(StringUtils.isNotBlank(searchKeyword)) {
@@ -142,4 +147,40 @@ public class BoardServiceImpl implements BoardService {
         return findAllBoards.map(BoardDTO::toBoardDTO);
     }
 
+    // 상품에 대한 문의글 보기
+    @Transactional(readOnly = true)
+    @Override
+    public Page<BoardDTO> getBoards(Pageable pageable,
+                                    Long itemId,
+                                    String searchKeyword,
+                                    String email) {
+
+        // 회원 조회
+        MemberEntity findUser = memberRepository.findByEmail(email);
+        log.info("유저 : " + findUser);
+
+        // 상품 조회
+        ItemEntity findItem = itemRepository.findById(itemId)
+                .orElseThrow(EntityNotFoundException::new);
+        log.info("상품 : " + findItem);
+
+        // 조회해올 게시글을 넣을 곳
+        Page<BoardEntity> findAllBoards;
+        if(StringUtils.isNotBlank(searchKeyword)) {
+            findAllBoards = boardRepository.findByItemItemIdContaining(itemId, pageable, searchKeyword);
+        } else {
+            findAllBoards = boardRepository.findAllByItemItemId(itemId, pageable);
+        }
+
+        for (BoardEntity boardEntity : findAllBoards) {
+            if(boardEntity.getMember().getEmail().equals(findUser.getEmail())) {
+                boardEntity.changeSecret(BoardSecret.UN_ROCK);
+            } else {
+                boardEntity.changeSecret(BoardSecret.ROCK);
+            }
+        }
+        log.info("조회된 게시글 수 : {}", findAllBoards.getTotalElements());
+        log.info("조회된 게시글 : {}", findAllBoards);
+        return findAllBoards.map(BoardDTO::toBoardDTO);
+    }
 }

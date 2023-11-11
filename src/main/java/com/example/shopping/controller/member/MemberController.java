@@ -205,7 +205,7 @@ public class MemberController {
             String email = userDetails.getUsername();
             log.info("유저 : " + email);
 
-            Page<BoardDTO> boards = boardService.getBoards(email, pageable, searchKeyword);
+            Page<BoardDTO> boards = boardService.getMyBoards(email, pageable, searchKeyword);
             Map<String, Object> response = new HashMap<>();
             // 현재 페이지의 아이템 목록
             response.put("items", boards.getContent());
