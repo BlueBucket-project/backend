@@ -69,8 +69,6 @@ public class SecurityConfig {
                 .antMatchers("/api/v1/{itemId}/boards/{boardId}/comments/**")
                     .access("hasRole('ROLE_ADMIN')")
                 .antMatchers("/api/v1/items/**").permitAll()
-                .antMatchers("/api/v1/items/{itemId}")
-                    .access("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
                 .antMatchers(HttpMethod.POST, "/api/v1/items")
                     .access("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
                 .antMatchers(HttpMethod.PUT, "/api/v1/items/{itemId}")

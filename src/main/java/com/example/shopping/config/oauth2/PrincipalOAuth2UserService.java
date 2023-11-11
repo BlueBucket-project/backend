@@ -109,16 +109,21 @@ public class PrincipalOAuth2UserService implements OAuth2UserService<OAuth2UserR
         } else {
             log.info("로그인을 이미 한적이 있습니다.");
         }
+        // 권한 가져오기
         List<GrantedAuthority> authorities = getAuthoritiesForUser(findUser);
+        // 토큰 생성
         TokenDTO tokenForOAuth2 = jwtProvider.createTokenForOAuth2(email, authorities);
+        // 기존에 이 토큰이 있는지 확인
         TokenEntity findToken = tokenRepository.findByMemberEmail(tokenForOAuth2.getMemberEmail());
 
-        TokenEntity saveToken = null;
+        TokenEntity saveToken;
+        // 기존의 토큰이 없다면 새로 만들어준다.
         if(findToken == null) {
             TokenEntity tokenEntity = TokenEntity.tokenEntity(tokenForOAuth2);
             saveToken = tokenRepository.save(tokenEntity);
             log.info("token : " + saveToken);
         } else {
+            // 기존의 토큰이 있다면 업데이트 해준다.
             tokenForOAuth2 = TokenDTO.builder()
                     .id(findToken.getId())
                     .grantType(tokenForOAuth2.getGrantType())
@@ -136,15 +141,16 @@ public class PrincipalOAuth2UserService implements OAuth2UserService<OAuth2UserR
         // 토큰이 제대로 되어 있나 검증
         if(StringUtils.hasText(saveToken.getAccessToken())
                 && jwtProvider.validateToken(saveToken.getAccessToken())) {
-            Authentication authentication = jwtProvider.getAuthentication(saveToken.getAccessToken());
-            log.info("authentication : " + authentication);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+            Authentication authenticationToken = jwtProvider.getAuthentication(saveToken.getAccessToken());
+            log.info("authentication : " + authenticationToken);
+            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+
             UserDetails userDetails = new User(email, "", authorities);
             log.info("userDetails : " + userDetails);
-            Authentication authentication1 =
+            Authentication authenticationUser =
                     new UsernamePasswordAuthenticationToken(userDetails, authorities);
-            log.info("authentication1 : " + authentication1);
-            SecurityContextHolder.getContext().setAuthentication(authentication1);
+            log.info("authentication1 : " + authenticationUser);
+            SecurityContextHolder.getContext().setAuthentication(authenticationUser);
         } else {
             log.info("검증 실패");
         }
@@ -154,6 +160,8 @@ public class PrincipalOAuth2UserService implements OAuth2UserService<OAuth2UserR
         log.info("principalDetails : " + principalDetails);
         return principalDetails;
     }
+
+    // 권한 가져오기 로직
     private List<GrantedAuthority> getAuthoritiesForUser(MemberEntity findUser) {
         Role role = findUser.getMemberRole();
 

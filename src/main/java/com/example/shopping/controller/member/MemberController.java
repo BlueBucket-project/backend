@@ -147,10 +147,13 @@ public class MemberController {
     @GetMapping("/refresh")
     @Tag(name = "member")
     @Operation(summary = "access token 발급", description = "refresh token을 받으면 access token을 반환해줍니다.")
-    public ResponseEntity<?> refreshToken(@RequestHeader("Authorization") String token) throws Exception {
+    public ResponseEntity<?> refreshToken(@AuthenticationPrincipal UserDetails userDetails) throws Exception {
         try {
-            if (token != null) {
-                ResponseEntity<TokenDTO> accessToken = tokenServiceImpl.createAccessToken(token);
+            String email = userDetails.getUsername();
+            log.info("이메일 : " + email);
+
+            if (email != null) {
+                ResponseEntity<TokenDTO> accessToken = tokenServiceImpl.createAccessToken(email);
                 return ResponseEntity.ok().body(accessToken);
             } else {
                 return ResponseEntity.notFound().build();
@@ -202,7 +205,7 @@ public class MemberController {
             String email = userDetails.getUsername();
             log.info("유저 : " + email);
 
-            Page<BoardDTO> boards = boardService.getBoards(email, pageable, searchKeyword);
+            Page<BoardDTO> boards = boardService.getMyBoards(email, pageable, searchKeyword);
             Map<String, Object> response = new HashMap<>();
             // 현재 페이지의 아이템 목록
             response.put("items", boards.getContent());

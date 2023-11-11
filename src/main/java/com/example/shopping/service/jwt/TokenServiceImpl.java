@@ -25,37 +25,43 @@ import java.util.List;
 @RequiredArgsConstructor
 @Log4j2
 @Transactional
-public class TokenServiceImpl implements TokenService{
+public class TokenServiceImpl implements TokenService {
     private final TokenRepository tokenRepository;
     private final JwtProvider jwtProvider;
     private final MemberRepository memberRepository;
 
     @Override
-    public ResponseEntity<TokenDTO> createAccessToken(String refreshToken) {
-        if(jwtProvider.validateToken(refreshToken)) {
-            TokenEntity byRefreshToken = tokenRepository.findByRefreshToken(refreshToken);
-            // 아이디 추출
-            String userEmail = byRefreshToken.getMemberEmail();
-            log.info("userEmail : " + userEmail);
+    public ResponseEntity<TokenDTO> createAccessToken(String email) {
+        // 토큰 조회
+        TokenEntity findToken = tokenRepository.findByMemberEmail(email);
+        log.info("토큰 : " + findToken);
+        // 유저 조회
+        MemberEntity findUser = memberRepository.findByEmail(email);
+        log.info("유저 : " + findUser);
 
-            MemberEntity byUserEmail = memberRepository.findByEmail(userEmail);
-            log.info("member : " + byUserEmail);
-
-            List<GrantedAuthority> authorities = getAuthoritiesForUser(byUserEmail);
-
-            TokenDTO accessToken = jwtProvider.createAccessToken(userEmail, authorities);
+        // refreshToken 2차 검증
+        if (jwtProvider.validateToken(findToken.getRefreshToken())) {
+            // 권한 가져오기
+            List<GrantedAuthority> authorities = getAuthoritiesForUser(findUser);
+            // 토큰 생성
+            TokenDTO accessToken = jwtProvider.createAccessToken(findUser.getEmail(), authorities);
             log.info("accessToken : " + accessToken);
 
-            TokenEntity tokenEntity = TokenEntity.tokenEntity(accessToken);
+            findToken = TokenEntity.builder()
+                    .id(findToken.getId())
+                    .grantType(accessToken.getGrantType())
+                    .accessToken(accessToken.getAccessToken())
+                    .accessTokenTime(accessToken.getAccessTokenTime())
+                    .memberEmail(accessToken.getMemberEmail())
+                    .refreshToken(findToken.getRefreshToken())
+                    .refreshTokenTime(findToken.getAccessTokenTime())
+                    .build();
 
-            log.info("token : " + tokenEntity);
-            tokenRepository.save(tokenEntity);
+            log.info("token : " + findToken);
+            TokenEntity saveToken = tokenRepository.save(findToken);
+            TokenDTO returnToken = TokenDTO.toTokenDTO(saveToken);
 
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.add(JwtAuthenticationFilter.HEADER_AUTHORIZATION, "Bearer " + accessToken);
-
-            return new ResponseEntity<>(accessToken, headers, HttpStatus.OK);
+            return new ResponseEntity<>(returnToken, HttpStatus.OK);
         } else {
             throw new IllegalArgumentException("Unexpected token");
         }
@@ -64,13 +70,13 @@ public class TokenServiceImpl implements TokenService{
     // 주어진 사용자에 대한 권한 정보를 가져오는 로직을 구현하는 메서드입니다.
     // 이 메서드는 데이터베이스나 다른 저장소에서 사용자의 권한 정보를 조회하고,
     // 해당 권한 정보를 List<GrantedAuthority> 형태로 반환합니다.
-    private List<GrantedAuthority> getAuthoritiesForUser(MemberEntity byUserEmail) {
+    private List<GrantedAuthority> getAuthoritiesForUser(MemberEntity member) {
         // 예시: 데이터베이스에서 사용자의 권한 정보를 조회하는 로직을 구현
         // member 객체를 이용하여 데이터베이스에서 사용자의 권한 정보를 조회하는 예시로 대체합니다.
-        Role role = byUserEmail.getMemberRole();  // 사용자의 권한 정보를 가져오는 로직 (예시)
+        Role role = member.getMemberRole();  // 사용자의 권한 정보를 가져오는 로직 (예시)
 
         List<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority("ROLE_" +role.name()));
+        authorities.add(new SimpleGrantedAuthority("ROLE_" + role.name()));
         log.info("role : " + role.name());
         log.info("authorities : " + authorities);
         return authorities;

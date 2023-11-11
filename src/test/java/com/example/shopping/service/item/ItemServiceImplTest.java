@@ -253,7 +253,7 @@ public class ItemServiceImplTest {
         given(itemRepository.findById(savedItem2.getItemId())).willReturn(Optional.ofNullable(savedItem2));
         Pageable pageable = PageRequest.of(0, 10);
         given(memberRepository.findById(1L)).willReturn(Optional.ofNullable(member));
-        ItemDTO item = itemService.getItem(2L, pageable, member.getEmail());
+        ItemDTO item = itemService.getItem(2L);
 
         Assertions.assertThat(item.getItemId()).isEqualTo(2L);
         Assertions.assertThat(item.getItemName()).isEqualTo("스프링");

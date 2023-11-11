@@ -21,5 +21,7 @@ public interface BoardService {
     // 문의 자세히 보기
     ResponseEntity<?> getBoard(Long boardId, String memberEmail);
     // 작성자의 문의글 보기
-    Page<BoardDTO> getBoards(String memberEmail, Pageable pageable, String searchKeyword);
+    Page<BoardDTO> getMyBoards(String memberEmail, Pageable pageable, String searchKeyword);
+    // 상품에 대한 문의글 보기
+    Page<BoardDTO> getBoards(Pageable pageable, Long itemId, String searchKeyword, String email);
 }

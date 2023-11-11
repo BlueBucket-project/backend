@@ -77,12 +77,9 @@ public class ItemController {
     @GetMapping("/{itemId}")
     @Tag(name = "item")
     @Operation(summary = "상품 상세 정보 보기", description = "상품의 상세정보를 볼 수 있습니다.")
-    public ResponseEntity<?> itemDetail(@PathVariable Long itemId,
-                                        Pageable pageable,
-                                        @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<?> itemDetail(@PathVariable Long itemId) {
         try {
-            String email = userDetails.getUsername();
-            ItemDTO item = itemServiceImpl.getItem(itemId, pageable, email);
+            ItemDTO item = itemServiceImpl.getItem(itemId);
             log.info("item : " + item);
             return ResponseEntity.ok().body(item);
         } catch (EntityNotFoundException e) {

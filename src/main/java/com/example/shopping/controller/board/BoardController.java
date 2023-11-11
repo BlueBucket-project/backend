@@ -1,12 +1,17 @@
 package com.example.shopping.controller.board;
 
 
+import com.example.shopping.domain.board.BoardDTO;
 import com.example.shopping.domain.board.CreateBoardDTO;
 import com.example.shopping.service.board.BoardServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -17,6 +22,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.EntityNotFoundException;
+import java.util.HashMap;
+import java.util.Map;
 
 
 @RestController
@@ -101,6 +108,47 @@ public class BoardController {
             return ResponseEntity.ok().body(board);
         } catch (EntityNotFoundException e) {
             return ResponseEntity.notFound().build();
+        }
+    }
+
+    // 상품 전체 보기
+    @GetMapping("")
+    @Tag(name = "board")
+    @Operation(summary = "문의글 전체 보기", description = "모든 상품에 대한 문의글을 봅니다.")
+    public ResponseEntity<?> getBoards(
+            // SecuritConfig에 Page 설정을 한 페이지에 10개 보여주도록
+            // 설정을 해서 여기서는 할 필요가 없다.
+            @PageableDefault(sort = "boardId", direction = Sort.Direction.DESC)
+            Pageable pageable,
+            @PathVariable(name = "itemId") Long itemId,
+            String searchKeyword,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            String email = userDetails.getUsername();
+
+            // 검색하지 않을 때는 모든 글을 보여준다.
+            Page<BoardDTO> boards = boardService.getBoards(pageable, itemId, searchKeyword, email);
+            Map<String, Object> response = new HashMap<>();
+            // 현재 페이지의 아이템 목록
+            response.put("items", boards.getContent());
+            // 현재 페이지 번호
+            response.put("nowPageNumber", boards.getNumber());
+            // 전체 페이지 수
+            response.put("totalPage", boards.getTotalPages());
+            // 한 페이지에 출력되는 데이터 개수
+            response.put("pageSize", boards.getSize());
+            // 다음 페이지 존재 여부
+            response.put("hasNextPage", boards.hasNext());
+            // 이전 페이지 존재 여부
+            response.put("hasPreviousPage", boards.hasPrevious());
+            // 첫 번째 페이지 여부
+            response.put("isFirstPage", boards.isFirst());
+            // 마지막 페이지 여부
+            response.put("isLastPage", boards.isLast());
+
+            return ResponseEntity.ok().body(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
         }
     }
 

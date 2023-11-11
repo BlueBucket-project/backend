@@ -96,59 +96,19 @@ public class ItemServiceImpl implements ItemService{
     // 이럴 경우 JPA가 더티체킹(변경감지)를 수행하지 않아서 성능을 향상 시킬 수 있다.
     @Transactional(readOnly = true)
     @Override
-    public ItemDTO getItem(Long itemId,
-                           Pageable pageable,
-                           String memberEmail) {
+    public ItemDTO getItem(Long itemId) {
         try {
             // 상품 조회
             ItemEntity findItem = itemRepository.findById(itemId)
                     .orElseThrow(EntityNotFoundException::new);
-            // 문의글을 가져옴
-            List<BoardEntity> boardEntityList = findItem.getBoardEntityList();
-            // 현재 사용자의 게시글과 다른 사용자의 게시글을 나눔
-            // 내 문의글
-            List<BoardEntity> myBoards = new ArrayList<>();
-            // 다른 사람 문의글
-            List<BoardEntity> otherBoards = new ArrayList<>();
 
-            // 가져온 문의글들에서 내가 작성한 글인지 구별하기 위해서
-            for (BoardEntity boardEntity : boardEntityList) {
-                if(boardEntity.getMember().getEmail().equals(memberEmail)) {
-                    boardEntity.changeSecret(BoardSecret.UN_ROCK);
-                    myBoards.add(boardEntity);
-                } else {
-                    boardEntity.changeSecret(BoardSecret.ROCK);
-                    otherBoards.add(boardEntity);
-                }
-            }
-
-            // 게시글 페이지 처리
-            Page<BoardEntity> myBoardPage = PageableExecutionUtils.getPage(
-                    myBoards, pageable, myBoards::size);
-
-            Page<BoardEntity> otherBoardPage = PageableExecutionUtils.getPage(
-                    otherBoards, pageable, otherBoards::size);
-
-            List<BoardDTO> myBoardDTOList = myBoardPage.getContent()
-                    .stream()
-                    .map(BoardDTO::toBoardDTO)
-                    .collect(Collectors.toList());
-
-            List<BoardDTO> otherBoardDTOList = otherBoardPage.getContent()
-                    .stream()
-                    .map(BoardDTO::toBoardDTO)
-                    .collect(Collectors.toList());
-
-            // DTO로 변환
             ItemDTO itemDTO = ItemDTO.toItemDTO(findItem);
-            // 현재 사용자의 게시글인 경우, 게시글 내용을 포함시킴
-            if(!myBoards.isEmpty()) {
-                itemDTO.getBoardDTOList().addAll(myBoardDTOList);
-            } else {
-                itemDTO.getBoardDTOList().addAll(otherBoardDTOList);
-            }
-            itemDTO.setMemberNickName(memberRepository.findById(itemDTO.getItemSeller()).orElseThrow().getNickName());
+            itemDTO.setMemberNickName(
+                    memberRepository.findById(itemDTO.getItemSeller())
+                            .orElseThrow(EntityNotFoundException::new)
+                            .getNickName());
             return itemDTO;
+
         } catch (EntityNotFoundException e) {
             throw new ItemException("상품이 없습니다. {}, " + e.getMessage());
         }
