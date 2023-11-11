@@ -1,5 +1,7 @@
 package com.example.shopping.config.oauth2;
 
+import com.example.shopping.domain.jwt.TokenDTO;
+import com.example.shopping.domain.member.ResponseMemberDTO;
 import com.example.shopping.entity.jwt.TokenEntity;
 import com.example.shopping.entity.member.MemberEntity;
 import com.example.shopping.repository.jwt.TokenRepository;
@@ -37,16 +39,19 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             log.info("email : " + email);
             TokenEntity findToken = tokenRepository.findByMemberEmail(email);
             log.info("token : " + findToken);
+            TokenDTO tokenDTO = TokenDTO.toTokenDTO(findToken);
             MemberEntity findUser = memberRepository.findByEmail(email);
+            ResponseMemberDTO memberDTO = ResponseMemberDTO.toMemberDTO(findUser);
+
             // 헤더에 담아준다.
-            response.addHeader("email", findToken.getMemberEmail());
+            response.addHeader("email", memberDTO.getEmail());
 
             // 바디에 담아준다.
             Map<String, Object> responseBody = new HashMap<>();
-            responseBody.put("providerId", findUser.getProviderId());
-            responseBody.put("accessToken", findToken.getAccessToken());
-            responseBody.put("refreshToken", findToken.getRefreshToken());
-            responseBody.put("email", findToken.getMemberEmail());
+            responseBody.put("providerId", memberDTO.getProviderId());
+            responseBody.put("accessToken", tokenDTO.getAccessToken());
+            responseBody.put("refreshToken", tokenDTO.getRefreshToken());
+            responseBody.put("email", tokenDTO.getMemberEmail());
 
             // JSON 응답 전송
             response.setContentType("application/json");
