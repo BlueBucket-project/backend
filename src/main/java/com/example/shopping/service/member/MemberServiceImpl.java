@@ -39,26 +39,28 @@ public class MemberServiceImpl implements MemberService{
 
     // 회원가입
     @Override
-    public ResponseEntity<?> signUp(RequestMemberDTO responseMemberDTO) {
+    public ResponseEntity<?> signUp(RequestMemberDTO memberDTO) {
         try {
-            MemberEntity findEmail = memberRepository.findByEmail(responseMemberDTO.getEmail());
+            MemberEntity findEmail = memberRepository.findByEmail(memberDTO.getEmail());
+            MemberEntity findNickName = memberRepository.findByNickName(memberDTO.getNickName());
 
 
-            if(findEmail != null) {
+            if(findEmail.getEmail().equals(memberDTO.getEmail())
+                    && findNickName.getNickName().equals(memberDTO.getNickName())) {
                 return ResponseEntity.badRequest().body("이미 가입된 회원입니다.");
             }
 
             // 아이디가 없다면 DB에 등록해줍니다.
             MemberEntity member = MemberEntity.builder()
-                    .email(responseMemberDTO.getEmail())
-                    .memberPw(passwordEncoder.encode(responseMemberDTO.getMemberPw()))
-                    .memberName(responseMemberDTO.getMemberName())
-                    .nickName(responseMemberDTO.getNickName())
-                    .memberRole(responseMemberDTO.getMemberRole())
+                    .email(memberDTO.getEmail())
+                    .memberPw(passwordEncoder.encode(memberDTO.getMemberPw()))
+                    .memberName(memberDTO.getMemberName())
+                    .nickName(memberDTO.getNickName())
+                    .memberRole(memberDTO.getMemberRole())
                     .address(AddressEntity.builder()
-                            .memberAddr(responseMemberDTO.getMemberAddress().getMemberAddr())
-                            .memberAddrDetail(responseMemberDTO.getMemberAddress().getMemberAddrDetail())
-                            .memberZipCode(responseMemberDTO.getMemberAddress().getMemberZipCode())
+                            .memberAddr(memberDTO.getMemberAddress().getMemberAddr())
+                            .memberAddrDetail(memberDTO.getMemberAddress().getMemberAddrDetail())
+                            .memberZipCode(memberDTO.getMemberAddress().getMemberZipCode())
                             .build()).build();
 
             log.info("member in service : " + member);
@@ -100,6 +102,7 @@ public class MemberServiceImpl implements MemberService{
     @Override
     public ResponseEntity<?> login(String memberEmail, String memberPw){
         try {
+            // 회원 조회
             MemberEntity findUser = memberRepository.findByEmail(memberEmail);
             log.info("user : " + findUser);
 
@@ -112,25 +115,32 @@ public class MemberServiceImpl implements MemberService{
                     List<GrantedAuthority> authoritiesForUser = getAuthoritiesForUser(findUser);
 
                     // JWT 생성
-                    TokenDTO token = jwtProvider.createToken(authentication, authoritiesForUser);
+                    TokenDTO token = jwtProvider.createToken(authentication, authoritiesForUser, findUser.getMemberId());
+                    // 토큰 조회
                     TokenEntity findToken = tokenRepository.findByMemberEmail(token.getMemberEmail());
 
+                    // 토큰이 없다면 새로 발급
                     if(findToken == null) {
                         log.info("발급한 토큰이 없습니다. 새로운 토큰을 발급합니다.");
+
+                        // 토큰 생성과 조회한 memberId를 넘겨줌
                         TokenEntity tokenEntity = TokenEntity.tokenEntity(token);
+                        // 토큰id는 자동생성
                         tokenRepository.save(tokenEntity);
                     } else {
                         log.info("이미 발급한 토큰이 있습니다. 토큰을 업데이트합니다.");
                         token = TokenDTO.builder()
-                                .id(findToken.getId())
                                 .grantType(token.getGrantType())
                                 .accessToken(token.getAccessToken())
                                 .accessTokenTime(token.getAccessTokenTime())
                                 .refreshToken(token.getRefreshToken())
                                 .refreshTokenTime(token.getRefreshTokenTime())
                                 .memberEmail(token.getMemberEmail())
+                                .memberId(token.getMemberId())
                                 .build();
-                        TokenEntity tokenEntity = TokenEntity.tokenEntity(token);
+                        // 이미 존재하는 토큰이니 토큰id가 있다.
+                        // 그 id로 토큰을 업데이트 시켜준다.
+                        TokenEntity tokenEntity = TokenEntity.updateToken(findToken.getId(), token);
                         tokenRepository.save(tokenEntity);
                     }
                     return ResponseEntity.ok().body(token);

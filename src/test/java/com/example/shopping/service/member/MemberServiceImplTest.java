@@ -109,7 +109,7 @@ class MemberServiceImplTest {
             List<GrantedAuthority> authoritiesForUser = getAuthoritiesForUser(findUser);
 
             // JWT 생성
-            TokenDTO token = jwtProvider.createToken(authentication, authoritiesForUser);
+            TokenDTO token = jwtProvider.createToken(authentication, authoritiesForUser, findUser.getMemberId());
             Assertions.assertThat(token).isNotNull();
         }
     }

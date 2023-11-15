@@ -111,7 +111,7 @@ public class BoardController {
         }
     }
 
-    // 상품 전체 보기
+    // 문의글 전체 보기
     @GetMapping("")
     @Tag(name = "board")
     @Operation(summary = "문의글 전체 보기", description = "모든 상품에 대한 문의글을 봅니다.")
@@ -122,10 +122,9 @@ public class BoardController {
             Pageable pageable,
             @PathVariable(name = "itemId") Long itemId,
             String searchKeyword,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @RequestParam(value = "email", required = false) String email) {
         try {
-            String email = userDetails.getUsername();
-
+            log.info("email : " + email);
             // 검색하지 않을 때는 모든 글을 보여준다.
             Page<BoardDTO> boards = boardService.getBoards(pageable, itemId, searchKeyword, email);
             Map<String, Object> response = new HashMap<>();

@@ -105,14 +105,14 @@ public class PrincipalOAuth2UserService implements OAuth2UserService<OAuth2UserR
                     .build();
 
             log.info("member : " + findUser);
-            memberRepository.save(findUser);
+             findUser = memberRepository.save(findUser);
         } else {
             log.info("로그인을 이미 한적이 있습니다.");
         }
         // 권한 가져오기
         List<GrantedAuthority> authorities = getAuthoritiesForUser(findUser);
         // 토큰 생성
-        TokenDTO tokenForOAuth2 = jwtProvider.createTokenForOAuth2(email, authorities);
+        TokenDTO tokenForOAuth2 = jwtProvider.createTokenForOAuth2(email, authorities, findUser.getMemberId());
         // 기존에 이 토큰이 있는지 확인
         TokenEntity findToken = tokenRepository.findByMemberEmail(tokenForOAuth2.getMemberEmail());
 
@@ -125,15 +125,15 @@ public class PrincipalOAuth2UserService implements OAuth2UserService<OAuth2UserR
         } else {
             // 기존의 토큰이 있다면 업데이트 해준다.
             tokenForOAuth2 = TokenDTO.builder()
-                    .id(findToken.getId())
                     .grantType(tokenForOAuth2.getGrantType())
                     .accessToken(tokenForOAuth2.getAccessToken())
                     .accessTokenTime(tokenForOAuth2.getAccessTokenTime())
                     .refreshToken(tokenForOAuth2.getRefreshToken())
                     .refreshTokenTime(tokenForOAuth2.getRefreshTokenTime())
                     .memberEmail(tokenForOAuth2.getMemberEmail())
+                    .memberId(tokenForOAuth2.getMemberId())
                     .build();
-            TokenEntity tokenEntity = TokenEntity.tokenEntity(tokenForOAuth2);
+            TokenEntity tokenEntity = TokenEntity.updateToken(findToken.getId(), tokenForOAuth2);
             saveToken = tokenRepository.save(tokenEntity);
             log.info("token : " + saveToken);
         }
