@@ -197,6 +197,7 @@ public class AdminController {
 
     @PostMapping(value = "/orderItem")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @Tag(name = "admin")
     @Operation(summary = "상품주문", description = "관리자가 상품을 최종 구매확정하는 API입니다.")
     public ResponseEntity<?> order(@RequestBody List<OrderMainDTO> orders, BindingResult result
             , @AuthenticationPrincipal UserDetails userDetails
@@ -225,6 +226,7 @@ public class AdminController {
     @GetMapping("/search")
     @Tag(name = "admin")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @Operation(summary = "상품 전체 보기(조건)", description = "상품을 조건대로 전체 볼 수 있는 API")
     public ResponseEntity<?> searchItemsConditions(@PageableDefault(sort = "itemId", direction = Sort.Direction.DESC)
                                                    Pageable pageable,
                                                    @RequestParam(required = false) String itemName,
