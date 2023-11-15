@@ -133,16 +133,6 @@ public class MemberController {
         }
     }
 
-    // 중복체크
-    @GetMapping("/email/{memberEmail}")
-    @Tag(name = "member")
-    @Operation(summary = "중복체크 API", description = "userEmail이 중복인지 체크하는 API입니다.")
-    public String emailCheck(@PathVariable String memberEmail) {
-        log.info("email : " + memberEmail);
-        String result = memberServiceImpl.emailCheck(memberEmail);
-        return result;
-    }
-
     // accessToken 만료시 refreshToken으로 accessToken 발급
     @GetMapping("/refresh")
     @Tag(name = "member")
@@ -163,14 +153,22 @@ public class MemberController {
         }
     }
 
+    // 중복체크
+    @GetMapping("/email/{memberEmail}")
+    @Tag(name = "member")
+    @Operation(summary = "중복체크 API", description = "userEmail이 중복인지 체크하는 API입니다.")
+    public boolean emailCheck(@PathVariable String memberEmail) {
+        log.info("email : " + memberEmail);
+       return memberServiceImpl.emailCheck(memberEmail);
+    }
+
     // 닉네임 조회
     @GetMapping("/nickName/{nickName}")
     @Tag(name = "member")
     @Operation(summary = "닉네임 조회", description = "중복된 닉네임이 있는지 확인하는 API입니다.")
-    public String nickNameCheck(@PathVariable String nickName) {
+    public boolean nickNameCheck(@PathVariable String nickName) {
         log.info("nickName : " + nickName);
-        String result = memberServiceImpl.nickNameCheck(nickName);
-        return result;
+        return memberServiceImpl.nickNameCheck(nickName);
     }
 
     // 주문 조회
