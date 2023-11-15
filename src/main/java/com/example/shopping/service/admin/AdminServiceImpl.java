@@ -67,10 +67,6 @@ public class AdminServiceImpl implements AdminService {
             // 삭제할 권한이 있는지 확인
             // userDetails에서 권한을 가져오기
             Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
-            // GrantedAuthority 타입의 권한을 List<String>으로 담아줌
-            List<String> collectAuthorities = authorities.stream()
-                    .map(GrantedAuthority::getAuthority)
-                    .collect(Collectors.toList());
 
             // 상품 조회
             ItemEntity findItem = itemRepository.findById(itemId)
@@ -78,26 +74,29 @@ public class AdminServiceImpl implements AdminService {
             // 상품 이미지 조회
             List<ItemImgEntity> findItemImg = itemImgRepository.findByItemItemId(itemId);
 
-            // 권한이 있는지 체크
-            if (!collectAuthorities.isEmpty()) {
-                for (String role : collectAuthorities) {
-                    // 존재하는 권한이 관리자인지 체크
-                    if (role.equals("ADMIN") || role.equals("ROLE_ADMIN")) {
-                        // 삭제하는데 이미지를 풀어놓는 이유는
-                        // S3에 삭제할 때 넘겨줘야 할 매개변수때문이다.
-                        for (ItemImgEntity itemImgEntity : findItemImg) {
-                            String uploadImgPath = itemImgEntity.getUploadImgPath();
-                            String uploadImgName = itemImgEntity.getUploadImgName();
+            // 현재는 권한이 1개만 있는 것으로 가정
+            if(!authorities.isEmpty()) {
+                // 현재 사용자의 권한(authority) 목록에서 첫 번째 권한을 가져오는 코드입니다.
+                // 현재 저의 로직에서는 유저는 하나의 권한을 가지므로 이렇게 처리할 수 있다.
+                String role = authorities.iterator().next().getAuthority();
+                log.info("권한 : " + role);
+                // 존재하는 권한이 관리자인지 체크
+                if (role.equals("ADMIN") || role.equals("ROLE_ADMIN")) {
+                    // 삭제하는데 이미지를 풀어놓는 이유는
+                    // S3에 삭제할 때 넘겨줘야 할 매개변수때문이다.
+                    for (ItemImgEntity itemImgEntity : findItemImg) {
+                        String uploadImgPath = itemImgEntity.getUploadImgPath();
+                        String uploadImgName = itemImgEntity.getUploadImgName();
 
-                            // 상품 정보 삭제
-                            itemRepository.deleteByItemId(findItem.getItemId());
-                            // S3에서 이미지 삭제
-                            s3ItemImgUploaderService.deleteFile(uploadImgPath, uploadImgName);
-                            return "상품을 삭제 했습니다.";
-                        }
+                        // 상품 정보 삭제
+                        itemRepository.deleteByItemId(findItem.getItemId());
+                        // S3에서 이미지 삭제
+                        s3ItemImgUploaderService.deleteFile(uploadImgPath, uploadImgName);
+                        return "상품을 삭제 했습니다.";
                     }
                 }
             }
+
             return "상품 삭제 권한이 없습니다.";
         } catch (Exception e) {
             return e.getMessage();
@@ -111,25 +110,21 @@ public class AdminServiceImpl implements AdminService {
             // 삭제할 권한이 있는지 확인
             // userDetails에서 권한을 가져오기
             Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
-            // GrantedAuthority 타입의 권한을 List<String>으로 담아줌
-            List<String> collectAuthorities = authorities.stream()
-                    .map(GrantedAuthority::getAuthority)
-                    .collect(Collectors.toList());
 
             // 게시글 조회
             BoardEntity findBoard = boardRepository.findById(boardId)
                     .orElseThrow(EntityNotFoundException::new);
 
             // 권한이 있는지 체크
-            if (!collectAuthorities.isEmpty()) {
-                for (String role : collectAuthorities) {
-                    // 존재하는 권한이 관리자인지 체크
-                    if (role.equals("ADMIN") || role.equals("ROLE_ADMIN")) {
-                        // 게시글 정보 삭제
-                        boardRepository.deleteByBoardId(findBoard.getBoardId());
-                        // S3에서 이미지 삭제
-                        return "게시글을 삭제 했습니다.";
-                    }
+            if (!authorities.isEmpty()) {
+                String role = authorities.iterator().next().getAuthority();
+                log.info("권한 : " + role);
+
+                if (role.equals("ADMIN") || role.equals("ROLE_ADMIN")) {
+                    // 게시글 정보 삭제
+                    boardRepository.deleteByBoardId(findBoard.getBoardId());
+                    // S3에서 이미지 삭제
+                    return "게시글을 삭제 했습니다.";
                 }
             }
             return "게시글 삭제 권한이 없습니다.";
@@ -148,13 +143,11 @@ public class AdminServiceImpl implements AdminService {
         try {
             // userDetails에서 권한을 가져오기
             Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
-            // GrantedAuthority 타입의 권한을 List<String>으로 담아줌
-            List<String> collectAuthorities = authorities.stream()
-                    .map(GrantedAuthority::getAuthority)
-                    .collect(Collectors.toList());
 
-            for (String role : collectAuthorities) {
-                // 존재하는 권한이 관리자인지 체크
+            // 권한이 있는지 체크
+            if (!authorities.isEmpty()) {
+                String role = authorities.iterator().next().getAuthority();
+                log.info("권한 : " + role);
                 if (role.equals("ADMIN") || role.equals("ROLE_ADMIN")) {
                     // 페이지 처리해서 예약된 것만 조회
                     Page<ItemEntity> items =
@@ -183,17 +176,15 @@ public class AdminServiceImpl implements AdminService {
         try {
             // userDetails에서 권한을 가져오기
             Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
-            // GrantedAuthority 타입의 권한을 List<String>으로 담아줌
-            List<String> collectAuthorities = authorities.stream()
-                    .map(GrantedAuthority::getAuthority)
-                    .collect(Collectors.toList());
 
             // 상품 조회
             ItemEntity findItem = itemRepository.findById(itemId)
                     .orElseThrow(EntityNotFoundException::new);
 
-            for (String role : collectAuthorities) {
-                // 존재하는 권한이 관리자인지 체크
+            // 권한이 있는지 체크
+            if (!authorities.isEmpty()) {
+                String role = authorities.iterator().next().getAuthority();
+                log.info("권한 : " + role);
                 if (role.equals("ADMIN") || role.equals("ROLE_ADMIN")) {
                     ItemDTO itemDTO = ItemDTO.toItemDTO(findItem);
                     itemDTO.setMemberNickName(memberRepository.findById(itemDTO.getItemSeller()).orElseThrow().getNickName());
@@ -282,22 +273,20 @@ public class AdminServiceImpl implements AdminService {
     public Page<BoardDTO> getAllBoards(Pageable pageable, String searchKeyword, UserDetails userDetails)  {
         // userDetails에서 권한을 가져오기
         Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
-        // GrantedAuthority 타입의 권한을 List<String>으로 담아줌
-        List<String> collectAuthorities = authorities.stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList());
 
         Page<BoardEntity> allBoards;
-        for (String role : collectAuthorities) {
-            // 존재하는 권한이 관리자인지 체크
+        // 권한이 있는지 체크
+        if (!authorities.isEmpty()) {
+            String role = authorities.iterator().next().getAuthority();
+            log.info("권한 : " + role);
             if (role.equals("ADMIN") || role.equals("ROLE_ADMIN")) {
                 if(StringUtils.isNotBlank(searchKeyword)) {
                     allBoards = boardRepository.findByTitleContaining(pageable, searchKeyword);
                 } else {
                     allBoards = boardRepository.findAll(pageable);
                 }
-                allBoards.forEach(board -> board.changeSecret(BoardSecret.UN_ROCK));
-                return allBoards.map(BoardDTO::toBoardDTO);
+                allBoards.forEach(board -> board.changeSecret(BoardSecret.UN_LOCK));
+                return allBoards.map(board -> BoardDTO.toBoardDTO(board, board.getMember().getNickName()));
             }
         }
         return null;
@@ -313,13 +302,10 @@ public class AdminServiceImpl implements AdminService {
                                     String searchKeyword) {
         // userDetails에서 권한을 가져오기
         Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
-        // GrantedAuthority 타입의 권한을 List<String>으로 담아줌
-        List<String> collectAuthorities = authorities.stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList());
-
         Page<BoardEntity> allByNickName;
-        for (String role : collectAuthorities) {
+        // 현재는 권한이 1개만 있는 것으로 가정
+        if (!authorities.isEmpty()) {
+            String role = authorities.iterator().next().getAuthority();
             // 존재하는 권한이 관리자인지 체크
             if (role.equals("ADMIN") || role.equals("ROLE_ADMIN")) {
                 if(StringUtils.isNotBlank(searchKeyword)) {
@@ -327,8 +313,8 @@ public class AdminServiceImpl implements AdminService {
                 } else {
                     allByNickName = boardRepository.findAllByMemberNickName(nickName, pageable);
                 }
-                allByNickName.forEach(board -> board.changeSecret(BoardSecret.UN_ROCK));
-                return allByNickName.map(BoardDTO::toBoardDTO);
+                allByNickName.forEach(board -> board.changeSecret(BoardSecret.UN_LOCK));
+                return allByNickName.map(board -> BoardDTO.toBoardDTO(board, nickName));
             }
         }
         return null;
