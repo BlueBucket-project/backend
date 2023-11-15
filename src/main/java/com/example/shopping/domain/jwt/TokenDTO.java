@@ -19,6 +19,7 @@ public class TokenDTO {
     private String memberEmail;
     private Date accessTokenTime;
     private Date refreshTokenTime;
+    private Long memberId;
 
     @Builder
     public TokenDTO(Long id, 
@@ -27,7 +28,8 @@ public class TokenDTO {
                     String refreshToken, 
                     String memberEmail, 
                     Date accessTokenTime, 
-                    Date refreshTokenTime) {
+                    Date refreshTokenTime,
+                    Long memberId) {
         this.id = id;
         this.grantType = grantType;
         this.accessToken = accessToken;
@@ -35,17 +37,18 @@ public class TokenDTO {
         this.memberEmail = memberEmail;
         this.accessTokenTime = accessTokenTime;
         this.refreshTokenTime = refreshTokenTime;
+        this.memberId = memberId;
     }
 
     public static TokenDTO toTokenDTO(TokenEntity tokenEntity) {
         return TokenDTO.builder()
-                .id(tokenEntity.getId())
                 .grantType(tokenEntity.getGrantType())
                 .accessToken(tokenEntity.getAccessToken())
                 .accessTokenTime(tokenEntity.getAccessTokenTime())
                 .refreshToken(tokenEntity.getRefreshToken())
                 .refreshTokenTime(tokenEntity.getAccessTokenTime())
                 .memberEmail(tokenEntity.getMemberEmail())
+                .memberId(tokenEntity.getMemberId())
                 .build();
     }
 }
