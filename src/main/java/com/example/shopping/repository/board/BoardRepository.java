@@ -1,24 +1,67 @@
 package com.example.shopping.repository.board;
 
 import com.example.shopping.entity.board.BoardEntity;
-import com.example.shopping.entity.item.ItemEntity;
-import com.example.shopping.entity.member.MemberEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.querydsl.QuerydslPredicateExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-@Repository
-public interface BoardRepository extends JpaRepository<BoardEntity, Long>{
-    void deleteByBoardId(Long boardId);
-    Page<BoardEntity> findByTitleContaining(Pageable pageable, String searchKeyword);
-    Page<BoardEntity> findAll(Pageable pageable);
-    Page<BoardEntity> findAllByMemberEmail(String email, Pageable pageable);
-    Page<BoardEntity> findByMemberEmailAndTitleContaining(String email, Pageable pageable, String searchKeyword);
+import java.util.Optional;
 
-    Page<BoardEntity> findAllByMemberNickName(String nickName, Pageable pageable);
-    Page<BoardEntity> findByMemberNickNameAndTitleContaining(String nickName, Pageable pageable, String searchKeyword);
-    Page<BoardEntity> findAllByItemItemId(Long itemId, Pageable pageable);
-    Page<BoardEntity> findByItemItemIdContaining(Long itemId, Pageable pageable, String searchKeyword);
+@Repository
+public interface BoardRepository extends JpaRepository<BoardEntity, Long> {
+//    @Query("select b from board b" +
+//            " join fetch b.member " +
+//            "where b.boardId = :boardId")
+    Optional<BoardEntity> findByBoardId(@Param("boardId") Long boardId);
+
+    void deleteByBoardId(Long boardId);
+
+//    @Query("select b from board b" +
+//            " join fetch b.member " +
+//            "where b.title like %:searchKeyword%")
+    Page<BoardEntity> findByTitleContaining(Pageable pageable, @Param("searchKeyword") String searchKeyword);
+
+//    @Query("select b from board b" +
+//            " join fetch b.member ")
+    Page<BoardEntity> findAll(Pageable pageable);
+
+//    @Query("select b from board b " +
+//            "join fetch b.member " +
+//            "where b.member.email = :email")
+    Page<BoardEntity> findAllByMemberEmail(@Param("email") String email, Pageable pageable);
+
+//    @Query("select  b from board  b " +
+//            " join  fetch b.member " +
+//            "where b.member.email = :email and b.title like %:searchKeyword%")
+    Page<BoardEntity> findByMemberEmailAndTitleContaining(@Param("email") String email,
+                                                          Pageable pageable,
+                                                          @Param("searchKeyword") String searchKeyword);
+
+//    @Query("select b from board b " +
+//            " join fetch b.member " +
+//            "where b.member.nickName = :nickName")
+    Page<BoardEntity> findAllByMemberNickName(@Param("nickName") String nickName,
+                                              Pageable pageable);
+
+//    @Query("select b from board b " +
+//            " join fetch b.member " +
+//            "where b.member.nickName = :nickName and b.title like %:searchKeyword%")
+    Page<BoardEntity> findByMemberNickNameAndTitleContaining(@Param("nickName") String nickName,
+                                                             Pageable pageable,
+                                                             @Param("searchKeyword") String searchKeyword);
+
+//    @Query("select b from board b " +
+//            " join fetch b.member " +
+//            "where b.item.itemId = :itemId")
+    Page<BoardEntity> findAllByItemItemId(@Param("itemId") Long itemId, Pageable pageable);
+
+//    @Query("select b from board b " +
+//            " join fetch b.member " +
+//            "where b.item.itemId = :itemId and b.title like %:searchKeyword%")
+    Page<BoardEntity> findByItemItemIdContaining(@Param("itemId") Long itemId,
+                                                 Pageable pageable,
+                                                 @Param("searchKeyword") String searchKeyword);
 }
