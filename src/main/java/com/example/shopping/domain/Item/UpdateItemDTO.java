@@ -34,7 +34,8 @@ public class UpdateItemDTO {
     @NotNull(message = "판매지역을 입력해야 합니다.")
     private String sellPlace;
 
-    private List<Long> delImgId;
+    @Schema(description = "남길 이미지id")
+    private List<Long> remainImgId;
 
     @Builder
     public UpdateItemDTO(String itemName, int price, String itemDetail, int stockNumber, String sellPlace, List<Long> delImgId) {
@@ -43,6 +44,6 @@ public class UpdateItemDTO {
         this.itemDetail = itemDetail;
         this.stockNumber = stockNumber;
         this.sellPlace = sellPlace;
-        this.delImgId = delImgId;
+        this.remainImgId = delImgId;
     }
 }

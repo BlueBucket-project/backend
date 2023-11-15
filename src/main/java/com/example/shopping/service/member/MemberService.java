@@ -17,7 +17,7 @@ public interface MemberService {
     // 회원수정
     ResponseEntity<?> updateUser(Long memberId, ModifyMemberDTO modifyMemberDTO, String memberEmail);
     // 이메일 체크
-    String emailCheck(String email);
+    boolean emailCheck(String email);
     // 닉네임 체크
-    String nickNameCheck(String nickName);
+    boolean nickNameCheck(String nickName);
 }

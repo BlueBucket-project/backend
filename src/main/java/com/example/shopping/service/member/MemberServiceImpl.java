@@ -41,33 +41,31 @@ public class MemberServiceImpl implements MemberService{
     @Override
     public ResponseEntity<?> signUp(RequestMemberDTO memberDTO) {
         try {
-            MemberEntity findEmail = memberRepository.findByEmail(memberDTO.getEmail());
-            MemberEntity findNickName = memberRepository.findByNickName(memberDTO.getNickName());
+            log.info("email : " + memberDTO.getEmail());
+            log.info("nickName : " + memberDTO.getNickName());
 
+            if(!emailCheck(memberDTO.getEmail()) && !nickNameCheck(memberDTO.getNickName())) {
+                return ResponseEntity.badRequest().body("이미 존재하는 회원이 있습니다.");
+            } else {
+                // 아이디가 없다면 DB에 등록해줍니다.
+                MemberEntity member = MemberEntity.builder()
+                        .email(memberDTO.getEmail())
+                        .memberPw(passwordEncoder.encode(memberDTO.getMemberPw()))
+                        .memberName(memberDTO.getMemberName())
+                        .nickName(memberDTO.getNickName())
+                        .memberRole(memberDTO.getMemberRole())
+                        .address(AddressEntity.builder()
+                                .memberAddr(memberDTO.getMemberAddress().getMemberAddr())
+                                .memberAddrDetail(memberDTO.getMemberAddress().getMemberAddrDetail())
+                                .memberZipCode(memberDTO.getMemberAddress().getMemberZipCode())
+                                .build()).build();
 
-            if(findEmail.getEmail().equals(memberDTO.getEmail())
-                    && findNickName.getNickName().equals(memberDTO.getNickName())) {
-                return ResponseEntity.badRequest().body("이미 가입된 회원입니다.");
+                log.info("member in service : " + member);
+                MemberEntity saveMember = memberRepository.save(member);
+
+                ResponseMemberDTO coverMember = ResponseMemberDTO.toMemberDTO(saveMember);
+                return ResponseEntity.ok().body(coverMember);
             }
-
-            // 아이디가 없다면 DB에 등록해줍니다.
-            MemberEntity member = MemberEntity.builder()
-                    .email(memberDTO.getEmail())
-                    .memberPw(passwordEncoder.encode(memberDTO.getMemberPw()))
-                    .memberName(memberDTO.getMemberName())
-                    .nickName(memberDTO.getNickName())
-                    .memberRole(memberDTO.getMemberRole())
-                    .address(AddressEntity.builder()
-                            .memberAddr(memberDTO.getMemberAddress().getMemberAddr())
-                            .memberAddrDetail(memberDTO.getMemberAddress().getMemberAddrDetail())
-                            .memberZipCode(memberDTO.getMemberAddress().getMemberZipCode())
-                            .build()).build();
-
-            log.info("member in service : " + member);
-            MemberEntity saveMember = memberRepository.save(member);
-
-            ResponseMemberDTO coverMember = ResponseMemberDTO.toMemberDTO(saveMember);
-            return ResponseEntity.ok().body(coverMember);
         } catch (Exception e) {
             log.error(e.getMessage());
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -198,23 +196,23 @@ public class MemberServiceImpl implements MemberService{
 
     // 중복체크
     @Override
-    public String emailCheck(String email) {
+    public boolean emailCheck(String email) {
         MemberEntity findEmail = memberRepository.findByEmail(email);
         if(findEmail == null) {
-            return "회원가입이 가능한 이메일입니다.";
+            return true;
         } else {
-            return "이미 가입한 이메일이 있습니다.";
+            return false;
         }
     }
 
     // 닉네임 체크
     @Override
-    public String nickNameCheck(String nickName) {
+    public boolean nickNameCheck(String nickName) {
         MemberEntity findNickName = memberRepository.findByNickName(nickName);
         if(findNickName == null) {
-            return "사용가능한 닉네임입니다.";
+            return true;
         } else {
-            return "이미 존재하는 닉네임입니다.";
+            return false;
         }
     }
 
