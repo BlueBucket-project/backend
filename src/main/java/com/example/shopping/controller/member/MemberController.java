@@ -121,7 +121,7 @@ public class MemberController {
     @Operation(summary = "수정 API", description = "유저 정보를 수정하는 API입니다.")
     @PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
     public ResponseEntity<?> update(@PathVariable Long memberId,
-                                    @RequestBody ModifyMemberDTO modifyMemberDTO,
+                                    @Validated @RequestBody ModifyMemberDTO modifyMemberDTO,
                                     @AuthenticationPrincipal UserDetails userDetails) {
         try {
             String email = userDetails.getUsername();
@@ -129,7 +129,7 @@ public class MemberController {
             ResponseEntity<?> responseEntity = memberServiceImpl.updateUser(memberId, modifyMemberDTO, email);
             return ResponseEntity.ok().body(responseEntity);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("잘못된 요청");
+            return ResponseEntity.badRequest().body("잘못된 요청 : " + e.getMessage());
         }
     }
 

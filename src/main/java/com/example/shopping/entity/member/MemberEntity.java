@@ -27,7 +27,7 @@ public class MemberEntity extends BaseTimeEntity {
     @Column(name = "member_pw")
     private String memberPw;
 
-    @Column(name = "nick_name")
+    @Column(name = "nick_name", nullable = false)
     private String nickName;
 
     @Enumerated(EnumType.STRING)
