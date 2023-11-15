@@ -4,7 +4,6 @@ import com.example.shopping.domain.board.BoardDTO;
 import com.example.shopping.domain.board.BoardSecret;
 import com.example.shopping.domain.board.CreateBoardDTO;
 import com.example.shopping.entity.board.BoardEntity;
-import com.example.shopping.entity.comment.CommentEntity;
 import com.example.shopping.entity.item.ItemEntity;
 import com.example.shopping.entity.member.MemberEntity;
 import com.example.shopping.repository.board.BoardRepository;
@@ -17,16 +16,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -67,7 +60,7 @@ public class BoardServiceImpl implements BoardService {
     @Override
     public String removeBoard(Long boardId, String memberEmail) {
         // 게시글 조회
-        BoardEntity findBoard = boardRepository.findById(boardId)
+        BoardEntity findBoard = boardRepository.findByBoardId(boardId)
                 .orElseThrow(EntityNotFoundException::new);
         // 유저 조회
         MemberEntity findUser = memberRepository.findByEmail(memberEmail);
@@ -91,12 +84,12 @@ public class BoardServiceImpl implements BoardService {
         MemberEntity findUser = memberRepository.findByEmail(memberEmail);
         log.info("유저 : " + findUser);
         // 문의글 조회
-        BoardEntity findBoard = boardRepository.findById(boardId)
+        BoardEntity findBoard = boardRepository.findByBoardId(boardId)
                 .orElseThrow(EntityNotFoundException::new);
 
         // 문의글을 작성할 때 등록된 이메일이 받아온 이메일이 맞아야 true
         if (findUser.getEmail().equals(findBoard.getMember().getEmail())) {
-            BoardDTO boardDTO = BoardDTO.toBoardDTO(findBoard);
+            BoardDTO boardDTO = BoardDTO.toBoardDTO(findBoard, findUser.getNickName());
             return ResponseEntity.ok().body(boardDTO);
         } else {
             return ResponseEntity.badRequest().body("해당 유저의 문의글이 아닙니다.");
@@ -110,7 +103,7 @@ public class BoardServiceImpl implements BoardService {
                                          String memberEmail) {
         try {
             // 게시글 조회
-            BoardEntity findBoard = boardRepository.findById(boardId)
+            BoardEntity findBoard = boardRepository.findByBoardId(boardId)
                     .orElseThrow(EntityNotFoundException::new);
             log.info("게시글 : " + findBoard);
             // 유저 조회
@@ -123,7 +116,7 @@ public class BoardServiceImpl implements BoardService {
                 findBoard = BoardEntity.updateBoard(boardDTO, findUser, findBoard.getItem());
             }
             BoardEntity saveBoard = boardRepository.save(findBoard);
-            BoardDTO returnBoard = BoardDTO.toBoardDTO(saveBoard);
+            BoardDTO returnBoard = BoardDTO.toBoardDTO(saveBoard, findUser.getNickName());
             return ResponseEntity.ok().body(returnBoard);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -135,6 +128,8 @@ public class BoardServiceImpl implements BoardService {
     @Override
     public Page<BoardDTO> getMyBoards(String memberEmail, Pageable pageable, String searchKeyword) {
 
+        MemberEntity findUser = memberRepository.findByEmail(memberEmail);
+
         Page<BoardEntity> findAllBoards;
         if(StringUtils.isNotBlank(searchKeyword)) {
             // 작성자의 문의글을 조회해온다.
@@ -143,8 +138,8 @@ public class BoardServiceImpl implements BoardService {
             findAllBoards = boardRepository.findAllByMemberEmail(memberEmail, pageable);
         }
         // 작성자의 모든 글은 본인 글이니 볼 수 있도록 상태를 바꿔준다.
-        findAllBoards.forEach(board -> board.changeSecret(BoardSecret.UN_ROCK));
-        return findAllBoards.map(BoardDTO::toBoardDTO);
+        findAllBoards.forEach(board -> board.changeSecret(BoardSecret.UN_LOCK));
+        return findAllBoards.map(board -> BoardDTO.toBoardDTO(board, findUser.getNickName()));
     }
 
     // 상품에 대한 문의글 보기
@@ -174,13 +169,14 @@ public class BoardServiceImpl implements BoardService {
 
         for (BoardEntity boardEntity : findAllBoards) {
             if(boardEntity.getMember().getEmail().equals(findUser.getEmail())) {
-                boardEntity.changeSecret(BoardSecret.UN_ROCK);
+                boardEntity.changeSecret(BoardSecret.UN_LOCK);
             } else {
-                boardEntity.changeSecret(BoardSecret.ROCK);
+                boardEntity.changeSecret(BoardSecret.LOCK);
             }
         }
         log.info("조회된 게시글 수 : {}", findAllBoards.getTotalElements());
         log.info("조회된 게시글 : {}", findAllBoards);
-        return findAllBoards.map(BoardDTO::toBoardDTO);
+
+        return findAllBoards.map(board -> BoardDTO.toBoardDTO(board, board.getMember().getNickName()));
     }
 }
