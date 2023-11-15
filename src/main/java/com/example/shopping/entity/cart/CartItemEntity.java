@@ -15,7 +15,7 @@ import javax.persistence.*;
 
 @Entity(name = "cartitem")
 @Getter
-@ToString
+@ToString(exclude = "cart")
 @NoArgsConstructor
 public class CartItemEntity extends BaseTimeEntity {
 
