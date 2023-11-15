@@ -96,7 +96,7 @@ public class BoardEntity extends BaseEntity {
                 .title(boardDTO.getTitle())
                 .content(boardDTO.getContent())
                 // 본인이 작성한 글은 읽을 수 있어야하기 때문에 UN_ROCK
-                .boardSecret(BoardSecret.UN_ROCK)
+                .boardSecret(BoardSecret.UN_LOCK)
                 .member(member)
                 .item(item)
                 .build();
