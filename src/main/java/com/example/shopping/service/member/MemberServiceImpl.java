@@ -179,22 +179,21 @@ public class MemberServiceImpl implements MemberService {
                             modifyMemberDTO.getMemberPw() == null
                                     ? findUser.getMemberPw()
                                     : passwordEncoder.encode(modifyMemberDTO.getMemberPw()))
-                    .nickName(modifyMemberDTO.getNickName() == null || !nickNameCheck(modifyMemberDTO.getNickName())
+                    .nickName(modifyMemberDTO.getNickName() == null
                             ? findUser.getNickName() : modifyMemberDTO.getNickName())
                     .memberRole(findUser.getMemberRole())
                     .memberPoint(findUser.getMemberPoint())
-                    .memberName(modifyMemberDTO.getMemberName() == null
-                    ? findUser.getMemberName() : modifyMemberDTO.getMemberName())
+                    .memberName(findUser.getMemberName())
                     .address(AddressEntity.builder()
-                            .memberAddr(modifyMemberDTO.getMemberAddress().getMemberAddr() == null
-                                    ? findUser.getAddress().getMemberAddr()
-                                    : modifyMemberDTO.getMemberAddress().getMemberAddr())
-                            .memberAddrDetail(modifyMemberDTO.getMemberAddress().getMemberAddrDetail() == null
-                                    ? findUser.getAddress().getMemberAddrDetail()
-                                    : modifyMemberDTO.getMemberAddress().getMemberAddrDetail())
-                            .memberZipCode(modifyMemberDTO.getMemberAddress().getMemberZipCode() == null
-                                    ? findUser.getAddress().getMemberZipCode()
-                                    : modifyMemberDTO.getMemberAddress().getMemberZipCode())
+                            .memberAddr(modifyMemberDTO.getMemberAddress() != null && modifyMemberDTO.getMemberAddress().getMemberAddr() != null
+                                    ? modifyMemberDTO.getMemberAddress().getMemberAddr()
+                                    : findUser.getAddress().getMemberAddr())
+                            .memberAddrDetail(modifyMemberDTO.getMemberAddress() != null && modifyMemberDTO.getMemberAddress().getMemberAddrDetail() != null
+                                    ? modifyMemberDTO.getMemberAddress().getMemberAddrDetail()
+                                    : findUser.getAddress().getMemberAddrDetail())
+                            .memberZipCode(modifyMemberDTO.getMemberAddress() != null && modifyMemberDTO.getMemberAddress().getMemberZipCode() != null
+                                    ? modifyMemberDTO.getMemberAddress().getMemberZipCode()
+                                    : findUser.getAddress().getMemberZipCode())
                             .build()).build();
             log.info("유저 수정 : " + findUser);
 
