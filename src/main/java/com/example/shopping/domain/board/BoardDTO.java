@@ -59,7 +59,7 @@ public class BoardDTO {
     }
 
     // 엔티티를 DTO로 변환하는 작업
-    public static BoardDTO toBoardDTO(BoardEntity board) {
+    public static BoardDTO toBoardDTO(BoardEntity board, String nickName) {
         // 게시글 댓글 처리
         List<CommentEntity> commentEntityList = board.getCommentEntityList();
         List<CommentDTO> commentDTOS = new ArrayList<>();
@@ -74,7 +74,7 @@ public class BoardDTO {
                 .boardId(board.getBoardId())
                 .title(board.getTitle())
                 .content(board.getContent())
-                .nickName(board.getMember().getNickName())
+                .nickName(nickName)
                 .commentDTOList(commentDTOS)
                 .regTime(LocalDateTime.now())
                 .boardSecret(board.getBoardSecret())
