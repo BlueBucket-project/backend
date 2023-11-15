@@ -3,8 +3,10 @@ package com.example.shopping.domain.cart;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
+@NoArgsConstructor
 public class CartUpdateDTO {
 
     @Schema(description = "장바구니번호")
