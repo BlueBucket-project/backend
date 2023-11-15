@@ -41,7 +41,9 @@ public class JwtProvider {
     }
 
     // 유저 정보를 가지고 AccessToken, RefreshToken 생성
-    public TokenDTO createToken(Authentication authentication, List<GrantedAuthority> authorities) {
+    public TokenDTO createToken(Authentication authentication,
+                                List<GrantedAuthority> authorities,
+                                Long memberId) {
         // 여기 authentication에서 인증이 완료된 것은 아니다.
         // 프론트에서 header에 accessToken을 담아서 검증을 거쳐야 인증처리가 완료됨
         // 이 시점에서는 아직 실제로 인증이 이루어지지 않았기 때문에 Authenticated 속성은 false로 설정
@@ -103,6 +105,7 @@ public class JwtProvider {
                 .accessTokenTime(accessTokenExpire)
                 .refreshTokenTime(refreshTokenExpire)
                 .memberEmail(authentication.getName())
+                .memberId(memberId)
                 .build();
 
         log.info("token in JwtProvider : " + tokenDTO);
@@ -114,7 +117,8 @@ public class JwtProvider {
     // 위에서는 accessToken만 발급하지만 여기에서는
     // accessToken과 refreshToken 모두 발급
     public TokenDTO createTokenForOAuth2(String memberEmail,
-                                         List<GrantedAuthority> authorities) {
+                                         List<GrantedAuthority> authorities,
+                                         Long memberId) {
         log.info("email in JwtProvicer : " + memberEmail);
         log.info("authorities in JwtProvicer : " + authorities);
 
@@ -156,6 +160,7 @@ public class JwtProvider {
                 .accessTokenTime(accessTokenExpire)
                 .refreshTokenTime(refreshTokenExpire)
                 .memberEmail(memberEmail)
+                .memberId(memberId)
                 .build();
     }
 
