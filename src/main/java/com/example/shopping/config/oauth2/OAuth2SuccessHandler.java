@@ -35,12 +35,17 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                                         Authentication authentication) throws IOException, ServletException {
         try {
             log.info("OAuth2 Login 성공!");
+            // 소셜 로그인 이메일 가져오기
             String email = authentication.getName();
             log.info("email : " + email);
+            // 토큰 조회
             TokenEntity findToken = tokenRepository.findByMemberEmail(email);
             log.info("token : " + findToken);
+            // 토큰 DTO 반환
             TokenDTO tokenDTO = TokenDTO.toTokenDTO(findToken);
+            // 회원 조회
             MemberEntity findUser = memberRepository.findByEmail(email);
+            // 회원 DTO 반환
             ResponseMemberDTO memberDTO = ResponseMemberDTO.toMemberDTO(findUser);
 
             // 헤더에 담아준다.
@@ -52,6 +57,8 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             responseBody.put("accessToken", tokenDTO.getAccessToken());
             responseBody.put("refreshToken", tokenDTO.getRefreshToken());
             responseBody.put("email", tokenDTO.getMemberEmail());
+            responseBody.put("memberId", tokenDTO.getMemberId());
+            responseBody.put("grantType", tokenDTO.getGrantType());
 
             // JSON 응답 전송
             response.setContentType("application/json");
