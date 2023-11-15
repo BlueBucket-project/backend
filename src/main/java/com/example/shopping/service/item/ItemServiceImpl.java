@@ -416,7 +416,7 @@ public class ItemServiceImpl implements ItemService{
             throw e;
         }
         catch (Exception e){
-            throw new EntityNotFoundException("상품 조회에 실패하였습니다.");
+            throw new EntityNotFoundException("상품 조회에 실패하였습니다.\n" + e.getMessage());
         }
     }
 
