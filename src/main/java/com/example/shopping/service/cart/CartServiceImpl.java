@@ -171,7 +171,12 @@ public class CartServiceImpl implements CartService{
     @Override
     public Page<CartItemDTO> getCartPage(Pageable pageable, String email) {
         Long mbrId = memberRepository.findByEmail(email).getMemberId();
-        Long cartId = cartRepository.findByMemberMemberId(mbrId).getCartId();
+        Long cartId = 0L;
+        try{
+            cartId = cartRepository.findByMemberMemberId(mbrId).getCartId();
+        }catch (Exception e){
+            throw new CartException("장바구니가 없습니다.");
+        }
 
         //Pageable 값 셋팅 - List to Page
         Pageable pageRequest = createPageRequestUsing(pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());

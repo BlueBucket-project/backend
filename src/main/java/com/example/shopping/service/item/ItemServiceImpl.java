@@ -161,7 +161,7 @@ public class ItemServiceImpl implements ItemService{
                         itemImgIds.add(imgId.getItemImgId());
                     }
                     //남기는 이미지 제외 - 삭제할 이미지 아이디 추출과정
-                    for(Long imgId : itemDTO.getDelImgId()) {
+                    for(Long imgId : itemDTO.getRemainImgId()) {
                         itemImgIds.remove(imgId);
                     }
                 }

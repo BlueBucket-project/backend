@@ -167,18 +167,18 @@ public class CartController {
     }
 
 
-    @GetMapping(value = "/{mbrEmail}")
+    @GetMapping(value = "")
     @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
     @Operation(summary = "장바구니내역조회", description = "장바구니 상품을 조회하는 API입니다.")
-    public ResponseEntity<?> getCartList(@PathVariable String mbrEmail
-            , @PageableDefault(sort = "cartItemId", direction = Sort.Direction.ASC) Pageable pageable
+    public ResponseEntity<?> getCartList(
+             @PageableDefault(sort = "cartItemId", direction = Sort.Direction.ASC) Pageable pageable
             ,@AuthenticationPrincipal UserDetails userDetails
     )    {
 
         Page<CartItemDTO> items = null;
 
         try {
-            items = cartService.getCartPage(pageable, mbrEmail);
+            items = cartService.getCartPage(pageable, userDetails.getUsername());
 
             Map<String, Object> response = new HashMap<>();
             // 현재 페이지의 아이템 목록
