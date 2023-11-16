@@ -2,6 +2,7 @@ package com.example.shopping.repository.cart;
 
 import com.example.shopping.domain.cart.CartDTO;
 import com.example.shopping.domain.cart.CartItemDTO;
+import com.example.shopping.domain.cart.CartStatus;
 import com.example.shopping.domain.member.ResponseMemberDTO;
 import com.example.shopping.entity.cart.CartEntity;
 import com.example.shopping.entity.cart.CartItemEntity;
@@ -28,6 +29,7 @@ public class CartRepositoryImpl implements CartRepository{
                     .count(item.getCount())
                     .cart(item.getCart() == null? null : newCart)
                     .item(item.getItem().toEntity())
+                    .status(CartStatus.WAIT)
                     .build();
             newCart.addCartItems(newCartItem);
         }
