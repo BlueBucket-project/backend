@@ -96,13 +96,16 @@ public class ItemEntity extends BaseTimeEntity {
         this.itemSeller = itemSeller;
     }
 
-    public void itemSell(int cnt, ItemSellStatus status){
+    public void itemSell(int cnt){
         // 아이템 판매 시
         // 재고감소, 상품상태변경, 예약자 및 예약수량 초기화
         this.stockNumber -= cnt;
 
         if(this.stockNumber == 0){
-            this.itemSellStatus = status;
+            this.itemSellStatus = ItemSellStatus.SOLD_OUT;
+        }
+        else{
+            this.itemSellStatus = ItemSellStatus.SELL;
         }
 
         this.itemReserver = null;

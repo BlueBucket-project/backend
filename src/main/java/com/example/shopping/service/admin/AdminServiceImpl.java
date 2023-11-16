@@ -218,7 +218,7 @@ public class AdminServiceImpl implements AdminService {
                 throw new ItemException("예약된 물품이 아니라 구매처리 할 수 없습니다.");
             }
 
-            if(item.getItemReserver() != orderMember.getEmail()){
+            if(!item.getItemReserver().equals(orderMember.getEmail())){
                 //throw 구매자와 예약한사람이 달라 판매 못함
                 throw new ItemException("예약자와 현재 구매하려는 사람이 달라 구매처리 할 수 없습니다.");
             }
@@ -248,7 +248,7 @@ public class AdminServiceImpl implements AdminService {
 
             // Item-status 변경
             ItemEntity updateItem = itemRepository.findById(savedItem.getItemId()).orElseThrow();
-            updateItem.itemSell(savedItem.getItemAmount(), ItemSellStatus.SOLD_OUT);
+            updateItem.itemSell(savedItem.getItemAmount());
             itemRepository.save(updateItem);
 
             //아이템 이미지 삭제처리
