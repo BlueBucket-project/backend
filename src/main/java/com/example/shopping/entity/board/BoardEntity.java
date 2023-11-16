@@ -48,7 +48,7 @@ public class BoardEntity extends BaseEntity {
     // orphanRemoval = true도 게시글을 삭제하면
     // 댓글도 삭제되므로 여기서 작업을 해야합니다.
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
-    @OrderBy("commentId asc ")
+    @OrderBy("commentId desc ")
     private List<CommentEntity> commentEntityList = new ArrayList<>();
 
     @Builder
@@ -104,6 +104,28 @@ public class BoardEntity extends BaseEntity {
                 .item(item)
                 .build();
     }
+
+//    // 게시글 업데이트 메소드에서 댓글 리스트를 비워두고 다시 추가하는 부분 추가
+//    public void updateBoard(BoardDTO boardDTO,
+//                            MemberEntity member,
+//                            ItemEntity item) {
+//        // 기존의 댓글 리스트 비워두기
+//        this.commentEntityList.clear();
+//
+//        // 새로운 댓글 리스트 추가합니다.
+//        List<CommentDTO> commentDTOList = boardDTO.getCommentDTOList();
+//        for (CommentDTO commentDTO : commentDTOList) {
+//            CommentEntity commentEntity = CommentEntity.toCommentEntity(commentDTO, member, this);
+//            this.commentEntityList.add(commentEntity);
+//        }
+//
+//        // 기존의 게시글 정보를 업데이트 합니다.
+//        this.title = boardDTO.getTitle() != null ? boardDTO.getTitle() : this.title;
+//        this.content = boardDTO.getContent() != null ? boardDTO.getContent() : this.content;
+//        this.member = member;
+//        this.item = item;
+//        this.boardSecret = boardDTO.getBoardSecret();
+//    }
 
 
     // 문의글 상태 변화
