@@ -158,6 +158,7 @@ public class ItemDTO {
  */
 
         return  ItemEntity.builder()
+                .itemId(this.itemId)
                 .itemDetail(this.itemDetail)
                 .itemName(this.itemName)
                 .itemPlace(this.sellPlace)

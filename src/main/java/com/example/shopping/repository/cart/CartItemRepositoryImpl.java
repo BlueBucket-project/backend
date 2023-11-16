@@ -22,14 +22,14 @@ public class CartItemRepositoryImpl implements CartItemRepository{
     @Override
     public CartItemDTO save(CartItemDTO cartItem) {
         CartItemEntity savedCartItem = cartItemJpaRepository.save(cartItem.toEntity());
-        return savedCartItem.toItemDTO();
+        return CartItemDTO.toDTO(savedCartItem);
     }
 
     @Override
     public CartMainDTO findByCartMainDTO(Long cartId, Long itemId) {
         CartItemEntity cartItem = cartItemJpaRepository.findByCartCartIdAndItemItemId(cartId, itemId);
         if(cartItem != null){
-            return cartItem.toMainDTO();
+            return CartMainDTO.toMainDTO(cartItem);
         }
         else
             return null;
@@ -39,7 +39,7 @@ public class CartItemRepositoryImpl implements CartItemRepository{
     public CartItemDTO findByCartItemDTO(Long cartId, Long itemId) {
         CartItemEntity cartItem = cartItemJpaRepository.findByCartCartIdAndItemItemId(cartId, itemId);
         if(cartItem != null){
-            return cartItem.toItemDTO();
+            return CartItemDTO.toDTO(cartItem);
         }
         else
             return null;
@@ -52,7 +52,16 @@ public class CartItemRepositoryImpl implements CartItemRepository{
         if(items == null)
             return null;
         else
-            return items.stream().map(CartItemEntity::toItemDTO).collect(Collectors.toList());
+            return items.stream().map(CartItemDTO::toDTO).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<CartItemDTO> findCartItemWithStatus(Long cartId) {
+        List<CartItemEntity> items = cartItemJpaRepository.findByCartCartIdAndStatus(cartId);
+        if(items == null)
+            return null;
+        else
+            return items.stream().map(CartItemDTO::toDTO).collect(Collectors.toList());
     }
 
     @Override
@@ -63,7 +72,7 @@ public class CartItemRepositoryImpl implements CartItemRepository{
     @Override
     public CartItemDTO findByCartItemId(Long cartItemId) {
         CartItemEntity item = cartItemJpaRepository.findById(cartItemId).orElseThrow();
-        return item.toItemDTO();
+        return CartItemDTO.toDTO(item);
     }
 
 }
