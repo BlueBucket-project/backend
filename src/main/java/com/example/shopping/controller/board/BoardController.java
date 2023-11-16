@@ -104,6 +104,7 @@ public class BoardController {
                                       @AuthenticationPrincipal UserDetails userDetails) {
         try {
             String email = userDetails.getUsername();
+            log.info("email : " + email);
             ResponseEntity<?> board = boardService.getBoard(boardId, email);
             return ResponseEntity.ok().body(board);
         } catch (EntityNotFoundException e) {
@@ -121,7 +122,7 @@ public class BoardController {
             @PageableDefault(sort = "boardId", direction = Sort.Direction.DESC)
             Pageable pageable,
             @PathVariable(name = "itemId") Long itemId,
-            String searchKeyword,
+            @RequestParam(value = "searchKeyword", required = false) String searchKeyword,
             @RequestParam(value = "email", required = false) String email) {
         try {
             log.info("email : " + email);
