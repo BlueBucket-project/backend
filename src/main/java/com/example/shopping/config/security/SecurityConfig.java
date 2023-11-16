@@ -83,7 +83,9 @@ public class SecurityConfig {
                     .access("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
                 .antMatchers("/api/v1/admins/**")
                     .access("hasRole('ROLE_ADMIN')")
-                .antMatchers(HttpMethod.POST, "/api/v1/admins/orderItem")
+                .antMatchers(HttpMethod.POST, "/api/v1/admins/**")
+                    .access("hasRole('ROLE_ADMIN')")
+                .antMatchers(HttpMethod.PUT, "/api/v1/admins/**")
                 .access("hasRole('ROLE_ADMIN')")
                 .antMatchers("/swagger-resources/**").permitAll()
                 .antMatchers("/swagger-ui/**").permitAll();
