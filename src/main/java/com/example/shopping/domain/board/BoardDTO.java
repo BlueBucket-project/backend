@@ -12,6 +12,7 @@ import lombok.ToString;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Getter
@@ -65,9 +66,14 @@ public class BoardDTO {
         List<CommentDTO> commentDTOS = new ArrayList<>();
 
         // 엔티티 댓글을 DTO 리스트에 담아주는 작업을 진행하고 있다.
-        for (CommentEntity commentEntity : commentEntityList) {
-            CommentDTO commentDTO = CommentDTO.toCommentDTO(commentEntity);
-            commentDTOS.add(commentDTO);
+        if (commentEntityList != null) {
+            for (CommentEntity commentEntity : commentEntityList) {
+                CommentDTO commentDTO = CommentDTO.toCommentDTO(commentEntity);
+                commentDTOS.add(commentDTO);
+            }
+        } else {
+            // commentEntityList가 null일 경우 빈 리스트로 초기화
+            commentDTOS = Collections.emptyList();
         }
 
         return BoardDTO.builder()
