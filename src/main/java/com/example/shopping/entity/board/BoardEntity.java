@@ -11,7 +11,6 @@ import com.example.shopping.entity.member.MemberEntity;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -19,7 +18,6 @@ import java.util.List;
 
 @Entity(name = "board")
 @Table
-@ToString
 @Getter
 @NoArgsConstructor
 public class BoardEntity extends BaseEntity {
@@ -32,16 +30,17 @@ public class BoardEntity extends BaseEntity {
     private String title;
     private String content;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private MemberEntity member;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "item_id")
     private ItemEntity item;
 
     @Enumerated(EnumType.STRING)
     private BoardSecret boardSecret;
+
 
     // 댓글
     // 여기에 적용해야 합니다. 보통 게시물을 삭제해야 이미지가 삭제되므로
@@ -70,7 +69,9 @@ public class BoardEntity extends BaseEntity {
     }
 
     // 게시글 DTO를 엔티티로 변환
-    public static BoardEntity toBoardEntity(BoardDTO board, MemberEntity member, ItemEntity item) {
+    public static BoardEntity toBoardEntity(BoardDTO board,
+                                            MemberEntity member,
+                                            ItemEntity item) {
         BoardEntity boardEntity = BoardEntity.builder()
                 .boardId(board.getBoardId())
                 .title(board.getTitle())
@@ -91,7 +92,9 @@ public class BoardEntity extends BaseEntity {
 
     /* 비즈니스 로직 */
     // 게시글 작성
-    public static BoardEntity createBoard(CreateBoardDTO boardDTO, MemberEntity member, ItemEntity item) {
+    public static BoardEntity createBoard(CreateBoardDTO boardDTO,
+                                          MemberEntity member,
+                                          ItemEntity item) {
         return BoardEntity.builder()
                 .title(boardDTO.getTitle())
                 .content(boardDTO.getContent())
@@ -103,7 +106,9 @@ public class BoardEntity extends BaseEntity {
     }
 
     // 게시글 수정
-    public static BoardEntity updateBoard(CreateBoardDTO boardDTO, MemberEntity member, ItemEntity item
+    public static BoardEntity updateBoard(CreateBoardDTO boardDTO,
+                                          MemberEntity member,
+                                          ItemEntity item
     ) {
         return BoardEntity.builder()
                 .title(boardDTO.getTitle())
