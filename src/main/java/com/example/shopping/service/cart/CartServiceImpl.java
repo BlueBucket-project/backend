@@ -3,10 +3,12 @@ package com.example.shopping.service.cart;
 import com.example.shopping.domain.Item.ItemDTO;
 import com.example.shopping.domain.Item.ItemSellStatus;
 import com.example.shopping.domain.cart.*;
+import com.example.shopping.domain.member.RequestMemberDTO;
 import com.example.shopping.entity.cart.CartItemEntity;
 import com.example.shopping.entity.item.ItemEntity;
 import com.example.shopping.entity.member.MemberEntity;
 import com.example.shopping.exception.cart.CartException;
+import com.example.shopping.exception.member.UserException;
 import com.example.shopping.exception.service.OutOfStockException;
 import com.example.shopping.repository.cart.CartItemRepository;
 import com.example.shopping.repository.cart.CartRepository;
@@ -74,13 +76,7 @@ public class CartServiceImpl implements CartService{
             CartDTO newCart = new CartDTO();
             newCart = newCart.createCart(member);
             log.info("새로운 장바구니 생성 : " + newCart.toString());
-//            CartItemDTO itemDetail = CartItemDTO.builder()
-//                    .price(item.getPrice() * cartItem.getCount())
-//                    .count(cartItem.getCount())
-//                    .cart(newCart)
-//                    .item(ItemDTO.toItemDTO(item))
-//                    .mbrId(member.getMemberId())
-//                    .build();
+
             CartItemDTO itemDetail = CartItemDTO.setCartItem(newCart, item, cartItem.getCount());
             newCart.addCartItems(itemDetail);
 
@@ -139,12 +135,18 @@ public class CartServiceImpl implements CartService{
     public String orderCart(List<CartOrderDTO> cartOrderList, String email) {
 
         try{
+                MemberEntity member = memberRepository.findByEmail(email);
+
             for(CartOrderDTO cartOrder : cartOrderList){
                 CartItemDTO cartItem = cartItemRepository.findByCartItemId(cartOrder.getCartItemId());
+
+                if(cartItem.getMbrId() != member.getMemberId())
+                    throw new CartException("예약하려고 하는 장바구니 상품id가 해당 회원의 장바구니 상품이 아닙니다.");
 
                 checkItemStock(cartItem.getItem().getItemId(), cartItem.getCount());
 
                 ItemEntity updateItem = itemRepository.findById(cartItem.getItem().getItemId()).orElseThrow();
+
                 if(updateItem.getItemSellStatus() == ItemSellStatus.RESERVED)
                     throw new CartException("상품("+ updateItem.getItemId()+")은 이미 예약되어 있습니다.\n예약자 : " +updateItem.getItemReserver());
 
@@ -154,7 +156,7 @@ public class CartServiceImpl implements CartService{
             return "구매예약에 성공하였습니다.";
         }
         catch (NullPointerException | NoSuchElementException e){
-            throw new CartException("예약하려고 하는 장바구니상품id가 해당 회원의 장바구니 상품이 아닙니다.");
+            throw new CartException("존재하지 않는 장바구니 상품id입니다.");
         }
         catch(CartException e){
             throw e;
