@@ -6,7 +6,6 @@ import com.example.shopping.entity.board.BoardEntity;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -15,7 +14,6 @@ import java.util.List;
 @Entity(name = "item")
 @Table
 @Getter
-@ToString
 @NoArgsConstructor
 public class ItemEntity extends BaseTimeEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)

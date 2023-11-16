@@ -71,7 +71,6 @@ public interface BoardRepository extends JpaRepository<BoardEntity, Long> {
 
     @Query(value = "select b from board b " +
             " join fetch b.member " +
-            " join fetch b.item " +
             "where b.item.itemId = :itemId" +
             " order by b.boardId desc ",
             countQuery = "select count(b) from board b where b.item.itemId = :itemId")
@@ -79,7 +78,6 @@ public interface BoardRepository extends JpaRepository<BoardEntity, Long> {
 
     @Query(value = "select b from board b " +
             " join fetch b.member " +
-            " join fetch b.item " +
             "where b.item.itemId = :itemId and b.title like %:searchKeyword%" +
             " order by b.boardId desc ",
             countQuery = "select count(b) from board b " +

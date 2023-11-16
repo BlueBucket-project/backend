@@ -12,7 +12,6 @@ import java.util.Date;
 @ToString
 @NoArgsConstructor
 public class TokenDTO {
-    private Long id;
     private String grantType;
     private String accessToken;
     private String refreshToken;
@@ -22,7 +21,7 @@ public class TokenDTO {
     private Long memberId;
 
     @Builder
-    public TokenDTO(Long id, 
+    public TokenDTO(
                     String grantType, 
                     String accessToken,
                     String refreshToken, 
@@ -30,7 +29,6 @@ public class TokenDTO {
                     Date accessTokenTime, 
                     Date refreshTokenTime,
                     Long memberId) {
-        this.id = id;
         this.grantType = grantType;
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;

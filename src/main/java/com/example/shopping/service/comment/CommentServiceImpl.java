@@ -53,7 +53,10 @@ public class CommentServiceImpl implements CommentService{
                 BoardEntity saveBoard = boardRepository.save(findBoard);
                 log.info("board : " + saveBoard);
 
-                return ResponseEntity.ok().body("댓글을 작성했습니다.");
+                CommentEntity saveComment = commentRepository.save(comment);
+                CommentDTO returnComment = CommentDTO.toCommentDTO(saveComment);
+
+                return ResponseEntity.ok().body(returnComment);
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("회원이 없습니다.");
             }
