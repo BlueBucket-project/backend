@@ -1,5 +1,6 @@
 package com.example.shopping.service.board;
 
+import com.example.shopping.domain.Item.ItemDTO;
 import com.example.shopping.domain.board.BoardDTO;
 import com.example.shopping.domain.board.BoardSecret;
 import com.example.shopping.domain.board.CreateBoardDTO;
@@ -35,24 +36,34 @@ public class BoardServiceImpl implements BoardService {
     public ResponseEntity<?> saveBoard(Long itemId,
                                        CreateBoardDTO boardDTO,
                                        String memberEmail) throws Exception {
-        // 회원 조회
-        MemberEntity findUser = memberRepository.findByEmail(memberEmail);
-        log.info("user : " + findUser);
-        // 상품 조회
-        ItemEntity findItem = itemRepository.findById(itemId)
-                .orElseThrow(EntityNotFoundException::new);
-        log.info("item : " + findItem);
+        try {
+            // 회원 조회
+            MemberEntity findUser = memberRepository.findByEmail(memberEmail);
+            log.info("user : " + findUser);
+            log.info("닉네임 : " + findUser.getNickName());
+            // 상품 조회
+            ItemEntity findItem = itemRepository.findById(itemId)
+                    .orElseThrow(EntityNotFoundException::new);
+            log.info("상품 : " + ItemDTO.toItemDTO(findItem));
 
-        if (findUser != null) {
-            // 작성할 문의글(제목, 내용), 유저 정보, 해당 상품의 정보를 넘겨준다.
-            BoardEntity boardEntity = BoardEntity.createBoard(boardDTO, findUser, findItem);
-            // 게시글은 상품의 상세페이지에 있으므로 연관관계 맺은 상품에 넣어줘야 한다.
-            findItem.getBoardEntityList().add(boardEntity);
-            itemRepository.save(findItem);
+            if (findUser != null && findUser.getNickName() != null) {
+                // 작성할 문의글(제목, 내용), 유저 정보, 해당 상품의 정보를 넘겨준다.
+                BoardEntity boardEntity =
+                        BoardEntity.createBoard(boardDTO, findUser, findItem);
+                // 게시글은 상품의 상세페이지에 있으므로 연관관계 맺은 상품에 넣어줘야 한다.
+                findItem.getBoardEntityList().add(boardEntity);
+                itemRepository.save(findItem);
+                BoardEntity saveBoard = boardRepository.save(boardEntity);
+                BoardDTO returnBoard = BoardDTO.toBoardDTO(saveBoard, findUser.getNickName());
+                log.info("게시글 : " + returnBoard);
 
-            return ResponseEntity.ok().body("문의글 작성했습니다.");
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("회원이 없습니다.");
+                return ResponseEntity.ok().body(returnBoard);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("회원이 없습니다.");
+            }
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
@@ -80,9 +91,8 @@ public class BoardServiceImpl implements BoardService {
     @Transactional(readOnly = true)
     @Override
     public ResponseEntity<?> getBoard(Long boardId, String memberEmail) {
-        // 유저 조회
+        // 회원 조회
         MemberEntity findUser = memberRepository.findByEmail(memberEmail);
-        log.info("유저 : " + findUser);
         // 문의글 조회
         BoardEntity findBoard = boardRepository.findByBoardId(boardId)
                 .orElseThrow(EntityNotFoundException::new);
@@ -131,7 +141,7 @@ public class BoardServiceImpl implements BoardService {
         MemberEntity findUser = memberRepository.findByEmail(memberEmail);
 
         Page<BoardEntity> findAllBoards;
-        if(StringUtils.isNotBlank(searchKeyword)) {
+        if (StringUtils.isNotBlank(searchKeyword)) {
             // 작성자의 문의글을 조회해온다.
             findAllBoards = boardRepository.findByMemberEmailAndTitleContaining(memberEmail, pageable, searchKeyword);
         } else {
@@ -161,18 +171,22 @@ public class BoardServiceImpl implements BoardService {
 
         // 조회해올 게시글을 넣을 곳
         Page<BoardEntity> findAllBoards;
-        if(StringUtils.isNotBlank(searchKeyword)) {
+        if (StringUtils.isNotBlank(searchKeyword)) {
             findAllBoards = boardRepository.findByItemItemIdContaining(itemId, pageable, searchKeyword);
         } else {
             findAllBoards = boardRepository.findAllByItemItemId(itemId, pageable);
         }
 
         for (BoardEntity boardEntity : findAllBoards) {
-            if(boardEntity.getMember().getEmail().equals(findUser.getEmail())) {
-                boardEntity.changeSecret(BoardSecret.UN_LOCK);
-            } else {
-                boardEntity.changeSecret(BoardSecret.LOCK);
-            }
+           if(email != null) {
+               if (boardEntity.getMember().getEmail().equals(findUser.getEmail())) {
+                   boardEntity.changeSecret(BoardSecret.UN_LOCK);
+               } else {
+                   boardEntity.changeSecret(BoardSecret.LOCK);
+               }
+           } else {
+               boardEntity.changeSecret(BoardSecret.LOCK);
+           }
         }
         log.info("조회된 게시글 수 : {}", findAllBoards.getTotalElements());
         log.info("조회된 게시글 : {}", findAllBoards);
