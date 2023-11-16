@@ -51,9 +51,6 @@ public class BoardServiceImpl implements BoardService {
                 // 작성할 문의글(제목, 내용), 유저 정보, 해당 상품의 정보를 넘겨준다.
                 BoardEntity boardEntity =
                         BoardEntity.createBoard(boardDTO, findUser, findItem);
-                // 게시글은 상품의 상세페이지에 있으므로 연관관계 맺은 상품에 넣어줘야 한다.
-                findItem.getBoardEntityList().add(boardEntity);
-                itemRepository.save(findItem);
                 BoardEntity saveBoard = boardRepository.save(boardEntity);
                 BoardDTO returnBoard = BoardDTO.toBoardDTO(saveBoard, findUser.getNickName());
                 log.info("게시글 : " + returnBoard);
@@ -122,16 +119,17 @@ public class BoardServiceImpl implements BoardService {
             log.info("유저 : " + findUser);
 
             // 받아온 유저를 조회하고 그 유저 정보와 게시글에 담긴 유저가 일치하는지
-            boolean equalsEmail = findUser.getEmail().equals(findBoard.getMember().getEmail());
+            boolean equalsEmail = findBoard.getMember().getEmail().equals(memberEmail);
             if(equalsEmail) {
                 // 수정할 내용, 유저정보, 게시글을 작성할 때 받은 상품의 정보를 넘겨준다.
                 findBoard = BoardEntity.builder()
                         .boardId(findBoard.getBoardId())
-                        .title(boardDTO.getTitle())
-                        .content(boardDTO.getContent())
+                        .title(boardDTO.getTitle() != null ? boardDTO.getTitle() : findBoard.getTitle())
+                        .content(boardDTO.getContent() != null ? boardDTO.getContent() : findBoard.getContent())
                         .item(findBoard.getItem())
                         .member(findBoard.getMember())
                         .boardSecret(BoardSecret.UN_LOCK)
+                        .commentEntityList(findBoard.getCommentEntityList())
                         .build();
                 BoardEntity updateBoard = boardRepository.save(findBoard);
                 BoardDTO returnBoard = BoardDTO.toBoardDTO(updateBoard, findUser.getNickName());

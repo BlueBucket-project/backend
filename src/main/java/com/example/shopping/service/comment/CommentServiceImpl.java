@@ -45,16 +45,10 @@ public class CommentServiceImpl implements CommentService{
             if(findUser != null) {
                 // 댓글 생성
                 CommentEntity comment = CommentEntity.createComment(commentDTO, findUser, findBoard);
-                // 게시글 엔티티안에 있는 댓글 리스트에 추가
-                findBoard.getCommentEntityList().add(comment);
-                log.info("댓글 : " + comment);
-                // DB에 저장
-                // 게시글과 연관관계를 맺었기 때문에 게시글만 저장해도 댓글이 저장된다.
-                BoardEntity saveBoard = boardRepository.save(findBoard);
-                log.info("board : " + saveBoard);
 
                 CommentEntity saveComment = commentRepository.save(comment);
                 CommentDTO returnComment = CommentDTO.toCommentDTO(saveComment);
+                log.info("댓글 : " + returnComment);
 
                 return ResponseEntity.ok().body(returnComment);
             } else {
