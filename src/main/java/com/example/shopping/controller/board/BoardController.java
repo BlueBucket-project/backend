@@ -86,8 +86,7 @@ public class BoardController {
         try {
             String email = userDetails.getUsername();
             log.info("이메일 : " + email);
-            ResponseEntity<?> responseEntity = boardService.updateBoard(boardId, modifyDTO, email);
-            return ResponseEntity.ok().body(responseEntity);
+            return boardService.updateBoard(boardId, modifyDTO, email);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }

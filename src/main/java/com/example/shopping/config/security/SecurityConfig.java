@@ -38,6 +38,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                .cors().and()
                 // 스프링 시큐리티에서 제공하는 로그인 페이지를 안쓰는 설정
                 .httpBasic()
                 .disable()

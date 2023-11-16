@@ -72,7 +72,7 @@ public class BoardEntity extends BaseEntity {
     public static BoardEntity toBoardEntity(BoardDTO board,
                                             MemberEntity member,
                                             ItemEntity item) {
-        BoardEntity boardEntity = BoardEntity.builder()
+        BoardEntity boardEntity = com.example.shopping.entity.board.BoardEntity.builder()
                 .boardId(board.getBoardId())
                 .title(board.getTitle())
                 .content(board.getContent())
@@ -95,7 +95,7 @@ public class BoardEntity extends BaseEntity {
     public static BoardEntity createBoard(CreateBoardDTO boardDTO,
                                           MemberEntity member,
                                           ItemEntity item) {
-        return BoardEntity.builder()
+        return com.example.shopping.entity.board.BoardEntity.builder()
                 .title(boardDTO.getTitle())
                 .content(boardDTO.getContent())
                 // 본인이 작성한 글은 읽을 수 있어야하기 때문에 UN_ROCK
@@ -105,23 +105,9 @@ public class BoardEntity extends BaseEntity {
                 .build();
     }
 
-    // 게시글 수정
-    public static BoardEntity updateBoard(CreateBoardDTO boardDTO,
-                                          MemberEntity member,
-                                          ItemEntity item
-    ) {
-        return BoardEntity.builder()
-                .title(boardDTO.getTitle())
-                .content(boardDTO.getContent())
-                .member(member)
-                .item(item)
-                .build();
-    }
 
     // 문의글 상태 변화
     public void changeSecret(BoardSecret secret) {
         this.boardSecret = secret;
     }
-
-
 }

@@ -90,11 +90,11 @@ public class MemberServiceImpl implements MemberService {
         log.info("email check2 : " + findUser.getEmail());
 
         // 회원이 비어있지 않고 넘어온 id가 DB에 등록된 id가 일치할 때
-        if (findUser != null) {
+        if (findUser.getMemberId().equals(memberId)) {
             memberRepository.deleteByMemberId(memberId);
             return "회원 탈퇴 완료";
         } else {
-            return "유저가 등록되어 있지 않습니다.";
+            return "해당 유저가 아니라 삭제할 수 없습니다.";
         }
     }
 
@@ -172,34 +172,38 @@ public class MemberServiceImpl implements MemberService {
             MemberEntity findUser = memberRepository.findByEmail(memberEmail);
             log.info("user : " + findUser);
 
-            findUser = MemberEntity.builder()
-                    .memberId(findUser.getMemberId())
-                    .email(findUser.getEmail())
-                    .memberPw(
-                            modifyMemberDTO.getMemberPw() == null
-                                    ? findUser.getMemberPw()
-                                    : passwordEncoder.encode(modifyMemberDTO.getMemberPw()))
-                    .nickName(modifyMemberDTO.getNickName() == null
-                            ? findUser.getNickName() : modifyMemberDTO.getNickName())
-                    .memberRole(findUser.getMemberRole())
-                    .memberPoint(findUser.getMemberPoint())
-                    .memberName(findUser.getMemberName())
-                    .address(AddressEntity.builder()
-                            .memberAddr(modifyMemberDTO.getMemberAddress() != null && modifyMemberDTO.getMemberAddress().getMemberAddr() != null
-                                    ? modifyMemberDTO.getMemberAddress().getMemberAddr()
-                                    : findUser.getAddress().getMemberAddr())
-                            .memberAddrDetail(modifyMemberDTO.getMemberAddress() != null && modifyMemberDTO.getMemberAddress().getMemberAddrDetail() != null
-                                    ? modifyMemberDTO.getMemberAddress().getMemberAddrDetail()
-                                    : findUser.getAddress().getMemberAddrDetail())
-                            .memberZipCode(modifyMemberDTO.getMemberAddress() != null && modifyMemberDTO.getMemberAddress().getMemberZipCode() != null
-                                    ? modifyMemberDTO.getMemberAddress().getMemberZipCode()
-                                    : findUser.getAddress().getMemberZipCode())
-                            .build()).build();
-            log.info("유저 수정 : " + findUser);
+            if(findUser.getMemberId().equals(memberId)) {
+                findUser = MemberEntity.builder()
+                        .memberId(findUser.getMemberId())
+                        .email(findUser.getEmail())
+                        .memberPw(
+                                modifyMemberDTO.getMemberPw() == null
+                                        ? findUser.getMemberPw()
+                                        : passwordEncoder.encode(modifyMemberDTO.getMemberPw()))
+                        .nickName(modifyMemberDTO.getNickName() == null
+                                ? findUser.getNickName() : modifyMemberDTO.getNickName())
+                        .memberRole(findUser.getMemberRole())
+                        .memberPoint(findUser.getMemberPoint())
+                        .memberName(findUser.getMemberName())
+                        .address(AddressEntity.builder()
+                                .memberAddr(modifyMemberDTO.getMemberAddress() != null && modifyMemberDTO.getMemberAddress().getMemberAddr() != null
+                                        ? modifyMemberDTO.getMemberAddress().getMemberAddr()
+                                        : findUser.getAddress().getMemberAddr())
+                                .memberAddrDetail(modifyMemberDTO.getMemberAddress() != null && modifyMemberDTO.getMemberAddress().getMemberAddrDetail() != null
+                                        ? modifyMemberDTO.getMemberAddress().getMemberAddrDetail()
+                                        : findUser.getAddress().getMemberAddrDetail())
+                                .memberZipCode(modifyMemberDTO.getMemberAddress() != null && modifyMemberDTO.getMemberAddress().getMemberZipCode() != null
+                                        ? modifyMemberDTO.getMemberAddress().getMemberZipCode()
+                                        : findUser.getAddress().getMemberZipCode())
+                                .build()).build();
+                log.info("유저 수정 : " + findUser);
 
-            MemberEntity updateUser = memberRepository.save(findUser);
-            ResponseMemberDTO toResponseMemberDTO = ResponseMemberDTO.toMemberDTO(updateUser);
-            return ResponseEntity.ok().body(toResponseMemberDTO);
+                MemberEntity updateUser = memberRepository.save(findUser);
+                ResponseMemberDTO toResponseMemberDTO = ResponseMemberDTO.toMemberDTO(updateUser);
+                return ResponseEntity.ok().body(toResponseMemberDTO);
+            } else {
+                return ResponseEntity.badRequest().body("일치하지 않습니다.");
+            }
 
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("회원 정보가 없습니다.");
