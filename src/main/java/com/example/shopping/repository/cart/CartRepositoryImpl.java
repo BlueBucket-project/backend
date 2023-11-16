@@ -17,12 +17,12 @@ public class CartRepositoryImpl implements CartRepository{
     @Override
     public CartDTO save(CartDTO cart) {
         CartEntity savedCart = cartJpaRepository.save(cart.toEntity());
-        return savedCart.toDTO();
+        return CartDTO.toCartDTO(savedCart);
     }
 
     @Override
     public CartDTO findByMemberMemberId(Long memberId) {
         Optional<CartEntity> cart = cartJpaRepository.findByMemberMemberId(memberId);
-        return cart.map(CartEntity::toDTO).orElse(null);
+        return cart.map(CartDTO::toCartDTO).orElse(null);
     }
 }

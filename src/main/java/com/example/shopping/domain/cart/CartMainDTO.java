@@ -1,5 +1,6 @@
 package com.example.shopping.domain.cart;
 
+import com.example.shopping.entity.cart.CartItemEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
@@ -26,7 +27,10 @@ public class CartMainDTO {
         this.count = count;
     }
 
-    public void addCount(int cnt){
-        this.count += cnt;
+    public static CartMainDTO toMainDTO(CartItemEntity cartItem){
+        return CartMainDTO.builder()
+                .itemId(cartItem.getItem().getItemId())
+                .count(cartItem.getCount())
+                .build();
     }
 }

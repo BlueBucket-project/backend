@@ -8,7 +8,7 @@ import java.util.*;
 
 public interface CartService {
 
-    CartItemDTO addCart(CartMainDTO cart, String email);
+    CartDTO addCart(CartMainDTO cart, String email);
 
     String deleteCart(List<CartUpdateDTO> cartItem, String email);
 

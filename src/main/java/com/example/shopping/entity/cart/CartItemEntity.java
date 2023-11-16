@@ -1,6 +1,7 @@
 package com.example.shopping.entity.cart;
 
 import com.example.shopping.domain.Item.ItemDTO;
+import com.example.shopping.domain.cart.CartDTO;
 import com.example.shopping.domain.cart.CartItemDTO;
 import com.example.shopping.domain.cart.CartMainDTO;
 import com.example.shopping.domain.cart.CartUpdateDTO;
@@ -15,7 +16,6 @@ import javax.persistence.*;
 
 @Entity(name = "cartitem")
 @Getter
-@ToString(exclude = "cart")
 @NoArgsConstructor
 public class CartItemEntity extends BaseTimeEntity {
 
@@ -42,40 +42,5 @@ public class CartItemEntity extends BaseTimeEntity {
         this.cart =cart;
         this.item = item;
         this.count = count;
-    }
-
-    public CartMainDTO toMainDTO(){
-        return CartMainDTO.builder()
-                .itemId(this.item.getItemId())
-                .count(this.count)
-                .build();
-    }
-
-    public CartItemDTO toItemDTO(){
-        return CartItemDTO.builder()
-                .cartItemId(this.cartitemId)
-                .cartId(this.cart.getCartId())
-                .cart(this.cart.toDTO())
-                .count(this.count)
-                .item(ItemDTO.toItemDTO(item))
-                .price(this.item.getPrice() * this.count)
-                .mbrId(this.cart.getMember().getMemberId())
-                .build();
-    }
-
-    public CartUpdateDTO toUpdateDTO(){
-        return CartUpdateDTO.builder()
-                .itemId(this.item.getItemId())
-                .cartId(this.cart.getCartId())
-                .count(this.count)
-                .build();
-    }
-
-    public static CartItemEntity setCartItem(CartEntity cart, ItemEntity item, int count){
-        return CartItemEntity.builder()
-                .cart(cart)
-                .item(item)
-                .count(count)
-                .build();
     }
 }
