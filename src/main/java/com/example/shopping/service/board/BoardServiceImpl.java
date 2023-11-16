@@ -7,6 +7,7 @@ import com.example.shopping.domain.board.CreateBoardDTO;
 import com.example.shopping.entity.board.BoardEntity;
 import com.example.shopping.entity.item.ItemEntity;
 import com.example.shopping.entity.member.MemberEntity;
+import com.example.shopping.exception.member.UserException;
 import com.example.shopping.repository.board.BoardRepository;
 import com.example.shopping.repository.item.ItemRepository;
 import com.example.shopping.repository.member.MemberRepository;
@@ -115,21 +116,33 @@ public class BoardServiceImpl implements BoardService {
             // 게시글 조회
             BoardEntity findBoard = boardRepository.findByBoardId(boardId)
                     .orElseThrow(EntityNotFoundException::new);
-            log.info("게시글 : " + findBoard);
+            log.info("게시글 닉네임 : " + findBoard.getMember().getNickName());
             // 유저 조회
             MemberEntity findUser = memberRepository.findByEmail(memberEmail);
             log.info("유저 : " + findUser);
 
-            // 게시글을 등록한 이메일이 맞다면 true
-            if (findUser.getEmail().equals(findBoard.getMember().getEmail())) {
+            // 받아온 유저를 조회하고 그 유저 정보와 게시글에 담긴 유저가 일치하는지
+            boolean equalsEmail = findUser.getEmail().equals(findBoard.getMember().getEmail());
+            if(equalsEmail) {
                 // 수정할 내용, 유저정보, 게시글을 작성할 때 받은 상품의 정보를 넘겨준다.
-                findBoard = BoardEntity.updateBoard(boardDTO, findUser, findBoard.getItem());
+                findBoard = BoardEntity.builder()
+                        .boardId(findBoard.getBoardId())
+                        .title(boardDTO.getTitle())
+                        .content(boardDTO.getContent())
+                        .item(findBoard.getItem())
+                        .member(findBoard.getMember())
+                        .boardSecret(BoardSecret.UN_LOCK)
+                        .build();
+                BoardEntity updateBoard = boardRepository.save(findBoard);
+                BoardDTO returnBoard = BoardDTO.toBoardDTO(updateBoard, findUser.getNickName());
+                log.info("게시글 : " + returnBoard);
+                return ResponseEntity.ok().body(returnBoard);
+            } else {
+                return ResponseEntity.badRequest().body("일치하지 않습니다.");
             }
-            BoardEntity saveBoard = boardRepository.save(findBoard);
-            BoardDTO returnBoard = BoardDTO.toBoardDTO(saveBoard, findUser.getNickName());
-            return ResponseEntity.ok().body(returnBoard);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("수정하는데 실패했습니다. : " + e.getMessage());
         }
     }
 
@@ -178,15 +191,15 @@ public class BoardServiceImpl implements BoardService {
         }
 
         for (BoardEntity boardEntity : findAllBoards) {
-           if(email != null) {
-               if (boardEntity.getMember().getEmail().equals(findUser.getEmail())) {
-                   boardEntity.changeSecret(BoardSecret.UN_LOCK);
-               } else {
-                   boardEntity.changeSecret(BoardSecret.LOCK);
-               }
-           } else {
-               boardEntity.changeSecret(BoardSecret.LOCK);
-           }
+            if (email != null) {
+                if (boardEntity.getMember().getEmail().equals(findUser.getEmail())) {
+                    boardEntity.changeSecret(BoardSecret.UN_LOCK);
+                } else {
+                    boardEntity.changeSecret(BoardSecret.LOCK);
+                }
+            } else {
+                boardEntity.changeSecret(BoardSecret.LOCK);
+            }
         }
         log.info("조회된 게시글 수 : {}", findAllBoards.getTotalElements());
         log.info("조회된 게시글 : {}", findAllBoards);
