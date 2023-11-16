@@ -144,6 +144,7 @@ public class CartServiceImpl implements CartService{
                     throw new CartException("예약하려고 하는 장바구니 상품id가 해당 회원의 장바구니 상품이 아닙니다.");
 
                 checkItemStock(cartItem.getItem().getItemId(), cartItem.getCount());
+                cartItem.updateCartStatus(CartStatus.RESERVED);
 
                 ItemEntity updateItem = itemRepository.findById(cartItem.getItem().getItemId()).orElseThrow();
 
@@ -152,6 +153,8 @@ public class CartServiceImpl implements CartService{
 
                 updateItem.changeStatus(ItemSellStatus.RESERVED);
                 updateItem.reserveItem(email, cartItem.getCount());
+
+                cartItemRepository.save(cartItem);
             }
             return "구매예약에 성공하였습니다.";
         }
@@ -176,10 +179,16 @@ public class CartServiceImpl implements CartService{
                 CartItemDTO cartItem = cartItemRepository.findByCartItemId(cartOrder.getCartItemId());
 
                 ItemEntity updateItem = itemRepository.findById(cartItem.getItem().getItemId()).orElseThrow();
+
                 if(updateItem.getItemSellStatus() == ItemSellStatus.SELL)
                     throw new CartException("상품("+ updateItem.getItemId()+")은 이미판매 상태입니다.");
+
+                cartItem.updateCartStatus(CartStatus.WAIT);
+
                 updateItem.changeStatus(ItemSellStatus.SELL);
                 updateItem.reserveItem(null, 0);
+
+                cartItemRepository.save(cartItem);
             }
             return "구매예약을 취소하였습니다.";
         }
@@ -231,7 +240,9 @@ public class CartServiceImpl implements CartService{
         if(cartId == null)
             throw new CartException("장바구니에 물품이 없습니다.");
         else{
-            cartItems = cartItemRepository.findByCartCartId(cartId);
+            //cartItems = cartItemRepository.findByCartCartId(cartId);
+            //PURCHASED 상태를 제외한 cartItem조회
+            cartItems =cartItemRepository.findCartItemWithStatus(cartId);
             for(CartItemDTO cart : cartItems){
                 if(cart.getItem().getMemberNickName() == null){
                     cart.getItem().setMemberNickName(Objects.requireNonNull(memberRepository.findById(cart.getItem().getItemSeller()).orElse(null)).getNickName());

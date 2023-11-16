@@ -15,6 +15,8 @@ public interface CartItemRepository {
 
     List<CartItemDTO> findByCartCartId(Long cartId);
 
+    List<CartItemDTO> findCartItemWithStatus(Long cartId);
+
     void delete(Long id);
 
     CartItemDTO findByCartItemId(Long cartItemId);

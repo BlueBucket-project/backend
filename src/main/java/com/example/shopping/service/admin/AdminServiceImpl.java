@@ -5,6 +5,8 @@ import com.example.shopping.domain.Item.ItemDTO;
 import com.example.shopping.domain.Item.ItemSellStatus;
 import com.example.shopping.domain.board.BoardDTO;
 import com.example.shopping.domain.board.BoardSecret;
+import com.example.shopping.domain.cart.CartItemDTO;
+import com.example.shopping.domain.cart.CartStatus;
 import com.example.shopping.domain.order.OrderDTO;
 import com.example.shopping.domain.order.OrderItemDTO;
 import com.example.shopping.domain.order.OrderMainDTO;
@@ -16,6 +18,8 @@ import com.example.shopping.entity.order.OrderItemEntity;
 import com.example.shopping.exception.item.ItemException;
 import com.example.shopping.exception.service.OutOfStockException;
 import com.example.shopping.repository.board.BoardRepository;
+import com.example.shopping.repository.cart.CartItemRepository;
+import com.example.shopping.repository.cart.CartRepository;
 import com.example.shopping.repository.item.ItemImgRepository;
 import com.example.shopping.repository.item.ItemRepository;
 import com.example.shopping.repository.member.MemberRepository;
@@ -55,6 +59,10 @@ public class AdminServiceImpl implements AdminService {
     // 주문 관련
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
+
+    // 장바구니 관련
+    private final CartRepository cartRepository;
+    private final CartItemRepository cartItemRepository;
 
     private final S3ItemImgUploaderService s3ItemImgUploaderService;
     // 게시글 관련
@@ -250,6 +258,12 @@ public class AdminServiceImpl implements AdminService {
             ItemEntity updateItem = itemRepository.findById(savedItem.getItemId()).orElseThrow();
             updateItem.itemSell(savedItem.getItemAmount());
             itemRepository.save(updateItem);
+
+            // Cart-status 변경
+            Long cartId = cartRepository.findByMemberMemberId(orderMember.getMemberId()).getCartId();
+            CartItemDTO cartItem = cartItemRepository.findByCartItemDTO(cartId, updateItem.getItemId());
+            cartItem.updateCartStatus(CartStatus.PURCHASED);
+            cartItemRepository.save(cartItem);
 
             //아이템 이미지 삭제처리
             List<ItemImgEntity> findImg = itemImgRepository.findByItemItemId(updateItem.getItemId());

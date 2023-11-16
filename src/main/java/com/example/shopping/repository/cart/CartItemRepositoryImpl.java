@@ -56,6 +56,15 @@ public class CartItemRepositoryImpl implements CartItemRepository{
     }
 
     @Override
+    public List<CartItemDTO> findCartItemWithStatus(Long cartId) {
+        List<CartItemEntity> items = cartItemJpaRepository.findByCartCartIdAndStatus(cartId);
+        if(items == null)
+            return null;
+        else
+            return items.stream().map(CartItemDTO::toDTO).collect(Collectors.toList());
+    }
+
+    @Override
     public void delete(Long id) {
         cartItemJpaRepository.deleteById(id);
     }

@@ -20,15 +20,17 @@ public class CartItemDTO {
     private CartDTO cart;
     private ItemDTO item;
     private Long mbrId;
+    private CartStatus status;
 
     @Builder
-    public CartItemDTO(Long cartItemId, int price, int count, CartDTO cart, Long mbrId, ItemDTO item){
+    public CartItemDTO(Long cartItemId, int price, int count, CartDTO cart, Long mbrId, ItemDTO item, CartStatus status){
         this.cartItemId = cartItemId;
         this.price = price;
         this.count = count;
         this.cart = cart;
         this.item = item;
         this.mbrId = mbrId;
+        this.status = status;
     }
 
     public CartItemEntity toEntity(){
@@ -38,6 +40,7 @@ public class CartItemDTO {
                 .cart(this.cart == null? null :
                         CartEntity.builder().cartId(this.cart.getCartId()).build())
                 .item(this.item.toEntity())
+                .status(this.status)
                 .build();
     }
 
@@ -51,6 +54,7 @@ public class CartItemDTO {
                         CartDTO.builder().cartId(cartItemEntity.getCart().getCartId()).build())
                 .mbrId(cartItemEntity.getCart().getMember()==null?null:
                         cartItemEntity.getCart().getMember().getMemberId())
+                .status(cartItemEntity.getStatus())
                 .build();
     }
 
@@ -65,7 +69,11 @@ public class CartItemDTO {
                 .price(item.getPrice() * count)
                 .count(count)
                 .mbrId(cart.getMember().getId())
+                .status(CartStatus.WAIT)
                 .build();
     }
 
+    public void updateCartStatus(CartStatus status){
+        this.status = status;
+    }
 }

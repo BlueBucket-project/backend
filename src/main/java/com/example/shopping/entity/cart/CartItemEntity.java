@@ -1,10 +1,7 @@
 package com.example.shopping.entity.cart;
 
 import com.example.shopping.domain.Item.ItemDTO;
-import com.example.shopping.domain.cart.CartDTO;
-import com.example.shopping.domain.cart.CartItemDTO;
-import com.example.shopping.domain.cart.CartMainDTO;
-import com.example.shopping.domain.cart.CartUpdateDTO;
+import com.example.shopping.domain.cart.*;
 import com.example.shopping.entity.Base.BaseTimeEntity;
 import com.example.shopping.entity.item.ItemEntity;
 import lombok.Builder;
@@ -31,16 +28,20 @@ public class CartItemEntity extends BaseTimeEntity {
     @Column(name="cart_count")
     private int count;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name="item_status")
+    private CartStatus status;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "item_id")
     private ItemEntity item;
 
     @Builder
-    public CartItemEntity(Long cartitemId, CartEntity cart, ItemEntity item, int count) {
+    public CartItemEntity(Long cartitemId, CartEntity cart, CartStatus status, ItemEntity item, int count) {
         this.cartitemId = cartitemId;
         this.cart =cart;
         this.item = item;
+        this.status = status;
         this.count = count;
     }
 }
