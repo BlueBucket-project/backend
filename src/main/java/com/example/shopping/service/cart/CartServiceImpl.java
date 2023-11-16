@@ -1,11 +1,14 @@
 package com.example.shopping.service.cart;
 
+import com.example.shopping.domain.Item.ItemDTO;
 import com.example.shopping.domain.Item.ItemSellStatus;
 import com.example.shopping.domain.cart.*;
+import com.example.shopping.domain.member.RequestMemberDTO;
 import com.example.shopping.entity.cart.CartItemEntity;
 import com.example.shopping.entity.item.ItemEntity;
 import com.example.shopping.entity.member.MemberEntity;
 import com.example.shopping.exception.cart.CartException;
+import com.example.shopping.exception.member.UserException;
 import com.example.shopping.exception.service.OutOfStockException;
 import com.example.shopping.repository.cart.CartItemRepository;
 import com.example.shopping.repository.cart.CartRepository;
@@ -13,6 +16,7 @@ import com.example.shopping.repository.item.ItemRepository;
 import com.example.shopping.repository.member.MemberRepository;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +24,7 @@ import javax.transaction.Transactional;
 import java.util.*;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class CartServiceImpl implements CartService{
 
@@ -30,10 +35,10 @@ public class CartServiceImpl implements CartService{
 
     @Override
     @Transactional
-    public CartItemDTO addCart(CartMainDTO cartItem, String mbrEmail) {
+    public CartDTO addCart(CartMainDTO cartItem, String mbrEmail) {
 
         // 장바구니에 최종 저장된 아이템정보
-        CartItemDTO savedCartItem = new CartItemDTO();
+        CartDTO savedCartItem = new CartDTO();
 
         MemberEntity member = memberRepository.findByEmail(mbrEmail);
         ItemEntity item = itemRepository.findById(cartItem.getItemId()).orElseThrow(()->new CartException("해당 상품이 존재하지 않습니다."));
@@ -42,36 +47,40 @@ public class CartServiceImpl implements CartService{
         CartDTO cart = cartRepository.findByMemberMemberId(member.getMemberId());
 
         if (cart != null) {
+            log.info("기존 장바구니 여부 확인 : "+ cart.toString());
             //장바구니 아이템 체크
             CartMainDTO savedCart = cartItemRepository.findByCartMainDTO(cart.getCartId(), cartItem.getItemId());
             CartItemDTO itemDetail = new CartItemDTO();
 
             //기존에 있는 아이템 추가 시
             if (savedCart != null) {
-
                 //수량증가
                 itemDetail = cartItemRepository.findByCartItemDTO(cart.getCartId(), savedCart.getItemId());
 
                 checkItemStock(cartItem.getItemId(), itemDetail.getCount() + cartItem.getCount());
-                itemDetail.modifyCount(cartItem.getCount());
-                savedCartItem = cartItemRepository.save(itemDetail);
-                //savedCart.addCount(cartItem.getCount());
+                itemDetail.modifyCount(itemDetail.getCount() + cartItem.getCount());
+                log.info("기존 상품 - 수량 증가여부 확인 : "+ itemDetail.getCount());
+
+                cart.updateCartItems(itemDetail);
+                savedCartItem = cartRepository.save(cart);
             } else {
                 //아니라면 CartItem Insert
-                itemDetail = CartItemEntity.setCartItem(cart.toEntity(), item, cartItem.getCount()).toItemDTO();
-                savedCartItem = cartItemRepository.save(itemDetail);
+                itemDetail = CartItemDTO.setCartItem(cart, item, cartItem.getCount());
+                cart.addCartItems(itemDetail);
+                savedCartItem = cartRepository.save(cart);
             }
         }
         //기존에 생성된 장바구니 없다면 생성
         else {
+            log.info("기존 장바구니 없음");
             CartDTO newCart = new CartDTO();
-            CartItemDTO itemDetail = new CartItemDTO();
+            newCart = newCart.createCart(member);
+            log.info("새로운 장바구니 생성 : " + newCart.toString());
 
-            newCart = cartRepository.save(newCart.createCart(member));
+            CartItemDTO itemDetail = CartItemDTO.setCartItem(newCart, item, cartItem.getCount());
+            newCart.addCartItems(itemDetail);
 
-            //CartItem Insert
-            itemDetail = CartItemEntity.setCartItem(newCart.toEntity(), item, cartItem.getCount()).toItemDTO();
-            savedCartItem = cartItemRepository.save(itemDetail);
+            savedCartItem = cartRepository.create(newCart);
         }
 
         return savedCartItem;
@@ -91,8 +100,11 @@ public class CartServiceImpl implements CartService{
                 cartItemRepository.delete(id);
             }
         }
+        catch(NullPointerException e){
+            throw new CartException("삭제하려고 하는 상품id나 카트번호가 잘못 되었습니다.");
+        }
         catch (Exception e){
-            throw new CartException("장바구니에서 상품을 삭제하는데 실패하였습니다.");
+            throw new CartException("장바구니에서 상품을 삭제하는데 실패하였습니다.\n" + e.getMessage());
         }
 
         return "장바구니에서 상품을 삭제하였습니다.";
@@ -122,32 +134,74 @@ public class CartServiceImpl implements CartService{
     @Transactional
     public String orderCart(List<CartOrderDTO> cartOrderList, String email) {
 
-        for(CartOrderDTO cartOrder : cartOrderList){
-            CartItemDTO cartItem = cartItemRepository.findByCartItemId(cartOrder.getCartItemId());
+        try{
+                MemberEntity member = memberRepository.findByEmail(email);
 
-            checkItemStock(cartItem.getItem().getItemId(), cartItem.getCount());
+            for(CartOrderDTO cartOrder : cartOrderList){
+                CartItemDTO cartItem = cartItemRepository.findByCartItemId(cartOrder.getCartItemId());
 
-            ItemEntity updateItem = itemRepository.findById(cartItem.getItem().getItemId()).orElseThrow();
-            updateItem.changeStatus(ItemSellStatus.RESERVED);
-            updateItem.reserveItem(email, cartItem.getCount());
+                if(cartItem.getMbrId() != member.getMemberId())
+                    throw new CartException("예약하려고 하는 장바구니 상품id가 해당 회원의 장바구니 상품이 아닙니다.");
+
+                checkItemStock(cartItem.getItem().getItemId(), cartItem.getCount());
+                cartItem.updateCartStatus(CartStatus.RESERVED);
+
+                ItemEntity updateItem = itemRepository.findById(cartItem.getItem().getItemId()).orElseThrow();
+
+                if(updateItem.getItemSellStatus() == ItemSellStatus.RESERVED)
+                    throw new CartException("상품("+ updateItem.getItemId()+")은 이미 예약되어 있습니다.\n예약자 : " +updateItem.getItemReserver());
+
+                updateItem.changeStatus(ItemSellStatus.RESERVED);
+                updateItem.reserveItem(email, cartItem.getCount());
+
+                cartItemRepository.save(cartItem);
+            }
+            return "구매예약에 성공하였습니다.";
         }
-        return "구매예약에 성공하였습니다.";
+        catch (NullPointerException | NoSuchElementException e){
+            throw new CartException("존재하지 않는 장바구니 상품id입니다.");
+        }
+        catch(CartException e){
+            throw e;
+        }
+        catch(Exception e){
+            throw new CartException("장바구니에서 상품을 예약하는데 실패하였습니다.\n" + e.getMessage());
+        }
+
     }
 
     //구매예약상품 취소
     @Override
     @Transactional
     public String cancelCartOrder(List<CartOrderDTO> cartOrderList, String email) {
-        for(CartOrderDTO cartOrder : cartOrderList){
-            CartItemDTO cartItem = cartItemRepository.findByCartItemId(cartOrder.getCartItemId());
+        try{
+            for(CartOrderDTO cartOrder : cartOrderList){
+                CartItemDTO cartItem = cartItemRepository.findByCartItemId(cartOrder.getCartItemId());
 
-            checkItemStock(cartItem.getItem().getItemId(), cartItem.getCount());
+                ItemEntity updateItem = itemRepository.findById(cartItem.getItem().getItemId()).orElseThrow();
 
-            ItemEntity updateItem = itemRepository.findById(cartItem.getItem().getItemId()).orElseThrow();
-            updateItem.changeStatus(ItemSellStatus.SELL);
-            updateItem.reserveItem(null, 0);
+                if(updateItem.getItemSellStatus() == ItemSellStatus.SELL)
+                    throw new CartException("상품("+ updateItem.getItemId()+")은 이미판매 상태입니다.");
+
+                cartItem.updateCartStatus(CartStatus.WAIT);
+
+                updateItem.changeStatus(ItemSellStatus.SELL);
+                updateItem.reserveItem(null, 0);
+
+                cartItemRepository.save(cartItem);
+            }
+            return "구매예약을 취소하였습니다.";
         }
-        return "구매예약을 취소하였습니다.";
+        catch (NullPointerException | NoSuchElementException e){
+            throw new CartException("예약취소하려고 하는 장바구니상품id가 해당 회원의 장바구니 상품이 아닙니다.");
+        }
+        catch(CartException e){
+            throw e;
+        }
+        catch(Exception e){
+            throw new CartException("구매예약 취소 작업이 실패하였습니다.\n" + e.getMessage());
+        }
+
     }
 
     //장바구니 상품 리스트 형태로 조회하기
@@ -186,7 +240,14 @@ public class CartServiceImpl implements CartService{
         if(cartId == null)
             throw new CartException("장바구니에 물품이 없습니다.");
         else{
-            cartItems = cartItemRepository.findByCartCartId(cartId);
+            //cartItems = cartItemRepository.findByCartCartId(cartId);
+            //PURCHASED 상태를 제외한 cartItem조회
+            cartItems =cartItemRepository.findCartItemWithStatus(cartId);
+            for(CartItemDTO cart : cartItems){
+                if(cart.getItem().getMemberNickName() == null){
+                    cart.getItem().setMemberNickName(Objects.requireNonNull(memberRepository.findById(cart.getItem().getItemSeller()).orElse(null)).getNickName());
+                }
+            }
             int start = (int) pageRequest.getOffset();
             int end = Math.min((start + pageRequest.getPageSize()), cartItems.size());
 

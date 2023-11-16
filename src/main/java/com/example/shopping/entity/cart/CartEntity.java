@@ -1,19 +1,17 @@
 package com.example.shopping.entity.cart;
 
-import com.example.shopping.domain.cart.CartDTO;
-import com.example.shopping.domain.member.ResponseMemberDTO;
 import com.example.shopping.entity.Base.BaseTimeEntity;
 import com.example.shopping.entity.member.MemberEntity;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity(name = "cart")
 @Getter
-@ToString
 @NoArgsConstructor
 public class CartEntity extends BaseTimeEntity {
 
@@ -27,17 +25,19 @@ public class CartEntity extends BaseTimeEntity {
     @JoinColumn(name = "member_id")
     private MemberEntity member;
 
+    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL)
+    private List<CartItemEntity> cartItems = new ArrayList<>();
+
     @Builder
-    public CartEntity(Long cartId, MemberEntity member) {
+    public CartEntity(Long cartId, MemberEntity member, List<CartItemEntity> carItems) {
         this.cartId = cartId;
         this.member = member;
+        this.cartItems = carItems == null ? new ArrayList<>() : carItems;
     }
 
-    public CartDTO toDTO(){
-        return CartDTO.builder()
-                .cartId(this.cartId)
-                .member(ResponseMemberDTO.toMemberDTO(this.member))
-                .build();
+    public void addCartItems(CartItemEntity cartItem){
+        this.cartItems.add(cartItem);
     }
+
 
 }
