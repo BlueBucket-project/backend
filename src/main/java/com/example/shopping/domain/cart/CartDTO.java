@@ -34,31 +34,34 @@ public class CartDTO {
         this.cartItems = cartItems;
     }
 
+
+    // OneToMany cartItems 셋팅 (기존분 변경 시 사용)
     public CartEntity toEntity(){
         return CartEntity.builder()
                 .cartId(this.cartId)
-                .member(member==null?null:MemberEntity.builder()
-                        .memberId(member.getId())
-                        .build())
+                .member(member==null?null :
+                        MemberEntity.builder().memberId(member.getId()).build())
                 .carItems(this.cartItems==null?null:this.cartItems.stream()
                         .map(CartItemDTO::toEntity).collect(Collectors.toList()))
                 .build();
     }
 
-    public static CartEntity toCartEntity(CartDTO cart){
+    // OneToMany cartItems 미셋팅 (Cart부터 새로 등록할 때 사용)
+    public static CartEntity toNewEntity(CartDTO cart){
         return CartEntity.builder()
                 .cartId(cart.getCartId())
-                .member(cart.getMember()==null? null : MemberEntity.builder().memberId(cart.getMember().getId()).build())
-                .carItems(cart.getCartItems()==null ? null : cart.getCartItems().stream()
-                        .map(CartItemDTO::toEntity).collect(Collectors.toList()))
+                .member(cart.getMember()==null? null :
+                        MemberEntity.builder().memberId(cart.getMember().getId()).build())
                 .build();
     }
     public static CartDTO toCartDTO(CartEntity cartEntity){
         List<CartItemEntity> cartItemEntityList = cartEntity.getCartItems();
         List<CartItemDTO> cartItemDTOList = new ArrayList<>();
 
-        for(CartItemEntity item : cartItemEntityList){
-            cartItemDTOList.add(CartItemDTO.toDTO(item));
+        if(cartItemEntityList != null){
+            for(CartItemEntity item : cartItemEntityList){
+                cartItemDTOList.add(CartItemDTO.toDTO(item));
+            }
         }
 
         return CartDTO.builder()

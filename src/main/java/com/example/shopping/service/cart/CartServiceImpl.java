@@ -1,5 +1,6 @@
 package com.example.shopping.service.cart;
 
+import com.example.shopping.domain.Item.ItemDTO;
 import com.example.shopping.domain.Item.ItemSellStatus;
 import com.example.shopping.domain.cart.*;
 import com.example.shopping.entity.cart.CartItemEntity;
@@ -13,6 +14,7 @@ import com.example.shopping.repository.item.ItemRepository;
 import com.example.shopping.repository.member.MemberRepository;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +22,7 @@ import javax.transaction.Transactional;
 import java.util.*;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class CartServiceImpl implements CartService{
 
@@ -42,6 +45,7 @@ public class CartServiceImpl implements CartService{
         CartDTO cart = cartRepository.findByMemberMemberId(member.getMemberId());
 
         if (cart != null) {
+            log.info("기존 장바구니 여부 확인 : "+ cart.toString());
             //장바구니 아이템 체크
             CartMainDTO savedCart = cartItemRepository.findByCartMainDTO(cart.getCartId(), cartItem.getItemId());
             CartItemDTO itemDetail = new CartItemDTO();
@@ -53,6 +57,8 @@ public class CartServiceImpl implements CartService{
 
                 checkItemStock(cartItem.getItemId(), itemDetail.getCount() + cartItem.getCount());
                 itemDetail.modifyCount(itemDetail.getCount() + cartItem.getCount());
+                log.info("기존 상품 - 수량 증가여부 확인 : "+ itemDetail.getCount());
+
                 cart.updateCartItems(itemDetail);
                 savedCartItem = cartRepository.save(cart);
             } else {
@@ -64,14 +70,21 @@ public class CartServiceImpl implements CartService{
         }
         //기존에 생성된 장바구니 없다면 생성
         else {
+            log.info("기존 장바구니 없음");
             CartDTO newCart = new CartDTO();
             newCart = newCart.createCart(member);
-
-            CartItemDTO itemDetail = new CartItemDTO();
-            itemDetail = CartItemDTO.setCartItem(newCart, item, cartItem.getCount());
+            log.info("새로운 장바구니 생성 : " + newCart.toString());
+//            CartItemDTO itemDetail = CartItemDTO.builder()
+//                    .price(item.getPrice() * cartItem.getCount())
+//                    .count(cartItem.getCount())
+//                    .cart(newCart)
+//                    .item(ItemDTO.toItemDTO(item))
+//                    .mbrId(member.getMemberId())
+//                    .build();
+            CartItemDTO itemDetail = CartItemDTO.setCartItem(newCart, item, cartItem.getCount());
             newCart.addCartItems(itemDetail);
 
-            savedCartItem = cartRepository.save(newCart);
+            savedCartItem = cartRepository.create(newCart);
         }
 
         return savedCartItem;

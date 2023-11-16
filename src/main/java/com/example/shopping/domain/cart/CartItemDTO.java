@@ -4,6 +4,7 @@ import com.example.shopping.domain.Item.ItemDTO;
 import com.example.shopping.entity.cart.CartEntity;
 import com.example.shopping.entity.cart.CartItemEntity;
 import com.example.shopping.entity.item.ItemEntity;
+import com.example.shopping.entity.member.MemberEntity;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,17 +16,16 @@ public class CartItemDTO {
     private Long cartItemId;
     private int price;
     private int count;
-    private Long cartId;
+    //private Long cartId;
     private CartDTO cart;
     private ItemDTO item;
     private Long mbrId;
 
     @Builder
-    public CartItemDTO(Long cartItemId, int price, int count, Long cartId, Long mbrId, CartDTO cart, ItemDTO item){
+    public CartItemDTO(Long cartItemId, int price, int count, CartDTO cart, Long mbrId, ItemDTO item){
         this.cartItemId = cartItemId;
         this.price = price;
         this.count = count;
-        this.cartId = cartId;
         this.cart = cart;
         this.item = item;
         this.mbrId = mbrId;
@@ -47,9 +47,6 @@ public class CartItemDTO {
                 .count(cartItemEntity.getCount())
                 .item(ItemDTO.toItemDTO(cartItemEntity.getItem()))
                 .price(cartItemEntity.getCount() * cartItemEntity.getItem().getPrice())
-                .cartId(cartItemEntity.getCart()==null? null :
-                        cartItemEntity.getCart().getCartId())
-                //.cart(CartDTO.toCartDTO(cartItemEntity.getCart()))
                 .cart(cartItemEntity.getCart()==null? null :
                         CartDTO.builder().cartId(cartItemEntity.getCart().getCartId()).build())
                 .mbrId(cartItemEntity.getCart().getMember()==null?null:
@@ -67,7 +64,6 @@ public class CartItemDTO {
                 .item(ItemDTO.toItemDTO(item))
                 .price(item.getPrice() * count)
                 .count(count)
-                .cartId(cart.getCartId())
                 .mbrId(cart.getMember().getId())
                 .build();
     }

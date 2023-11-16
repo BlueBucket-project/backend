@@ -32,7 +32,12 @@ public class CartEntity extends BaseTimeEntity {
     public CartEntity(Long cartId, MemberEntity member, List<CartItemEntity> carItems) {
         this.cartId = cartId;
         this.member = member;
-        this.cartItems = carItems;
+        this.cartItems = carItems == null ? new ArrayList<>() : carItems;
     }
+
+    public void addCartItems(CartItemEntity cartItem){
+        this.cartItems.add(cartItem);
+    }
+
 
 }
