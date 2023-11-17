@@ -8,8 +8,8 @@ spring:
         - local
       prod:
         - prod
-    active: local
-#    active: ${profile}
+#    active: local
+    active: ${profile}
   devtools:
     livereload:
       enabled: true
@@ -23,18 +23,20 @@ spring:
 
   jpa:
     open-in-view: true
-    show-sql: true
     hibernate:
       ddl-auto: update
     properties:
       hibernate:
-        show_sql: true
+        #logging SQL 과 중복으로 떠서 제거
+        #show_sql: true
         format_sql: true
         default_batch_fetch_size: 500
 
 logging:
   level:
-    org.hibernate.SQL: debug
+    org:
+      hibernate:
+        SQL: debug
 
 ---
 #multipart upload파일 용량설정
