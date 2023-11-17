@@ -327,14 +327,6 @@ public class ItemServiceImpl implements ItemService{
         MemberEntity findUser = memberRepository.findByEmail(memberEmail);
 
         if(findUser.getMemberId().equals(findItem.getItemSeller())) {
-            for(ItemImgEntity img : findImg) {
-                String uploadFilePath = img.getUploadImgPath();
-                String uuidFileName = img.getUploadImgName();
-
-                // S3에서 삭제
-                String result = s3ItemImgUploaderService.deleteFile(uploadFilePath, uuidFileName);
-                log.info(result);
-            }
 
             //item을 참조하고 있는 자식Entity값 null셋팅
             List<CartItemDTO> items = cartItemRepository.findByItemId(itemId);
@@ -345,6 +337,15 @@ public class ItemServiceImpl implements ItemService{
             }
             // 상품 정보 삭제
             itemRepository.delete(findItem);
+
+            for(ItemImgEntity img : findImg) {
+                String uploadFilePath = img.getUploadImgPath();
+                String uuidFileName = img.getUploadImgName();
+
+                // S3에서 삭제
+                String result = s3ItemImgUploaderService.deleteFile(uploadFilePath, uuidFileName);
+                log.info(result);
+            }
         }else  {
             return "해당 유저의 게시글이 아닙니다.";
         }
