@@ -3,12 +3,14 @@ package com.example.shopping.service.item;
 import com.example.shopping.domain.Item.*;
 import com.example.shopping.domain.board.BoardDTO;
 import com.example.shopping.domain.board.BoardSecret;
+import com.example.shopping.domain.cart.CartItemDTO;
 import com.example.shopping.entity.board.BoardEntity;
 import com.example.shopping.entity.item.ItemEntity;
 import com.example.shopping.entity.item.ItemImgEntity;
 import com.example.shopping.entity.member.MemberEntity;
 import com.example.shopping.exception.item.ItemException;
 import com.example.shopping.exception.member.UserException;
+import com.example.shopping.repository.cart.CartItemRepository;
 import com.example.shopping.repository.item.ItemImgRepository;
 import com.example.shopping.repository.item.ItemRepository;
 import com.example.shopping.repository.member.MemberRepository;
@@ -36,6 +38,7 @@ public class ItemServiceImpl implements ItemService{
     private final ItemRepository itemRepository;
     private final ItemImgRepository itemImgRepository;
     private final S3ItemImgUploaderService s3ItemImgUploaderService;
+    private final CartItemRepository cartItemRepository;
 
     // 상품 등록 메소드
     @Override
@@ -328,16 +331,20 @@ public class ItemServiceImpl implements ItemService{
                 String uploadFilePath = img.getUploadImgPath();
                 String uuidFileName = img.getUploadImgName();
 
-                // 상품 정보 삭제
-                itemRepository.delete(findItem);
-                //class java.lang.integer cannot be cast to class com.example.shopping.entity.item.itementity Error남
-                //itemRepository.deleteByItemId(itemId);
-                // DB에서 이미지 삭제
-//                itemImgRepository.deleteById(img.getItemImgId());
                 // S3에서 삭제
                 String result = s3ItemImgUploaderService.deleteFile(uploadFilePath, uuidFileName);
                 log.info(result);
             }
+
+            //item을 참조하고 있는 자식Entity값 null셋팅
+            List<CartItemDTO> items = cartItemRepository.findByItemId(itemId);
+
+            for(CartItemDTO item : items){
+                item.setItem(null);
+                cartItemRepository.save(item);
+            }
+            // 상품 정보 삭제
+            itemRepository.delete(findItem);
         }else  {
             return "해당 유저의 게시글이 아닙니다.";
         }

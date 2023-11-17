@@ -22,7 +22,8 @@ public class CartItemRepositoryImpl implements CartItemRepository{
 
     @Override
     public CartItemDTO save(CartItemDTO cartItem) {
-        CartItemEntity savedCartItem = cartItemJpaRepository.save(cartItem.toEntity());
+        CartItemEntity sample = cartItem.toEntity();
+        CartItemEntity savedCartItem = cartItemJpaRepository.save(sample);
         return CartItemDTO.toDTO(savedCartItem);
     }
 
@@ -83,6 +84,16 @@ public class CartItemRepositoryImpl implements CartItemRepository{
     public CartItemDTO findByCartItemId(Long cartItemId) {
         CartItemEntity item = cartItemJpaRepository.findById(cartItemId).orElseThrow();
         return CartItemDTO.toDTO(item);
+    }
+
+    @Override
+    public List<CartItemDTO> findByItemId(Long itemId) {
+        List<CartItemEntity> items = cartItemJpaRepository.findByItemItemId(itemId);
+
+        if(items == null)
+            return null;
+        else
+            return items.stream().map(CartItemDTO::toDTO).collect(Collectors.toList());
     }
 
 }

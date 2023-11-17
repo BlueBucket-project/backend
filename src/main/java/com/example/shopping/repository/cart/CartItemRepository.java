@@ -23,4 +23,6 @@ public interface CartItemRepository {
     void delete(Long id);
 
     CartItemDTO findByCartItemId(Long cartItemId);
+
+    List<CartItemDTO> findByItemId(Long itemId);
 }

@@ -22,4 +22,5 @@ public interface CartItemJpaRepository extends JpaRepository<CartItemEntity, Lon
             "AND c.status = :status")
     List<CartItemEntity> findByCartCartIdAndStatus(@Param("cartId") Long cartId, @Param("status")CartStatus status);
 
+    List<CartItemEntity> findByItemItemId(Long itemId);
 }
