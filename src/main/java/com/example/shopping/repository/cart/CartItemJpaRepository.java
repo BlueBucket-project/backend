@@ -1,5 +1,6 @@
 package com.example.shopping.repository.cart;
 
+import com.example.shopping.domain.cart.CartStatus;
 import com.example.shopping.entity.cart.CartItemEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -12,9 +13,14 @@ public interface CartItemJpaRepository extends JpaRepository<CartItemEntity, Lon
 
     List<CartItemEntity> findByCartCartId(Long cartId);
 
-    @Query(value = "select * from cartitem c " +
-            "where c.cart_id = :cartId and c.item_status != 'PURCHASED'", nativeQuery = true)
-    List<CartItemEntity> findByCartCartIdAndStatus(@Param("cartId") Long cartId);
 
+    @Query("SELECT c FROM cartitem c JOIN FETCH c.cart WHERE c.cart.cartId = :cartId " +
+            "AND c.status <> :status")
+    List<CartItemEntity> findByCartCartIdAndStatusNot(@Param("cartId") Long cartId, @Param("status")CartStatus status);
 
+    @Query("SELECT c FROM cartitem c JOIN FETCH c.cart WHERE c.cart.cartId = :cartId " +
+            "AND c.status = :status")
+    List<CartItemEntity> findByCartCartIdAndStatus(@Param("cartId") Long cartId, @Param("status")CartStatus status);
+
+    List<CartItemEntity> findByItemItemId(Long itemId);
 }

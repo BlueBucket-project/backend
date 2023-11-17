@@ -39,7 +39,8 @@ public class CartItemDTO {
                 .count(this.count)
                 .cart(this.cart == null? null :
                         CartEntity.builder().cartId(this.cart.getCartId()).build())
-                .item(this.item.toEntity())
+                .item(this.item == null? null :
+                        this.item.toEntity())
                 .status(this.status)
                 .build();
     }
@@ -48,11 +49,13 @@ public class CartItemDTO {
         return CartItemDTO.builder()
                 .cartItemId(cartItemEntity.getCartitemId())
                 .count(cartItemEntity.getCount())
-                .item(ItemDTO.toItemDTO(cartItemEntity.getItem()))
-                .price(cartItemEntity.getCount() * cartItemEntity.getItem().getPrice())
-                .cart(cartItemEntity.getCart()==null? null :
+                .item(cartItemEntity.getItem() == null ? null :
+                        ItemDTO.toItemDTO(cartItemEntity.getItem()))
+                .price(cartItemEntity.getItem() == null ? 0 :
+                        cartItemEntity.getCount() * cartItemEntity.getItem().getPrice())
+                .cart(cartItemEntity.getCart() == null? null :
                         CartDTO.builder().cartId(cartItemEntity.getCart().getCartId()).build())
-                .mbrId(cartItemEntity.getCart().getMember()==null?null:
+                .mbrId(cartItemEntity.getCart().getMember() == null?null:
                         cartItemEntity.getCart().getMember().getMemberId())
                 .status(cartItemEntity.getStatus())
                 .build();
@@ -75,5 +78,9 @@ public class CartItemDTO {
 
     public void updateCartStatus(CartStatus status){
         this.status = status;
+    }
+
+    public void setItem(ItemDTO item){
+        this.item = item;
     }
 }
