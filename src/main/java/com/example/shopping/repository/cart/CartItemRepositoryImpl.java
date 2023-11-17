@@ -2,6 +2,7 @@ package com.example.shopping.repository.cart;
 
 import com.example.shopping.domain.cart.CartItemDTO;
 import com.example.shopping.domain.cart.CartMainDTO;
+import com.example.shopping.domain.cart.CartStatus;
 import com.example.shopping.entity.cart.CartItemEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,8 +57,17 @@ public class CartItemRepositoryImpl implements CartItemRepository{
     }
 
     @Override
-    public List<CartItemDTO> findCartItemWithStatus(Long cartId) {
-        List<CartItemEntity> items = cartItemJpaRepository.findByCartCartIdAndStatus(cartId);
+    public List<CartItemDTO> findCartItemWithStatus(Long cartId, CartStatus status) {
+        List<CartItemEntity> items = cartItemJpaRepository.findByCartCartIdAndStatus(cartId, status);
+        if(items == null)
+            return null;
+        else
+            return items.stream().map(CartItemDTO::toDTO).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<CartItemDTO> findCartItemNotPurchased(Long cartId) {
+        List<CartItemEntity> items = cartItemJpaRepository.findByCartCartIdAndStatusNot(cartId, CartStatus.PURCHASED);
         if(items == null)
             return null;
         else

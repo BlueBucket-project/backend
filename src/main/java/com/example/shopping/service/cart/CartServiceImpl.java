@@ -240,9 +240,8 @@ public class CartServiceImpl implements CartService{
         if(cartId == null)
             throw new CartException("장바구니에 물품이 없습니다.");
         else{
-            //cartItems = cartItemRepository.findByCartCartId(cartId);
             //PURCHASED 상태를 제외한 cartItem조회
-            cartItems =cartItemRepository.findCartItemWithStatus(cartId);
+            cartItems =cartItemRepository.findCartItemNotPurchased(cartId);
             for(CartItemDTO cart : cartItems){
                 if(cart.getItem().getMemberNickName() == null){
                     cart.getItem().setMemberNickName(Objects.requireNonNull(memberRepository.findById(cart.getItem().getItemSeller()).orElse(null)).getNickName());
