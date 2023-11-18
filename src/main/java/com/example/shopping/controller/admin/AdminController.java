@@ -64,62 +64,63 @@ public class AdminController {
         return result;
     }
 
-    // 관리자 상품 전체 보기 페이지
-    @GetMapping("/items")
-    @Tag(name = "admin")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @Operation(summary = "전체 페이지 보기", description = "관리자가 예약 & 전부 팔린 상품을 보는 API입니다.")
-    public ResponseEntity<?> getItems(
-            @PageableDefault(sort = "itemId", direction = Sort.Direction.DESC)
-            Pageable pageable,
-            @AuthenticationPrincipal UserDetails userDetails,
-            @RequestParam("itemSellStatus") ItemSellStatus itemSellStatus) {
-
-        // 파라미터로 상품의 상태를 보고 그거에 맞는 상품을 조회한다.
-        // 이렇게 해야 확장성이 늘어난다.
-        Page<ItemDTO> items = adminService.superitendItem(pageable, userDetails, itemSellStatus);
-
-        Map<String, Object> pageItem = new HashMap<>();
-        // 현재 페이지의 아이템 목록
-        pageItem.put("items", items.getContent());
-        // 현재 페이지 번호
-        pageItem.put("nowPageNumber", items.getNumber());
-        // 전체 페이지 수
-        pageItem.put("totalPage", items.getTotalPages());
-        // 한 페이지에 출력되는 데이터 개수
-        pageItem.put("pageSize", items.getSize());
-        // 다음 페이지 존재 여부
-        pageItem.put("hasNextPage", items.hasNext());
-        // 이전 페이지 존재 여부
-        pageItem.put("hasPreviousPage", items.hasPrevious());
-        // 첫 번째 페이지 여부
-        pageItem.put("isFirstPage", items.isFirst());
-        // 마지막 페이지 여부
-        pageItem.put("isLastPage", items.isLast());
-
-        return ResponseEntity.ok().body(pageItem);
-    }
-
-    // 상품 상세 정보
-    @GetMapping("/{itemId}")
-    @Tag(name = "admin")
-    @Operation(summary = "상품 상세 정보 보기", description = "관리자가 상품의 상세정보를 볼 수 있습니다.")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<?> itemDetail(@PathVariable Long itemId,
-                                        @AuthenticationPrincipal UserDetails userDetails) {
-        try {
-            ResponseEntity<ItemDTO> item = adminService.getItem(itemId, userDetails);
-            log.info("item : " + item);
-            return ResponseEntity.ok().body(item);
-        } catch (EntityNotFoundException e) {
-            log.error("존재하지 않는 상품입니다.");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("존재하지 않는 상품입니다.");
-        }
-    }
+//    // 관리자 상품 전체 보기 페이지
+//    @GetMapping("/items")
+//    @Tag(name = "admin")
+//    @PreAuthorize("hasRole('ROLE_ADMIN')")
+//    @Operation(summary = "전체 페이지 보기", description = "관리자가 예약 & 전부 팔린 상품을 보는 API입니다.")
+//    public ResponseEntity<?> getItems(
+//            @PageableDefault(sort = "itemId", direction = Sort.Direction.DESC)
+//            Pageable pageable,
+//            @AuthenticationPrincipal UserDetails userDetails,
+//            @RequestParam("itemSellStatus") ItemSellStatus itemSellStatus) {
+//
+//        // 파라미터로 상품의 상태를 보고 그거에 맞는 상품을 조회한다.
+//        // 이렇게 해야 확장성이 늘어난다.
+//        Page<ItemDTO> items = adminService.superitendItem(pageable, userDetails, itemSellStatus);
+//
+//        Map<String, Object> pageItem = new HashMap<>();
+//        // 현재 페이지의 아이템 목록
+//        pageItem.put("items", items.getContent());
+//        // 현재 페이지 번호
+//        pageItem.put("nowPageNumber", items.getNumber());
+//        // 전체 페이지 수
+//        pageItem.put("totalPage", items.getTotalPages());
+//        // 한 페이지에 출력되는 데이터 개수
+//        pageItem.put("pageSize", items.getSize());
+//        // 다음 페이지 존재 여부
+//        pageItem.put("hasNextPage", items.hasNext());
+//        // 이전 페이지 존재 여부
+//        pageItem.put("hasPreviousPage", items.hasPrevious());
+//        // 첫 번째 페이지 여부
+//        pageItem.put("isFirstPage", items.isFirst());
+//        // 마지막 페이지 여부
+//        pageItem.put("isLastPage", items.isLast());
+//
+//        return ResponseEntity.ok().body(pageItem);
+//    }
+//
+//    // 상품 상세 정보
+//    @GetMapping("/{itemId}")
+//    @Tag(name = "admin")
+//    @Operation(summary = "상품 상세 정보 보기", description = "관리자가 상품의 상세정보를 볼 수 있습니다.")
+//    @PreAuthorize("hasRole('ROLE_ADMIN')")
+//    public ResponseEntity<?> itemDetail(@PathVariable Long itemId,
+//                                        @AuthenticationPrincipal UserDetails userDetails) {
+//        try {
+//            ResponseEntity<ItemDTO> item = adminService.getItem(itemId, userDetails);
+//            log.info("item : " + item);
+//            return ResponseEntity.ok().body(item);
+//        } catch (EntityNotFoundException e) {
+//            log.error("존재하지 않는 상품입니다.");
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("존재하지 않는 상품입니다.");
+//        }
+//    }
 
     // 모든 문의글 보기
     @GetMapping("/boards")
     @Tag(name = "admin")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Operation(summary = "전체 문의글 보기", description = "모든 문의글을 보여주는 API입니다.")
     public ResponseEntity<?> getBoards(
             // SecuritConfig에 Page 설정을 한 페이지에 10개 보여주도록
@@ -159,6 +160,7 @@ public class AdminController {
     // 회원 문의글 보기
     @GetMapping("/boards/{nickName}")
     @Tag(name = "admin")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Operation(summary = "전체 문의글 보기", description = "모든 문의글을 보여주는 API입니다.")
     public ResponseEntity<?> getUserBoards(
             // SecuritConfig에 Page 설정을 한 페이지에 10개 보여주도록
@@ -192,6 +194,22 @@ public class AdminController {
             return ResponseEntity.ok().body(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @GetMapping("/{boardId}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @Tag(name = "admin")
+    @Operation(summary = "문의글 상세 보기", description = "상품에 대한 문의를 상세히 봅니다.")
+    public ResponseEntity<?> getBoard(@PathVariable Long boardId,
+                                      @AuthenticationPrincipal UserDetails userDetails) {
+        try {
+            String email = userDetails.getUsername();
+            log.info("email : " + email);
+            ResponseEntity<?> board = adminService.getBoard(boardId, userDetails);
+            return ResponseEntity.ok().body(board);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 
