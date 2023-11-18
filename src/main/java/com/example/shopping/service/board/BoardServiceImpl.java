@@ -7,6 +7,7 @@ import com.example.shopping.domain.board.CreateBoardDTO;
 import com.example.shopping.entity.board.BoardEntity;
 import com.example.shopping.entity.item.ItemEntity;
 import com.example.shopping.entity.member.MemberEntity;
+import com.example.shopping.exception.board.BoardException;
 import com.example.shopping.exception.member.UserException;
 import com.example.shopping.repository.board.BoardRepository;
 import com.example.shopping.repository.item.ItemRepository;
@@ -97,7 +98,7 @@ public class BoardServiceImpl implements BoardService {
 
         // 문의글을 작성할 때 등록된 이메일이 받아온 이메일이 맞아야 true
         if (findUser.getEmail().equals(findBoard.getMember().getEmail())) {
-            BoardDTO boardDTO = BoardDTO.toBoardDTO(findBoard, findUser.getNickName());
+            BoardDTO boardDTO = BoardDTO.toBoardDTO(findBoard, findBoard.getMember().getNickName());
             return ResponseEntity.ok().body(boardDTO);
         } else {
             return ResponseEntity.badRequest().body("해당 유저의 문의글이 아닙니다.");
@@ -158,9 +159,15 @@ public class BoardServiceImpl implements BoardService {
         } else {
             findAllBoards = boardRepository.findAllByMemberEmail(memberEmail, pageable);
         }
-        // 작성자의 모든 글은 본인 글이니 볼 수 있도록 상태를 바꿔준다.
-        findAllBoards.forEach(board -> board.changeSecret(BoardSecret.UN_LOCK));
-        return findAllBoards.map(board -> BoardDTO.toBoardDTO(board, findUser.getNickName()));
+
+        findAllBoards.forEach(board -> {
+            if(board.getMember().getMemberId().equals(findUser.getMemberId())) {
+                board.changeSecret(BoardSecret.UN_LOCK);
+            } else {
+                throw new BoardException("작성자의 글이 아닙니다.");
+            }
+        });
+        return findAllBoards.map(board -> BoardDTO.toBoardDTO(board, board.getMember().getNickName()));
     }
 
     // 상품에 대한 문의글 보기
