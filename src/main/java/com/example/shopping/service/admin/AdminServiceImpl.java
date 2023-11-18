@@ -1,6 +1,5 @@
 package com.example.shopping.service.admin;
 
-import com.example.shopping.config.jwt.JwtAuthenticationEntryPoint;
 import com.example.shopping.domain.Item.ItemDTO;
 import com.example.shopping.domain.Item.ItemSellStatus;
 import com.example.shopping.domain.board.BoardDTO;
@@ -42,7 +41,6 @@ import javax.persistence.EntityNotFoundException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Log4j2
@@ -90,21 +88,25 @@ public class AdminServiceImpl implements AdminService {
                 log.info("권한 : " + role);
                 // 존재하는 권한이 관리자인지 체크
                 if (role.equals("ADMIN") || role.equals("ROLE_ADMIN")) {
+                    // 장바구니 상품을 null로 바꾸고 저장
+                    List<CartItemDTO> items = cartItemRepository.findByItemId(itemId);
+                    for(CartItemDTO item : items) {
+                        item.setItem(null);
+                        cartItemRepository.save(item);
+                    }
+                    // 상품 정보 삭제
+                    itemRepository.deleteByItemId(findItem.getItemId());
                     // 삭제하는데 이미지를 풀어놓는 이유는
                     // S3에 삭제할 때 넘겨줘야 할 매개변수때문이다.
                     for (ItemImgEntity itemImgEntity : findItemImg) {
                         String uploadImgPath = itemImgEntity.getUploadImgPath();
                         String uploadImgName = itemImgEntity.getUploadImgName();
-
-                        // 상품 정보 삭제
-                        itemRepository.deleteByItemId(findItem.getItemId());
                         // S3에서 이미지 삭제
                         s3ItemImgUploaderService.deleteFile(uploadImgPath, uploadImgName);
-                        return "상품을 삭제 했습니다.";
                     }
+                    return "상품을 삭제 했습니다.";
                 }
             }
-
             return "상품 삭제 권한이 없습니다.";
         } catch (Exception e) {
             return e.getMessage();
@@ -143,67 +145,67 @@ public class AdminServiceImpl implements AdminService {
 
 
     // 상품 전체 페이지 조회
-    @Override
-    @Transactional(readOnly = true)
-    public Page<ItemDTO> superitendItem(Pageable pageable,
-                                        UserDetails userDetails,
-                                        ItemSellStatus itemSellStatus) {
-        try {
-            // userDetails에서 권한을 가져오기
-            Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
-
-            // 권한이 있는지 체크
-            if (!authorities.isEmpty()) {
-                String role = authorities.iterator().next().getAuthority();
-                log.info("권한 : " + role);
-                if (role.equals("ADMIN") || role.equals("ROLE_ADMIN")) {
-                    // 페이지 처리해서 예약된 것만 조회
-                    Page<ItemEntity> items =
-                            itemRepository.findByItemSellStatus(pageable, itemSellStatus);
-                    log.info("items : {}", items);
-
-                    Page<ItemDTO> itemDTO = items.map(ItemDTO::toItemDTO);
-                    for (ItemDTO item : itemDTO) {
-                        item.setMemberNickName(memberRepository.findById(item.getItemSeller()).orElseThrow().getNickName());
-                    }
-                    return itemDTO;
-                }
-            }
-            return null;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    // 상품 상세정보
-    // 상품의 데이터를 읽어오는 트랜잭션을 읽기 전용으로 설정합니다.
-    // 이럴 경우 JPA가 더티체킹(변경감지)를 수행하지 않아서 성능을 향상 시킬 수 있다.
-    @Transactional(readOnly = true)
-    @Override
-    public ResponseEntity<ItemDTO> getItem(Long itemId, UserDetails userDetails) {
-        try {
-            // userDetails에서 권한을 가져오기
-            Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
-
-            // 상품 조회
-            ItemEntity findItem = itemRepository.findById(itemId)
-                    .orElseThrow(EntityNotFoundException::new);
-
-            // 권한이 있는지 체크
-            if (!authorities.isEmpty()) {
-                String role = authorities.iterator().next().getAuthority();
-                log.info("권한 : " + role);
-                if (role.equals("ADMIN") || role.equals("ROLE_ADMIN")) {
-                    ItemDTO itemDTO = ItemDTO.toItemDTO(findItem);
-                    itemDTO.setMemberNickName(memberRepository.findById(itemDTO.getItemSeller()).orElseThrow().getNickName());
-                    return ResponseEntity.ok().body(itemDTO);
-                }
-            }
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        }
-    }
+//    @Override
+//    @Transactional(readOnly = true)
+//    public Page<ItemDTO> superitendItem(Pageable pageable,
+//                                        UserDetails userDetails,
+//                                        ItemSellStatus itemSellStatus) {
+//        try {
+//            // userDetails에서 권한을 가져오기
+//            Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
+//
+//            // 권한이 있는지 체크
+//            if (!authorities.isEmpty()) {
+//                String role = authorities.iterator().next().getAuthority();
+//                log.info("권한 : " + role);
+//                if (role.equals("ADMIN") || role.equals("ROLE_ADMIN")) {
+//                    // 페이지 처리해서 예약된 것만 조회
+//                    Page<ItemEntity> items =
+//                            itemRepository.findByItemSellStatus(pageable, itemSellStatus);
+//                    log.info("items : {}", items);
+//
+//                    Page<ItemDTO> itemDTO = items.map(ItemDTO::toItemDTO);
+//                    for (ItemDTO item : itemDTO) {
+//                        item.setMemberNickName(memberRepository.findById(item.getItemSeller()).orElseThrow().getNickName());
+//                    }
+//                    return itemDTO;
+//                }
+//            }
+//            return null;
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
+//
+//    // 상품 상세정보
+//    // 상품의 데이터를 읽어오는 트랜잭션을 읽기 전용으로 설정합니다.
+//    // 이럴 경우 JPA가 더티체킹(변경감지)를 수행하지 않아서 성능을 향상 시킬 수 있다.
+//    @Transactional(readOnly = true)
+//    @Override
+//    public ResponseEntity<ItemDTO> getItem(Long itemId, UserDetails userDetails) {
+//        try {
+//            // userDetails에서 권한을 가져오기
+//            Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
+//
+//            // 상품 조회
+//            ItemEntity findItem = itemRepository.findById(itemId)
+//                    .orElseThrow(EntityNotFoundException::new);
+//
+//            // 권한이 있는지 체크
+//            if (!authorities.isEmpty()) {
+//                String role = authorities.iterator().next().getAuthority();
+//                log.info("권한 : " + role);
+//                if (role.equals("ADMIN") || role.equals("ROLE_ADMIN")) {
+//                    ItemDTO itemDTO = ItemDTO.toItemDTO(findItem);
+//                    itemDTO.setMemberNickName(memberRepository.findById(itemDTO.getItemSeller()).orElseThrow().getNickName());
+//                    return ResponseEntity.ok().body(itemDTO);
+//                }
+//            }
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+//        } catch (EntityNotFoundException e) {
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+//        }
+//    }
 
     public OrderDTO orderItem(List<OrderMainDTO> orders, String adminEmail) {
 
@@ -332,6 +334,33 @@ public class AdminServiceImpl implements AdminService {
             }
         }
         return null;
+    }
+
+    // 문의글 상세 보기
+    @Transactional(readOnly = true)
+    @Override
+    public ResponseEntity<BoardDTO> getBoard(Long boardId, UserDetails userDetails) {
+        try {
+            // userDetails에서 권한을 가져오기
+            Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
+
+            // 문의글 조회
+            BoardEntity findBoard = boardRepository.findByBoardId(boardId)
+                    .orElseThrow(EntityNotFoundException::new);
+
+            // 권한이 있는지 체크
+            if (!authorities.isEmpty()) {
+                String role = authorities.iterator().next().getAuthority();
+                log.info("권한 : " + role);
+                if (role.equals("ADMIN") || role.equals("ROLE_ADMIN")) {
+                    BoardDTO returnBoard = BoardDTO.toBoardDTO(findBoard, findBoard.getMember().getNickName());
+                    return ResponseEntity.ok().body(returnBoard);
+                }
+            }
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
     }
 
 }

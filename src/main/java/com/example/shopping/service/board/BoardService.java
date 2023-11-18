@@ -5,6 +5,7 @@ import com.example.shopping.domain.board.CreateBoardDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
 
 
 public interface BoardService {
