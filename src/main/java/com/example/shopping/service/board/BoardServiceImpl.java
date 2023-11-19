@@ -8,7 +8,6 @@ import com.example.shopping.entity.board.BoardEntity;
 import com.example.shopping.entity.item.ItemEntity;
 import com.example.shopping.entity.member.MemberEntity;
 import com.example.shopping.exception.board.BoardException;
-import com.example.shopping.exception.member.UserException;
 import com.example.shopping.repository.board.BoardRepository;
 import com.example.shopping.repository.item.ItemRepository;
 import com.example.shopping.repository.member.MemberRepository;
@@ -53,7 +52,7 @@ public class BoardServiceImpl implements BoardService {
                 BoardEntity boardEntity =
                         BoardEntity.createBoard(boardDTO, findUser, findItem);
                 BoardEntity saveBoard = boardRepository.save(boardEntity);
-                BoardDTO returnBoard = BoardDTO.toBoardDTO(saveBoard, findUser.getNickName());
+                BoardDTO returnBoard = BoardDTO.toBoardDTO(saveBoard, findUser.getNickName(), findItem.getItemId());
                 log.info("게시글 : " + returnBoard);
 
                 return ResponseEntity.ok().body(returnBoard);
@@ -98,7 +97,10 @@ public class BoardServiceImpl implements BoardService {
 
         // 문의글을 작성할 때 등록된 이메일이 받아온 이메일이 맞아야 true
         if (findUser.getEmail().equals(findBoard.getMember().getEmail())) {
-            BoardDTO boardDTO = BoardDTO.toBoardDTO(findBoard, findBoard.getMember().getNickName());
+            BoardDTO boardDTO = BoardDTO.toBoardDTO(
+                    findBoard,
+                    findBoard.getMember().getNickName(),
+                    findBoard.getItem().getItemId());
             return ResponseEntity.ok().body(boardDTO);
         } else {
             return ResponseEntity.badRequest().body("해당 유저의 문의글이 아닙니다.");
@@ -133,7 +135,10 @@ public class BoardServiceImpl implements BoardService {
                         .commentEntityList(findBoard.getCommentEntityList())
                         .build();
                 BoardEntity updateBoard = boardRepository.save(findBoard);
-                BoardDTO returnBoard = BoardDTO.toBoardDTO(updateBoard, findUser.getNickName());
+                BoardDTO returnBoard = BoardDTO.toBoardDTO(
+                        updateBoard,
+                        findUser.getNickName(),
+                        findBoard.getItem().getItemId());
                 log.info("게시글 : " + returnBoard);
                 return ResponseEntity.ok().body(returnBoard);
             } else {
@@ -167,7 +172,10 @@ public class BoardServiceImpl implements BoardService {
                 throw new BoardException("작성자의 글이 아닙니다.");
             }
         });
-        return findAllBoards.map(board -> BoardDTO.toBoardDTO(board, board.getMember().getNickName()));
+        return findAllBoards.map(board -> BoardDTO.toBoardDTO(
+                board,
+                board.getMember().getNickName(),
+                board.getItem().getItemId()));
     }
 
     // 상품에 대한 문의글 보기
@@ -209,6 +217,9 @@ public class BoardServiceImpl implements BoardService {
         log.info("조회된 게시글 수 : {}", findAllBoards.getTotalElements());
         log.info("조회된 게시글 : {}", findAllBoards);
 
-        return findAllBoards.map(board -> BoardDTO.toBoardDTO(board, board.getMember().getNickName()));
+        return findAllBoards.map(board -> BoardDTO.toBoardDTO(
+                board,
+                board.getMember().getNickName(),
+                board.getItem().getItemId()));
     }
 }

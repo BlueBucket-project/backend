@@ -41,6 +41,9 @@ public class BoardDTO {
     @Schema(description = "문의글이 본인글인지 확인")
     private BoardSecret boardSecret;
 
+    @Schema(description = "상품 번호")
+    private Long itemId;
+
 
     @Builder
     public BoardDTO(Long boardId,
@@ -49,7 +52,8 @@ public class BoardDTO {
                     String nickName,
                     LocalDateTime regTime,
                     List<CommentDTO> commentDTOList,
-                    BoardSecret boardSecret) {
+                    BoardSecret boardSecret,
+                    Long itemId) {
         this.boardId = boardId;
         this.title = title;
         this.content = content;
@@ -57,10 +61,13 @@ public class BoardDTO {
         this.regTime = regTime;
         this.commentDTOList = commentDTOList;
         this.boardSecret = boardSecret;
+        this.itemId = itemId;
     }
 
     // 엔티티를 DTO로 변환하는 작업
-    public static BoardDTO toBoardDTO(BoardEntity board, String nickName) {
+    public static BoardDTO toBoardDTO(BoardEntity board,
+                                      String nickName,
+                                      Long itemId) {
         // 게시글 댓글 처리
         List<CommentEntity> commentEntityList = board.getCommentEntityList();
         List<CommentDTO> commentDTOS = new ArrayList<>();
@@ -82,6 +89,7 @@ public class BoardDTO {
                 .content(board.getContent())
                 .nickName(nickName)
                 .commentDTOList(commentDTOS)
+                .itemId(itemId)
                 .regTime(LocalDateTime.now())
                 .boardSecret(board.getBoardSecret())
                 .build();

@@ -118,7 +118,7 @@ public class ItemDTO {
         if(boardEntityList != null) {
             for (BoardEntity boardEntity : boardEntityList) {
                 String nickName = boardEntity.getMember().getNickName();
-                BoardDTO boardDTO = BoardDTO.toBoardDTO(boardEntity, nickName);
+                BoardDTO boardDTO = BoardDTO.toBoardDTO(boardEntity, nickName, item.getItemId());
                 boardDTOS.add(boardDTO);
             }
         }
