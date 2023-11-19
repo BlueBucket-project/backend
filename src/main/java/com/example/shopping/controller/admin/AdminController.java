@@ -38,7 +38,6 @@ import java.util.Map;
 public class AdminController {
     private final AdminServiceImpl adminService;
     private final ItemServiceImpl itemService;
-    private final BoardServiceImpl boardService;
 
     // 상품 삭제
     @DeleteMapping("/items/{itemId}")
