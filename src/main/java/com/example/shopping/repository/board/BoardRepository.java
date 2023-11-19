@@ -14,6 +14,7 @@ import java.util.Optional;
 public interface BoardRepository extends JpaRepository<BoardEntity, Long> {
     @Query("select b from board b" +
             " join fetch b.member " +
+            " join fetch b.item " +
             " where b.boardId = :boardId")
     Optional<BoardEntity> findByBoardId(@Param("boardId") Long boardId);
 
@@ -21,6 +22,7 @@ public interface BoardRepository extends JpaRepository<BoardEntity, Long> {
 
     @Query(value = "select b from board b" +
             " join fetch  b.member " +
+            " join fetch b.item " +
             " where b.title like %:searchKeyword%" +
             " order by b.boardId DESC ",
             countQuery = "select count(b) from board b where b.title like %:searchKeyword%")
@@ -29,12 +31,14 @@ public interface BoardRepository extends JpaRepository<BoardEntity, Long> {
 
     @Query(value = "select b from board b" +
             " join fetch b.member " +
+            " join fetch b.item " +
             " order by b.boardId DESC ",
             countQuery = "select count(b) from board b")
     Page<BoardEntity> findAll(Pageable pageable);
 
     @Query(value = "select b from board b " +
             "join fetch b.member " +
+            " join fetch b.item " +
             "where b.member.email = :email" +
             " order by b.boardId DESC ",
             countQuery = "select count(b) from board b where b.member.email = :email"
@@ -43,6 +47,7 @@ public interface BoardRepository extends JpaRepository<BoardEntity, Long> {
 
     @Query(value = "select  b from board  b " +
             " join fetch b.member " +
+            " join fetch b.item " +
             " where b.member.email = :email and b.title like %:searchKeyword%" +
             " order by b.boardId DESC ",
             countQuery = "select count(b) from board b " +
@@ -53,6 +58,7 @@ public interface BoardRepository extends JpaRepository<BoardEntity, Long> {
 
     @Query(value = "select b from board b " +
             " join fetch b.member " +
+            " join fetch b.item " +
             "where b.member.nickName = :nickName" +
             " order by b.boardId DESC",
             countQuery = "select count(b) from board b where b.member.nickName = :nickName")
@@ -61,6 +67,7 @@ public interface BoardRepository extends JpaRepository<BoardEntity, Long> {
 
     @Query(value = "select b from board b " +
             " join fetch b.member " +
+            " join fetch b.item " +
             "where b.member.nickName = :nickName and b.title like %:searchKeyword%" +
             " order by b.boardId desc ",
             countQuery = "select count(b) from board b " +
@@ -71,6 +78,7 @@ public interface BoardRepository extends JpaRepository<BoardEntity, Long> {
 
     @Query(value = "select b from board b " +
             " join fetch b.member " +
+            " join fetch b.item " +
             "where b.item.itemId = :itemId" +
             " order by b.boardId desc ",
             countQuery = "select count(b) from board b where b.item.itemId = :itemId")
@@ -78,6 +86,7 @@ public interface BoardRepository extends JpaRepository<BoardEntity, Long> {
 
     @Query(value = "select b from board b " +
             " join fetch b.member " +
+            " join fetch b.item " +
             "where b.item.itemId = :itemId and b.title like %:searchKeyword%" +
             " order by b.boardId desc ",
             countQuery = "select count(b) from board b " +

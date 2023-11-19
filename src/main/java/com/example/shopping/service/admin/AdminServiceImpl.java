@@ -81,7 +81,7 @@ public class AdminServiceImpl implements AdminService {
             List<ItemImgEntity> findItemImg = itemImgRepository.findByItemItemId(itemId);
 
             // 현재는 권한이 1개만 있는 것으로 가정
-            if(!authorities.isEmpty()) {
+            if (!authorities.isEmpty()) {
                 // 현재 사용자의 권한(authority) 목록에서 첫 번째 권한을 가져오는 코드입니다.
                 // 현재 저의 로직에서는 유저는 하나의 권한을 가지므로 이렇게 처리할 수 있다.
                 String role = authorities.iterator().next().getAuthority();
@@ -90,7 +90,7 @@ public class AdminServiceImpl implements AdminService {
                 if (role.equals("ADMIN") || role.equals("ROLE_ADMIN")) {
                     // 장바구니 상품을 null로 바꾸고 저장
                     List<CartItemDTO> items = cartItemRepository.findByItemId(itemId);
-                    for(CartItemDTO item : items) {
+                    for (CartItemDTO item : items) {
                         item.setItem(null);
                         cartItemRepository.save(item);
                     }
@@ -228,7 +228,7 @@ public class AdminServiceImpl implements AdminService {
                 throw new ItemException("예약된 물품이 아니라 구매처리 할 수 없습니다.");
             }
 
-            if(!item.getItemReserver().equals(orderMember.getEmail())){
+            if (!item.getItemReserver().equals(orderMember.getEmail())) {
                 //throw 구매자와 예약한사람이 달라 판매 못함
                 throw new ItemException("예약자와 현재 구매하려는 사람이 달라 구매처리 할 수 없습니다.");
             }
@@ -286,7 +286,7 @@ public class AdminServiceImpl implements AdminService {
     // 모든 문의글 보기
     @Transactional(readOnly = true)
     @Override
-    public Page<BoardDTO> getAllBoards(Pageable pageable, String searchKeyword, UserDetails userDetails)  {
+    public Page<BoardDTO> getAllBoards(Pageable pageable, String searchKeyword, UserDetails userDetails) {
         // userDetails에서 권한을 가져오기
         Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
 
@@ -296,13 +296,16 @@ public class AdminServiceImpl implements AdminService {
             String role = authorities.iterator().next().getAuthority();
             log.info("권한 : " + role);
             if (role.equals("ADMIN") || role.equals("ROLE_ADMIN")) {
-                if(StringUtils.isNotBlank(searchKeyword)) {
+                if (StringUtils.isNotBlank(searchKeyword)) {
                     allBoards = boardRepository.findByTitleContaining(pageable, searchKeyword);
                 } else {
                     allBoards = boardRepository.findAll(pageable);
                 }
                 allBoards.forEach(board -> board.changeSecret(BoardSecret.UN_LOCK));
-                return allBoards.map(board -> BoardDTO.toBoardDTO(board, board.getMember().getNickName()));
+                return allBoards.map(board -> BoardDTO.toBoardDTO(
+                        board,
+                        board.getMember().getNickName(),
+                        board.getItem().getItemId()));
             }
         }
         return null;
@@ -313,9 +316,9 @@ public class AdminServiceImpl implements AdminService {
     @Transactional(readOnly = true)
     @Override
     public Page<BoardDTO> getBoardsByNiickName(UserDetails userDetails,
-                                    Pageable pageable,
-                                    String nickName,
-                                    String searchKeyword) {
+                                               Pageable pageable,
+                                               String nickName,
+                                               String searchKeyword) {
         // userDetails에서 권한을 가져오기
         Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
         Page<BoardEntity> allByNickName;
@@ -324,13 +327,16 @@ public class AdminServiceImpl implements AdminService {
             String role = authorities.iterator().next().getAuthority();
             // 존재하는 권한이 관리자인지 체크
             if (role.equals("ADMIN") || role.equals("ROLE_ADMIN")) {
-                if(StringUtils.isNotBlank(searchKeyword)) {
+                if (StringUtils.isNotBlank(searchKeyword)) {
                     allByNickName = boardRepository.findByMemberNickNameAndTitleContaining(nickName, pageable, searchKeyword);
                 } else {
                     allByNickName = boardRepository.findAllByMemberNickName(nickName, pageable);
                 }
                 allByNickName.forEach(board -> board.changeSecret(BoardSecret.UN_LOCK));
-                return allByNickName.map(board -> BoardDTO.toBoardDTO(board, nickName));
+                return allByNickName.map(board -> BoardDTO.toBoardDTO(
+                        board,
+                        nickName,
+                        board.getItem().getItemId()));
             }
         }
         return null;
@@ -353,7 +359,10 @@ public class AdminServiceImpl implements AdminService {
                 String role = authorities.iterator().next().getAuthority();
                 log.info("권한 : " + role);
                 if (role.equals("ADMIN") || role.equals("ROLE_ADMIN")) {
-                    BoardDTO returnBoard = BoardDTO.toBoardDTO(findBoard, findBoard.getMember().getNickName());
+                    BoardDTO returnBoard = BoardDTO.toBoardDTO(
+                            findBoard,
+                            findBoard.getMember().getNickName(),
+                            findBoard.getItem().getItemId());
                     return ResponseEntity.ok().body(returnBoard);
                 }
             }
