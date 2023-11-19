@@ -41,7 +41,7 @@ public class AdminController {
     private final BoardServiceImpl boardService;
 
     // 상품 삭제
-    @DeleteMapping("/{itemId}")
+    @DeleteMapping("/items/{itemId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Tag(name = "admin")
     @Operation(summary = "상품 삭제", description = "관리자가 상품을 삭제하는 API입니다.")
@@ -53,7 +53,7 @@ public class AdminController {
     }
 
     // 게시글 삭제
-    @DeleteMapping("/{boardId}")
+    @DeleteMapping("/boards/{boardId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Tag(name = "admin")
     @Operation(summary = "게시글 삭제", description = "관리자가 게시글을 삭제하는 API입니다.")
