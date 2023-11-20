@@ -48,17 +48,7 @@ public class ItemServiceImpl implements ItemService{
 
         if(findUser != null) {
             // 상품 등록
-            ItemEntity item = ItemEntity.builder()
-                    .itemSeller(findUser.getMemberId())
-                    .itemName(itemDTO.getItemName())
-                    .itemDetail(itemDTO.getItemDetail())
-                    .itemSellStatus(itemDTO.getItemSellStatus())
-                    .stockNumber(itemDTO.getStockNumber())
-                    .price(itemDTO.getPrice())
-                    .itemPlace(itemDTO.getSellPlace())
-                    .itemReserver(itemDTO.getItemReserver())
-                    .itemRamount(itemDTO.getItemRamount())
-                    .build();
+            ItemEntity item = ItemEntity.fromUpdateItemDTO(findUser.getMemberId(), itemDTO);
 
             if(itemFiles.size() != 0){
                 //업로드할 이미지가 없다면 업로드 안하기 위한 로직
