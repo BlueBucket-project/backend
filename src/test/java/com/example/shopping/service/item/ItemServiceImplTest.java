@@ -219,7 +219,7 @@ public class ItemServiceImplTest {
         given(itemImgRepository.findByItemItemId(1L)).willReturn(new ArrayList<>());
         given(itemRepository.save(any())).willReturn(editedItem1);
 
-        ItemDTO item = itemService.updateItem(1L, updateItem, new ArrayList<>(), member.getEmail());
+        ItemDTO item = itemService.updateItem(1L, updateItem, new ArrayList<>(), member.getEmail(), "ROLE_USER");
 
         Assertions.assertThat(item.getItemName()).isEqualTo("테스트");
         Assertions.assertThat(item.getStockNumber()).isEqualTo(2);
@@ -241,7 +241,7 @@ public class ItemServiceImplTest {
         given(itemRepository.findById(1L)).willReturn(Optional.ofNullable(savedItem1));
         given(memberRepository.findByEmail(any())).willReturn(member2);
 
-        org.junit.jupiter.api.Assertions.assertThrows(UserException.class, () -> itemService.updateItem(1L, updateItem, new ArrayList<>(), "test123@test.com")) ;
+        org.junit.jupiter.api.Assertions.assertThrows(UserException.class, () -> itemService.updateItem(1L, updateItem, new ArrayList<>(), "test123@test.com", "ROLE_USER")) ;
     }
 
     private Pageable createPageRequestUsing(int page, int size, Sort sort) {

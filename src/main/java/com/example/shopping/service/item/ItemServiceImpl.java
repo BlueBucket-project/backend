@@ -18,7 +18,6 @@ import com.example.shopping.service.s3.S3ItemImgUploaderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.*;
-import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,7 +30,6 @@ import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
-@Transactional
 @Log4j2
 public class ItemServiceImpl implements ItemService{
     private final MemberRepository memberRepository;
@@ -42,6 +40,7 @@ public class ItemServiceImpl implements ItemService{
 
     // 상품 등록 메소드
     @Override
+    @Transactional
     public ItemDTO saveItem(ItemDTO itemDTO,
                                       List<MultipartFile> itemFiles,
                                       String memberEmail) throws Exception {
@@ -53,7 +52,6 @@ public class ItemServiceImpl implements ItemService{
                     .itemSeller(findUser.getMemberId())
                     .itemName(itemDTO.getItemName())
                     .itemDetail(itemDTO.getItemDetail())
-                    // 처음 상품을 등록하면 무조건 SELL 상태 - controller에서 셋팅해서 넘겨줌
                     .itemSellStatus(itemDTO.getItemSellStatus())
                     .stockNumber(itemDTO.getStockNumber())
                     .price(itemDTO.getPrice())
@@ -119,25 +117,27 @@ public class ItemServiceImpl implements ItemService{
 
     // 상품 수정
     @Override
+    @Transactional
     public ItemDTO updateItem(Long itemId,
                                         UpdateItemDTO itemDTO,
                                         List<MultipartFile> itemFiles,
-                                        String memberEmail) throws Exception {
+                                        String memberEmail,
+                                        String role) throws Exception {
         try {
             ItemEntity findItem = itemRepository.findById(itemId)
                     .orElseThrow(EntityNotFoundException::new);
             log.info("item : " + findItem);
             MemberEntity findMember = memberRepository.findByEmail(memberEmail);
             log.info("member : " + findMember);
+            MemberEntity sellMember = memberRepository.findById(itemDTO.getItemSeller()).orElseThrow();
 
             // 상품 엔티티에 있는 List로 된 이미지들을 가져오기
             List<ItemImgEntity> itemImgList = findItem.getItemImgList();
             List<BoardEntity> boardEntityList = findItem.getBoardEntityList();
 
-
-            // 이메일을 userDetails에서 가져와서 조회한 다음
-            // 회원 id와 상품에 담긴 member 엔티티의 id 비교
-            if(findMember.getMemberId().equals(findItem.getItemSeller())) {
+            // 로그인한 본인 그리고 관리자의 경우는 수정가능
+            if(findMember.getMemberId().equals(findItem.getItemSeller())
+                    || (role.equals("ROLE_ADMIN") && (findItem.getItemSeller().equals(sellMember.getMemberId())))) {
                 // 상품 정보 수정
                 findItem = ItemEntity.builder()
                         .itemId(findItem.getItemId())
@@ -147,7 +147,9 @@ public class ItemServiceImpl implements ItemService{
                         .itemSellStatus(findItem.getItemSellStatus())
                         .stockNumber(itemDTO.getStockNumber())
                         .price(itemDTO.getPrice())
-                        .itemSeller(findMember.getMemberId())
+                        //관리자로 수정작업 시, UpdateItemDTO의 itemSeller
+                        //본인이 수정작업 시, userDetails의 email로 id조회
+                        .itemSeller(role.equals("ROLE_ADMIN") ? sellMember.getMemberId() : findMember.getMemberId())
                         .itemRamount(findItem.getItemRamount())
                         .itemReserver(findItem.getItemReserver()==null?null:findItem.getItemReserver())
                         .itemImgList(itemImgList)
@@ -163,9 +165,12 @@ public class ItemServiceImpl implements ItemService{
                     for(ItemImgEntity imgId : itemImgs){
                         itemImgIds.add(imgId.getItemImgId());
                     }
-                    //남기는 이미지 제외 - 삭제할 이미지 아이디 추출과정
-                    for(Long imgId : itemDTO.getRemainImgId()) {
-                        itemImgIds.remove(imgId);
+
+                    if(itemDTO.getRemainImgId() != null){
+                        //남기는 이미지 제외 - 삭제할 이미지 아이디 추출과정
+                        for(Long imgId : itemDTO.getRemainImgId()) {
+                            itemImgIds.remove(imgId);
+                        }
                     }
                 }
                 for(Long imgId : itemImgIds){
@@ -224,24 +229,24 @@ public class ItemServiceImpl implements ItemService{
 
                 ItemEntity saveItem = itemRepository.save(findItem);
                 ItemDTO toItemDTO = ItemDTO.toItemDTO(saveItem);
-                toItemDTO.setMemberNickName(findMember.getNickName());
+                toItemDTO.setMemberNickName(role.equals("ROLE_ADMIN") ? sellMember.getNickName() : findMember.getNickName());
                 return toItemDTO;
 
-
             } else {
-                throw  new UserException("상품을 등록한 본인이 아닙니다.");
+                throw  new UserException("로그인한 아이디가 상품을 등록한 본인이 아니거나\n관리자로 로그인 하셨을 경우 itemSeller와 상품등록자가 달라 수정작업을 진행할 수 없습니다.");
             }
         }
         catch(UserException e){
             throw e;
         }
         catch (Exception e) {
-            throw new ItemException("상품 수정하는 작업을 실패했습니다.");
+            throw new ItemException("상품 수정하는 작업을 실패했습니다.\n" + e.getMessage());
         }
     }
 
     // 이미지 삭제
     @Override
+    @Transactional
     public String removeImg(Long itemId, Long itemImgId, String memberEmail) {
         try{
             // 이미지 조회
@@ -317,38 +322,56 @@ public class ItemServiceImpl implements ItemService{
 
     // 상품 삭제
     @Override
-    public String removeItem(Long itemId, String memberEmail) {
-        // 상품 조회
-        ItemEntity findItem = itemRepository.findById(itemId)
-                .orElseThrow(EntityNotFoundException::new);
-        // 이미지 조회
-        List<ItemImgEntity> findImg = itemImgRepository.findByItemItemId(itemId);
-        // 회원 조회
-        MemberEntity findUser = memberRepository.findByEmail(memberEmail);
+    @Transactional
+    public String removeItem(Long itemId, Long sellerId, String memberEmail, String role) {
 
-        if(findUser.getMemberId().equals(findItem.getItemSeller())) {
+        try {
+            // 상품 조회
+            ItemEntity findItem = itemRepository.findById(itemId)
+                    .orElseThrow(() -> new ItemException("해당 상품 정보가 존재하지 않습니다."));
 
-            //item을 참조하고 있는 자식Entity값 null셋팅
-            List<CartItemDTO> items = cartItemRepository.findByItemId(itemId);
-
-            for(CartItemDTO item : items){
-                item.setItem(null);
-                cartItemRepository.save(item);
+            if(findItem.getItemSellStatus() == ItemSellStatus.RESERVED){
+                throw new ItemException("해당 상품은 예약되었으니 관리자 혹은 예약자와 논의 후 삭제를 진행하여 주시기 바랍니다.");
             }
-            // 상품 정보 삭제
-            itemRepository.delete(findItem);
 
-            for(ItemImgEntity img : findImg) {
-                String uploadFilePath = img.getUploadImgPath();
-                String uuidFileName = img.getUploadImgName();
+            // 이미지 조회
+            List<ItemImgEntity> findImg = itemImgRepository.findByItemItemId(itemId);
+            // 회원 조회
+            MemberEntity findUser = memberRepository.findByEmail(memberEmail);
+            MemberEntity sellUser = memberRepository.findById(sellerId).orElseThrow();
 
-                // S3에서 삭제
-                String result = s3ItemImgUploaderService.deleteFile(uploadFilePath, uuidFileName);
-                log.info(result);
+            if(findUser.getMemberId().equals(findItem.getItemSeller())
+                    || (role.equals("ROLE_ADMIN") && sellUser.getMemberId().equals(findItem.getItemSeller()))) {
+
+                //item을 참조하고 있는 자식Entity값 null셋팅
+                List<CartItemDTO> items = cartItemRepository.findByItemId(itemId);
+
+                for(CartItemDTO item : items){
+                    item.setItem(null);
+                    cartItemRepository.save(item);
+                }
+                // 상품 정보 삭제
+                itemRepository.delete(findItem);
+
+                for(ItemImgEntity img : findImg) {
+                    String uploadFilePath = img.getUploadImgPath();
+                    String uuidFileName = img.getUploadImgName();
+
+                    // S3에서 삭제
+                    String result = s3ItemImgUploaderService.deleteFile(uploadFilePath, uuidFileName);
+                    log.info(result);
+                }
+            }else  {
+                throw  new UserException("로그인한 아이디가 상품을 등록한 본인이 아니거나\n관리자로 로그인 하셨을 경우 itemSeller와 상품등록자가 달라 삭제작업을 진행할 수 없습니다.");
             }
-        }else  {
-            return "해당 유저의 게시글이 아닙니다.";
+        } catch (ItemException e){
+            throw e;
+        } catch(UserException userException){
+            throw userException;
+        } catch (Exception ignored){
+            throw new ItemException("상품 삭제에 실패하였습니다.\n"+ ignored.getMessage());
         }
+
         return "상품과 이미지를 삭제했습니다.";
     }
 
