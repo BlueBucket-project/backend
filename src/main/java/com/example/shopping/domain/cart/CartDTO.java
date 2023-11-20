@@ -80,13 +80,16 @@ public class CartDTO {
     }
 
     public void addCartItems(CartItemDTO cartItem){
+        if(this.cartItems == null){
+            this.cartItems = new ArrayList<>();
+        }
         this.cartItems.add(cartItem);
     }
 
     public void updateCartItems(CartItemDTO cartItem){
         int idx=0;
 
-        for(CartItemDTO item:this.cartItems){
+        for(CartItemDTO item : this.cartItems){
             if(item.getCartItemId() == cartItem.getCartItemId()){
                 this.cartItems.remove(idx);
                 this.cartItems.add(cartItem);
