@@ -1,5 +1,6 @@
 package com.example.shopping.service.comment;
 
+import com.example.shopping.domain.board.ReplyStatus;
 import com.example.shopping.domain.comment.CommentDTO;
 import com.example.shopping.domain.comment.ModifyCommentDTO;
 import com.example.shopping.entity.board.BoardEntity;

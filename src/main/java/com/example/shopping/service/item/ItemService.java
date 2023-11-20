@@ -21,10 +21,11 @@ public interface ItemService {
     ItemDTO updateItem(Long itemId,
                        UpdateItemDTO itemDTO,
                        List<MultipartFile> itemFiles,
-                       String memberEmail) throws Exception;
+                       String memberEmail,
+                       String role) throws Exception;
 
     // 상품 삭제
-    String removeItem(Long itemId, String memberEmail);
+    String removeItem(Long itemId, Long sellerId, String memberEmail, String role);
 
     // 이미지 삭제
     String removeImg(Long itemId, Long itemImgId, String memberEmail);

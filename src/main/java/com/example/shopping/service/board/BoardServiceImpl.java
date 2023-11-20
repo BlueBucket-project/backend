@@ -4,6 +4,7 @@ import com.example.shopping.domain.Item.ItemDTO;
 import com.example.shopping.domain.board.BoardDTO;
 import com.example.shopping.domain.board.BoardSecret;
 import com.example.shopping.domain.board.CreateBoardDTO;
+import com.example.shopping.domain.board.ReplyStatus;
 import com.example.shopping.entity.board.BoardEntity;
 import com.example.shopping.entity.item.ItemEntity;
 import com.example.shopping.entity.member.MemberEntity;
@@ -51,8 +52,12 @@ public class BoardServiceImpl implements BoardService {
                 // 작성할 문의글(제목, 내용), 유저 정보, 해당 상품의 정보를 넘겨준다.
                 BoardEntity boardEntity =
                         BoardEntity.createBoard(boardDTO, findUser, findItem);
+                boardEntity.changeSecret(BoardSecret.UN_LOCK);
                 BoardEntity saveBoard = boardRepository.save(boardEntity);
-                BoardDTO returnBoard = BoardDTO.toBoardDTO(saveBoard, findUser.getNickName(), findItem.getItemId());
+                BoardDTO returnBoard = BoardDTO.toBoardDTO(
+                        saveBoard,
+                        findUser.getNickName(),
+                        findItem.getItemId());
                 log.info("게시글 : " + returnBoard);
 
                 return ResponseEntity.ok().body(returnBoard);
@@ -131,8 +136,8 @@ public class BoardServiceImpl implements BoardService {
                         .content(boardDTO.getContent() != null ? boardDTO.getContent() : findBoard.getContent())
                         .item(findBoard.getItem())
                         .member(findBoard.getMember())
-                        .boardSecret(BoardSecret.UN_LOCK)
                         .commentEntityList(findBoard.getCommentEntityList())
+                        .boardSecret(BoardSecret.LOCK)
                         .build();
                 BoardEntity updateBoard = boardRepository.save(findBoard);
                 BoardDTO returnBoard = BoardDTO.toBoardDTO(
@@ -165,6 +170,17 @@ public class BoardServiceImpl implements BoardService {
             findAllBoards = boardRepository.findAllByMemberEmail(memberEmail, pageable);
         }
 
+        // 댓글이 있으면 답변완료, 없으면 미완료
+        for(BoardEntity boardCheck : findAllBoards) {
+            if(boardCheck.getCommentEntityList().isEmpty()) {
+                boardCheck.changeReply(ReplyStatus.REPLY_X);
+            } else {
+                boardCheck.changeReply(ReplyStatus.REPLY_O);
+            }
+        }
+
+        // 해당 게시글을 만들때 id와 조회한 id를 체크
+        // 그리고 맞다면 읽을 권한주고 없으면 잠가주기
         findAllBoards.forEach(board -> {
             if(board.getMember().getMemberId().equals(findUser.getMemberId())) {
                 board.changeSecret(BoardSecret.UN_LOCK);
@@ -202,9 +218,20 @@ public class BoardServiceImpl implements BoardService {
         } else {
             findAllBoards = boardRepository.findAllByItemItemId(itemId, pageable);
         }
+        // 댓글이 있으면 답변완료, 없으면 미완료
+        for(BoardEntity boardCheck : findAllBoards) {
+            if(boardCheck.getCommentEntityList().isEmpty()) {
+                boardCheck.changeReply(ReplyStatus.REPLY_X);
+            } else {
+                boardCheck.changeReply(ReplyStatus.REPLY_O);
+            }
+        }
 
         for (BoardEntity boardEntity : findAllBoards) {
+            // 파라미터로 받아온 이메일이 있다면
             if (email != null) {
+                // 해당 게시글을 만들때 이메일과 조회한 이메일을 체크
+                // 그리고 맞다면 읽을 권한주고 없으면 잠가주기
                 if (boardEntity.getMember().getEmail().equals(findUser.getEmail())) {
                     boardEntity.changeSecret(BoardSecret.UN_LOCK);
                 } else {

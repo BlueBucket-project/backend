@@ -168,6 +168,9 @@ public class CartServiceImpl implements CartService{
         catch(CartException e){
             throw e;
         }
+        catch(OutOfStockException e){
+            throw e;
+        }
         catch(Exception e){
             throw new CartException("장바구니에서 상품을 예약하는데 실패하였습니다.\n" + e.getMessage());
         }
