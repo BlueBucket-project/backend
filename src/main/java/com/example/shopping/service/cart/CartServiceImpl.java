@@ -8,6 +8,7 @@ import com.example.shopping.entity.cart.CartItemEntity;
 import com.example.shopping.entity.item.ItemEntity;
 import com.example.shopping.entity.member.MemberEntity;
 import com.example.shopping.exception.cart.CartException;
+import com.example.shopping.exception.item.ItemException;
 import com.example.shopping.exception.member.UserException;
 import com.example.shopping.exception.service.OutOfStockException;
 import com.example.shopping.repository.cart.CartItemRepository;
@@ -143,6 +144,9 @@ public class CartServiceImpl implements CartService{
                 if(cartItem.getMbrId() != member.getMemberId())
                     throw new CartException("예약하려고 하는 장바구니 상품id가 해당 회원의 장바구니 상품이 아닙니다.");
 
+                if(cartItem.getItem() == null)
+                    throw new ItemException("예약 하려고 하는 상품이 판매자에 의해 삭제되었습니다.");
+
                 checkItemStock(cartItem.getItem().getItemId(), cartItem.getCount());
                 cartItem.updateCartStatus(CartStatus.RESERVED);
 
@@ -164,6 +168,9 @@ public class CartServiceImpl implements CartService{
         catch(CartException e){
             throw e;
         }
+        catch(OutOfStockException e){
+            throw e;
+        }
         catch(Exception e){
             throw new CartException("장바구니에서 상품을 예약하는데 실패하였습니다.\n" + e.getMessage());
         }
@@ -177,6 +184,9 @@ public class CartServiceImpl implements CartService{
         try{
             for(CartOrderDTO cartOrder : cartOrderList){
                 CartItemDTO cartItem = cartItemRepository.findByCartItemId(cartOrder.getCartItemId());
+
+                if(cartItem.getItem() == null)
+                    throw new ItemException("취소하려고 하는 상품이 판매자에 의해 삭제되었습니다.");
 
                 ItemEntity updateItem = itemRepository.findById(cartItem.getItem().getItemId()).orElseThrow();
 
@@ -243,8 +253,10 @@ public class CartServiceImpl implements CartService{
             //PURCHASED 상태를 제외한 cartItem조회
             cartItems =cartItemRepository.findCartItemNotPurchased(cartId);
             for(CartItemDTO cart : cartItems){
-                if(cart.getItem().getMemberNickName() == null){
-                    cart.getItem().setMemberNickName(Objects.requireNonNull(memberRepository.findById(cart.getItem().getItemSeller()).orElse(null)).getNickName());
+                if(cart.getItem() != null){
+                    if(cart.getItem().getMemberNickName() == null){
+                        cart.getItem().setMemberNickName(Objects.requireNonNull(memberRepository.findById(cart.getItem().getItemSeller()).orElse(null)).getNickName());
+                    }
                 }
             }
             int start = (int) pageRequest.getOffset();

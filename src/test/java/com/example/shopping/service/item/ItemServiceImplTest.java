@@ -212,14 +212,16 @@ public class ItemServiceImplTest {
                 .sellPlace("서울시 관악구")
                 .price(20000)
                 .stockNumber(2)
+                .itemSeller(1L)
                 .build();
 
         given(itemRepository.findById(1L)).willReturn(Optional.ofNullable(savedItem1));
         given(memberRepository.findByEmail(member.getEmail())).willReturn(member);
+        given(memberRepository.findById(updateItem.getItemSeller())).willReturn(Optional.ofNullable(member));
         given(itemImgRepository.findByItemItemId(1L)).willReturn(new ArrayList<>());
         given(itemRepository.save(any())).willReturn(editedItem1);
 
-        ItemDTO item = itemService.updateItem(1L, updateItem, new ArrayList<>(), member.getEmail());
+        ItemDTO item = itemService.updateItem(1L, updateItem, new ArrayList<>(), member.getEmail(), "ROLE_USER");
 
         Assertions.assertThat(item.getItemName()).isEqualTo("테스트");
         Assertions.assertThat(item.getStockNumber()).isEqualTo(2);
@@ -236,12 +238,14 @@ public class ItemServiceImplTest {
                 .sellPlace("서울시 관악구")
                 .price(20000)
                 .stockNumber(2)
+                .itemSeller(2L)
                 .build();
 
         given(itemRepository.findById(1L)).willReturn(Optional.ofNullable(savedItem1));
-        given(memberRepository.findByEmail(any())).willReturn(member2);
+        given(memberRepository.findByEmail(member2.getEmail())).willReturn(member2);
+        given(memberRepository.findById(updateItem.getItemSeller())).willReturn(Optional.ofNullable(member));
 
-        org.junit.jupiter.api.Assertions.assertThrows(UserException.class, () -> itemService.updateItem(1L, updateItem, new ArrayList<>(), "test123@test.com")) ;
+        org.junit.jupiter.api.Assertions.assertThrows(UserException.class, () -> itemService.updateItem(1L, updateItem, new ArrayList<>(), member2.getEmail(), "ROLE_USER")) ;
     }
 
     private Pageable createPageRequestUsing(int page, int size, Sort sort) {

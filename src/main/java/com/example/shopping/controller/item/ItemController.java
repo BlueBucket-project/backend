@@ -1,9 +1,7 @@
 package com.example.shopping.controller.item;
 
-import com.example.shopping.domain.Item.ItemDTO;
-import com.example.shopping.domain.Item.ItemSellStatus;
-import com.example.shopping.domain.Item.CreateItemDTO;
-import com.example.shopping.domain.Item.UpdateItemDTO;
+import com.example.shopping.domain.Item.*;
+import com.example.shopping.exception.member.UserException;
 import com.example.shopping.service.item.ItemServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.EntityNotFoundException;
+import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +40,7 @@ public class ItemController {
     @PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
     @Tag(name = "item")
     @Operation(summary = "상품 등록", description = "상품을 등록하는 API입니다.")
-    public ResponseEntity<?> createItem(@RequestPart("key") CreateItemDTO item,
+    public ResponseEntity<?> createItem(@Valid @RequestPart("key") CreateItemDTO item,
                                         @RequestPart(value = "files", required = false)List<MultipartFile>itemFiles,
                                         BindingResult result
                                         ,@AuthenticationPrincipal UserDetails userDetails
@@ -99,14 +98,15 @@ public class ItemController {
                                         ,@AuthenticationPrincipal UserDetails userDetails
     ) {
         try {
+
             String email = userDetails.getUsername();
-            ItemDTO updateItem = itemServiceImpl.updateItem(itemId, itemDTO, itemFiles, email);
-            //testData
-            //ItemDTO updateItem = itemServiceImpl.updateItem(itemId, itemDTO, itemFiles, "mem123@test.com");
+            String role = userDetails.getAuthorities().iterator().next().getAuthority();
+
+            ItemDTO updateItem = itemServiceImpl.updateItem(itemId, itemDTO, itemFiles, email, role);
 
             return ResponseEntity.ok().body(updateItem);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
@@ -116,16 +116,18 @@ public class ItemController {
     @Tag(name = "item")
     @Operation(summary = "상품 삭제", description = "상품을 삭제하는 API입니다.")
     public ResponseEntity<?> deleteItem(@PathVariable Long itemId
-                                        ,@AuthenticationPrincipal UserDetails userDetails
+                                        , @RequestBody DelItemDTO itemDTO
+                                        , @AuthenticationPrincipal UserDetails userDetails
     ) {
         try {
             String email = userDetails.getUsername();
-            String result = itemServiceImpl.removeItem(itemId, email);
-            //String result = itemServiceImpl.removeItem(itemId, "mem123@test.com");
+            String role = userDetails.getAuthorities().iterator().next().getAuthority();
+
+            String result = itemServiceImpl.removeItem(itemId, itemDTO.getItemSeller(), email, role);
 
             return ResponseEntity.ok().body(result);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("잘못된 요청입니다.");
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 

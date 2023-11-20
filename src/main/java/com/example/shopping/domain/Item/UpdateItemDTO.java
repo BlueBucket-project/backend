@@ -34,16 +34,22 @@ public class UpdateItemDTO {
     @NotNull(message = "판매지역을 입력해야 합니다.")
     private String sellPlace;
 
+    @NotNull(message = "남길 이미지를 입력해주셔야 합니다. 공백으로라도 보내주세요.")
     @Schema(description = "남길 이미지id")
     private List<Long> remainImgId;
 
+    @NotNull(message = "아이템 판매자를 입력해야합니다. 공백으로라도 보내주세요.")
+    @Schema(description = "아이템 판매자")
+    private Long itemSeller;
+
     @Builder
-    public UpdateItemDTO(String itemName, int price, String itemDetail, int stockNumber, String sellPlace, List<Long> delImgId) {
+    public UpdateItemDTO(String itemName, int price, String itemDetail, int stockNumber, String sellPlace, List<Long> delImgId, Long itemSeller) {
         this.itemName = itemName;
         this.price = price;
         this.itemDetail = itemDetail;
         this.stockNumber = stockNumber;
         this.sellPlace = sellPlace;
         this.remainImgId = delImgId;
+        this.itemSeller = itemSeller;
     }
 }

@@ -1,6 +1,8 @@
 package com.example.shopping.entity.item;
 
+import com.example.shopping.domain.Item.ItemDTO;
 import com.example.shopping.domain.Item.ItemSellStatus;
+import com.example.shopping.domain.Item.UpdateItemDTO;
 import com.example.shopping.entity.Base.BaseTimeEntity;
 import com.example.shopping.entity.board.BoardEntity;
 import lombok.Builder;
@@ -96,6 +98,19 @@ public class ItemEntity extends BaseTimeEntity {
         this.itemSeller = itemSeller;
     }
 
+    public static ItemEntity fromUpdateItemDTO(Long sellerId, ItemDTO item){
+        return ItemEntity.builder()
+                .itemSeller(sellerId)
+                .itemName(item.getItemName())
+                .itemDetail(item.getItemDetail())
+                .itemSellStatus(item.getItemSellStatus())
+                .stockNumber(item.getStockNumber())
+                .price(item.getPrice())
+                .itemPlace(item.getSellPlace())
+                .itemReserver(item.getItemReserver())
+                .itemRamount(item.getItemRamount())
+                .build();
+    }
     public void itemSell(int cnt){
         // 아이템 판매 시
         // 재고감소, 상품상태변경, 예약자 및 예약수량 초기화
