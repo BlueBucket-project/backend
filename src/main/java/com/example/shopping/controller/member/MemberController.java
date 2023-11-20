@@ -208,7 +208,7 @@ public class MemberController {
             // 현재 페이지의 아이템 목록
             response.put("items", boards.getContent());
             // 현재 페이지 번호
-            response.put("nowPageNumber", boards.getNumber());
+            response.put("nowPageNumber", boards.getNumber()+1);
             // 전체 페이지 수
             response.put("totalPage", boards.getTotalPages());
             // 한 페이지에 출력되는 데이터 개수

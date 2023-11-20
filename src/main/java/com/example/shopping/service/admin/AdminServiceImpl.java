@@ -4,6 +4,7 @@ import com.example.shopping.domain.Item.ItemDTO;
 import com.example.shopping.domain.Item.ItemSellStatus;
 import com.example.shopping.domain.board.BoardDTO;
 import com.example.shopping.domain.board.BoardSecret;
+import com.example.shopping.domain.board.ReplyStatus;
 import com.example.shopping.domain.cart.CartItemDTO;
 import com.example.shopping.domain.cart.CartStatus;
 import com.example.shopping.domain.order.OrderDTO;
@@ -290,17 +291,36 @@ public class AdminServiceImpl implements AdminService {
         // userDetails에서 권한을 가져오기
         Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
 
+        String email = userDetails.getUsername();
+        MemberEntity findEmail = memberRepository.findByEmail(email);
+        log.info("관리자 정보 : " + findEmail);
+
         Page<BoardEntity> allBoards;
         // 권한이 있는지 체크
         if (!authorities.isEmpty()) {
             String role = authorities.iterator().next().getAuthority();
             log.info("권한 : " + role);
+            // 관리자 권한 체크
             if (role.equals("ADMIN") || role.equals("ROLE_ADMIN")) {
+                // 키워드가 있으면
                 if (StringUtils.isNotBlank(searchKeyword)) {
+                    // 키워드로 페이지 처리해서 검색
                     allBoards = boardRepository.findByTitleContaining(pageable, searchKeyword);
                 } else {
+                    // 키워드가 없으니 모두 검색
                     allBoards = boardRepository.findAll(pageable);
                 }
+
+                // 댓글이 없으면 답변 미완료, 있으면 완료
+                for(BoardEntity boardCheck : allBoards) {
+                    if(boardCheck.getCommentEntityList().isEmpty()) {
+                        boardCheck.changeReply(ReplyStatus.REPLY_X);
+                    } else {
+                        boardCheck.changeReply(ReplyStatus.REPLY_O);
+                    }
+                }
+
+                // 관리자라 모두 읽을 수 있으니 UN_LOCK
                 allBoards.forEach(board -> board.changeSecret(BoardSecret.UN_LOCK));
                 return allBoards.map(board -> BoardDTO.toBoardDTO(
                         board,
@@ -332,6 +352,15 @@ public class AdminServiceImpl implements AdminService {
                 } else {
                     allByNickName = boardRepository.findAllByMemberNickName(nickName, pageable);
                 }
+                // 댓글이 없으면 답변 미완료, 있으면 완료
+                for(BoardEntity boardCheck : allByNickName) {
+                    if(boardCheck.getCommentEntityList().isEmpty()) {
+                        boardCheck.changeReply(ReplyStatus.REPLY_X);
+                    } else {
+                        boardCheck.changeReply(ReplyStatus.REPLY_O);
+                    }
+                }
+                // 관리자라 모두 읽을 수 있으니 UN_LOCK
                 allByNickName.forEach(board -> board.changeSecret(BoardSecret.UN_LOCK));
                 return allByNickName.map(board -> BoardDTO.toBoardDTO(
                         board,

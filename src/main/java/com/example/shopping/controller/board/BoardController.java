@@ -107,7 +107,7 @@ public class BoardController {
         }
     }
 
-    // 문의글 전체 보기
+    // 상품에 대한 문의글 전체 보기
     @GetMapping("")
     @Tag(name = "board")
     @Operation(summary = "문의글 전체 보기", description = "모든 상품에 대한 문의글을 봅니다.")
@@ -127,7 +127,7 @@ public class BoardController {
             // 현재 페이지의 아이템 목록
             response.put("items", boards.getContent());
             // 현재 페이지 번호
-            response.put("nowPageNumber", boards.getNumber());
+            response.put("nowPageNumber", boards.getNumber()+1);
             // 전체 페이지 수
             response.put("totalPage", boards.getTotalPages());
             // 한 페이지에 출력되는 데이터 개수

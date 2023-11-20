@@ -44,6 +44,9 @@ public class BoardDTO {
     @Schema(description = "상품 번호")
     private Long itemId;
 
+    @Schema(description = "답글상태")
+    private ReplyStatus replyStatus;
+
 
     @Builder
     public BoardDTO(Long boardId,
@@ -53,7 +56,8 @@ public class BoardDTO {
                     LocalDateTime regTime,
                     List<CommentDTO> commentDTOList,
                     BoardSecret boardSecret,
-                    Long itemId) {
+                    Long itemId,
+                    ReplyStatus replyStatus) {
         this.boardId = boardId;
         this.title = title;
         this.content = content;
@@ -62,6 +66,7 @@ public class BoardDTO {
         this.commentDTOList = commentDTOList;
         this.boardSecret = boardSecret;
         this.itemId = itemId;
+        this.replyStatus = replyStatus;
     }
 
     // 엔티티를 DTO로 변환하는 작업
@@ -90,9 +95,14 @@ public class BoardDTO {
                 .nickName(nickName)
                 .commentDTOList(commentDTOS)
                 .itemId(itemId)
+                // 답글 미완료 상태로 등록
+                .replyStatus(board.getReplyStatus())
                 .regTime(LocalDateTime.now())
                 .boardSecret(board.getBoardSecret())
                 .build();
     }
 
+    public void viewPermission(BoardSecret boardSecret) {
+        this.boardSecret = boardSecret;
+    }
 }

@@ -126,7 +126,7 @@ public class AdminController {
             // 설정을 해서 여기서는 할 필요가 없다.
             @PageableDefault(sort = "boardId", direction = Sort.Direction.DESC)
             Pageable pageable,
-            String searchKeyword,
+            @RequestParam(value = "searchKeyword", required = false) String searchKeyword,
             @AuthenticationPrincipal UserDetails userDetails) {
         try {
             // 검색하지 않을 때는 모든 글을 보여준다.
@@ -136,7 +136,7 @@ public class AdminController {
             // 현재 페이지의 아이템 목록
             response.put("items", boards.getContent());
             // 현재 페이지 번호
-            response.put("nowPageNumber", boards.getNumber());
+            response.put("nowPageNumber", boards.getNumber() + 1);
             // 전체 페이지 수
             response.put("totalPage", boards.getTotalPages());
             // 한 페이지에 출력되는 데이터 개수
@@ -176,7 +176,7 @@ public class AdminController {
             // 현재 페이지의 아이템 목록
             response.put("items", boards.getContent());
             // 현재 페이지 번호
-            response.put("nowPageNumber", boards.getNumber());
+            response.put("nowPageNumber", boards.getNumber()+1);
             // 전체 페이지 수
             response.put("totalPage", boards.getTotalPages());
             // 한 페이지에 출력되는 데이터 개수
@@ -260,7 +260,7 @@ public class AdminController {
             // 현재 페이지의 아이템 목록
             response.put("items", items.getContent());
             // 현재 페이지 번호
-            response.put("nowPageNumber", items.getNumber());
+            response.put("nowPageNumber", items.getNumber()+1);
             // 전체 페이지 수
             response.put("totalPage", items.getTotalPages());
             // 한 페이지에 출력되는 데이터 개수

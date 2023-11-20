@@ -3,6 +3,7 @@ package com.example.shopping.entity.board;
 import com.example.shopping.domain.board.BoardDTO;
 import com.example.shopping.domain.board.BoardSecret;
 import com.example.shopping.domain.board.CreateBoardDTO;
+import com.example.shopping.domain.board.ReplyStatus;
 import com.example.shopping.domain.comment.CommentDTO;
 import com.example.shopping.entity.Base.BaseEntity;
 import com.example.shopping.entity.comment.CommentEntity;
@@ -41,6 +42,9 @@ public class BoardEntity extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private BoardSecret boardSecret;
 
+    @Enumerated(EnumType.STRING)
+    private ReplyStatus replyStatus;
+
 
     // 댓글
     // 여기에 적용해야 합니다. 보통 게시물을 삭제해야 이미지가 삭제되므로
@@ -58,7 +62,8 @@ public class BoardEntity extends BaseEntity {
                        MemberEntity member,
                        ItemEntity item,
                        BoardSecret boardSecret,
-                       List<CommentEntity> commentEntityList) {
+                       List<CommentEntity> commentEntityList,
+                       ReplyStatus replyStatus) {
         this.boardId = boardId;
         this.title = title;
         this.content = content;
@@ -66,17 +71,19 @@ public class BoardEntity extends BaseEntity {
         this.item = item;
         this.boardSecret = boardSecret;
         this.commentEntityList = commentEntityList;
+        this.replyStatus = replyStatus;
     }
 
     // 게시글 DTO를 엔티티로 변환
     public static BoardEntity toBoardEntity(BoardDTO board,
                                             MemberEntity member,
                                             ItemEntity item) {
-        BoardEntity boardEntity = com.example.shopping.entity.board.BoardEntity.builder()
+        BoardEntity boardEntity = BoardEntity.builder()
                 .boardId(board.getBoardId())
                 .title(board.getTitle())
                 .content(board.getContent())
                 .member(member)
+                .boardSecret(BoardSecret.UN_LOCK)
                 .item(item)
                 .build();
 
@@ -99,37 +106,19 @@ public class BoardEntity extends BaseEntity {
                 .title(boardDTO.getTitle())
                 .content(boardDTO.getContent())
                 // 본인이 작성한 글은 읽을 수 있어야하기 때문에 UN_ROCK
-                .boardSecret(BoardSecret.UN_LOCK)
+//                .boardSecret(BoardSecret.UN_LOCK)
                 .member(member)
                 .item(item)
+                .replyStatus(ReplyStatus.REPLY_X)
                 .build();
     }
 
-//    // 게시글 업데이트 메소드에서 댓글 리스트를 비워두고 다시 추가하는 부분 추가
-//    public void updateBoard(BoardDTO boardDTO,
-//                            MemberEntity member,
-//                            ItemEntity item) {
-//        // 기존의 댓글 리스트 비워두기
-//        this.commentEntityList.clear();
-//
-//        // 새로운 댓글 리스트 추가합니다.
-//        List<CommentDTO> commentDTOList = boardDTO.getCommentDTOList();
-//        for (CommentDTO commentDTO : commentDTOList) {
-//            CommentEntity commentEntity = CommentEntity.toCommentEntity(commentDTO, member, this);
-//            this.commentEntityList.add(commentEntity);
-//        }
-//
-//        // 기존의 게시글 정보를 업데이트 합니다.
-//        this.title = boardDTO.getTitle() != null ? boardDTO.getTitle() : this.title;
-//        this.content = boardDTO.getContent() != null ? boardDTO.getContent() : this.content;
-//        this.member = member;
-//        this.item = item;
-//        this.boardSecret = boardDTO.getBoardSecret();
-//    }
-
-
-    // 문의글 상태 변화
-    public void changeSecret(BoardSecret secret) {
-        this.boardSecret = secret;
+    // 답장 상태 변화
+    public void changeReply(ReplyStatus replyStatus) {
+        this.replyStatus = replyStatus;
+    }
+    // 잠금 상태 변화
+    public void changeSecret(BoardSecret boardSecret) {
+        this.boardSecret = boardSecret;
     }
 }
