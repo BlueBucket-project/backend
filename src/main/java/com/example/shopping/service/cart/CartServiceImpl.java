@@ -60,6 +60,10 @@ public class CartServiceImpl implements CartService{
                 //수량증가
                 itemDetail = cartItemRepository.findByCartItemDTO(cart.getCartId(), savedCart.getItemId());
 
+                if(itemDetail.getStatus().equals(CartStatus.RESERVED)){
+                    throw new CartException("이미 예약되어있는 상품을 추가하셨습니다");
+                }
+
                 checkItemStock(cartItem.getItemId(), itemDetail.getCount() + cartItem.getCount());
                 itemDetail.modifyCount(itemDetail.getCount() + cartItem.getCount());
                 log.info("기존 상품 - 수량 증가여부 확인 : "+ itemDetail.getCount());
