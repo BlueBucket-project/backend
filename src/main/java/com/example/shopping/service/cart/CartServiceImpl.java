@@ -44,6 +44,8 @@ public class CartServiceImpl implements CartService{
         MemberEntity member = memberRepository.findByEmail(mbrEmail);
         ItemEntity item = itemRepository.findById(cartItem.getItemId()).orElseThrow(()->new CartException("해당 상품이 존재하지 않습니다."));
 
+        checkItemStock(cartItem.getItemId(), cartItem.getCount());
+
         //기존 장바구니 여부 확인
         CartDTO cart = cartRepository.findByMemberMemberId(member.getMemberId());
 
