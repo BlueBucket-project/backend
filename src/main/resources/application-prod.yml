@@ -61,9 +61,9 @@ spring:
     password: ${rds_mysql_secret}
 
   jpa:
+    # 데이터베이스 플랫폼을 지정
     database-platform: org.hibernate.dialect.MySQL8Dialect
-    # 영속성 컨텍스트의 생존 범위를 트랜잭션 범위로 한정
-    # 실시간 트래픽이 중요한 API 애플리케이션에는 false로 유지
+    # JPA Open EntityManager in View 패턴을 활성화 또는 비활성화
     open-in-view: true
     # JPA 처리 시에 발생하는 SQL을 보여줄 것인지 결정합니다.
     show-sql: true
@@ -75,5 +75,6 @@ spring:
         # 실제 JPA의 구현체인 Hibernate 가 동작하면서 발생하는 SQL을 포맷팅해서 출력합니다.
         # 실행되는 SQL의 가독성을 높여 줍니다.
         format_sql: true
-        # 일대다 컬렉션 조회 시 성능 최적화
+        # LAZY 로딩 시 기본적으로 사용되는 배치 크기를 설정
+        # fetch join 사용시 최적화
         default_batch_fetch_size: 500

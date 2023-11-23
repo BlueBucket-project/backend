@@ -22,15 +22,22 @@ spring:
       matching-strategy: ant_path_matcher
 
   jpa:
+    # 데이터베이스 플랫폼을 지정
+    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+    # JPA Open EntityManager in View 패턴을 활성화 또는 비활성화
     open-in-view: true
     hibernate:
+      # Hibernate가 데이터베이스 스키마를 자동으로 생성 또는 갱신할 때 사용
       ddl-auto: update
     properties:
       hibernate:
-        #logging SQL 과 중복으로 떠서 제거
-        #show_sql: true
+        # SQL 쿼리를 보기 쉽게 형식화할지 여부를 지정
         format_sql: true
+        # LAZY 로딩 시 기본적으로 사용되는 배치 크기를 설정
+        # fetch join 사용시 최적화
         default_batch_fetch_size: 500
+        # SQL 쿼리에 주석을 추가할지 여부를 지정
+        use_sql_comments: true
 
 logging:
   level:
