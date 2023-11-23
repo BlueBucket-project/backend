@@ -410,7 +410,7 @@ public class ItemServiceImpl implements ItemService{
             else place = "%" + place + "%";
 
             if (reserver==null || reserver.isEmpty()) reserver = null;
-            else reserver = "%" + reserver + "%";
+            else reserver = reserver;
 
             String statusString = "";
             if(status == null) statusString = "%";
