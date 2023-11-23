@@ -31,7 +31,7 @@ public class CommentDTO {
         return CommentDTO.builder()
                 .commentId(commentEntity.getCommentId())
                 .comment(commentEntity.getComment())
-                .writeTime(LocalDateTime.now())
+                .writeTime(commentEntity.getRegTime())
                 .build();
     }
 }

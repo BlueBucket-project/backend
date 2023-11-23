@@ -97,7 +97,7 @@ public class BoardDTO {
                 .itemId(itemId)
                 // 답글 미완료 상태로 등록
                 .replyStatus(board.getReplyStatus())
-                .regTime(LocalDateTime.now())
+                .regTime(board.getRegTime())
                 .boardSecret(board.getBoardSecret())
                 .build();
     }

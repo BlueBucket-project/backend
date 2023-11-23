@@ -168,7 +168,7 @@ public class ItemController {
             // 현재 페이지의 아이템 목록
             response.put("items", items.getContent());
             // 현재 페이지 번호
-            response.put("nowPageNumber", items.getNumber());
+            response.put("nowPageNumber", items.getNumber()+1);
             // 전체 페이지 수
             response.put("totalPage", items.getTotalPages());
             // 한 페이지에 출력되는 데이터 개수
