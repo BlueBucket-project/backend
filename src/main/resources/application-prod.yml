@@ -11,6 +11,7 @@ spring:
             scope:
               - email
               - profile
+
           # naver
           naver:
             client-id: ${naver_client}
