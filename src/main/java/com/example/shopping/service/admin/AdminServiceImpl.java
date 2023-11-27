@@ -210,8 +210,9 @@ public class AdminServiceImpl implements AdminService {
 
     public OrderDTO orderItem(List<OrderMainDTO> orders, String adminEmail) {
 
-        Long memberId = orders.get(0).getItemReserver();
-        MemberEntity orderMember = memberRepository.findById(memberId).orElseThrow();
+        String mbrEmail = orders.get(0).getItemReserver();
+        MemberEntity orderMember = memberRepository.findByEmail(mbrEmail);
+        Long memberId = orderMember.getMemberId();
         Long adminId = memberRepository.findByEmail(adminEmail).getMemberId();
 
         //구매하려는 상품템리스트
