@@ -98,7 +98,7 @@ public class SecurityConfig {
         http
                 // JWT Token을 위한 Filter를 아래에서 만들어 줄건데,
                 // 이 Filter를 어느위치에서 사용하겠다고 등록을 해주어야 Filter가 작동이 됩니다.
-                .apply(new JwtSecurtityConfig(jwtProvider));
+                .apply(new JwtSecurityConfig(jwtProvider));
 
         // 에러 방지
         http
