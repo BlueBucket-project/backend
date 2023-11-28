@@ -84,14 +84,4 @@ public interface BoardRepository extends JpaRepository<BoardEntity, Long> {
             countQuery = "select count(b) from board b where b.item.itemId = :itemId")
     Page<BoardEntity> findAllByItemItemId(@Param("itemId") Long itemId, Pageable pageable);
 
-    @Query(value = "select b from board b " +
-            " join fetch b.member " +
-            " join fetch b.item " +
-            "where b.item.itemId = :itemId and b.title like %:searchKeyword%" +
-            " order by b.boardId desc ",
-            countQuery = "select count(b) from board b " +
-                    "where b.item.itemId = :itemId and b.title like %:searchKeyword%")
-    Page<BoardEntity> findByItemItemIdContaining(@Param("itemId") Long itemId,
-                                                 Pageable pageable,
-                                                 @Param("searchKeyword") String searchKeyword);
 }

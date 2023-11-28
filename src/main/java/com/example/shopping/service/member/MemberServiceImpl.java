@@ -186,13 +186,16 @@ public class MemberServiceImpl implements MemberService {
                         .memberPoint(findUser.getMemberPoint())
                         .memberName(findUser.getMemberName())
                         .address(AddressEntity.builder()
-                                .memberAddr(modifyMemberDTO.getMemberAddress() != null && modifyMemberDTO.getMemberAddress().getMemberAddr() != null
+                                .memberAddr(modifyMemberDTO.getMemberAddress() != null &&
+                                        modifyMemberDTO.getMemberAddress().getMemberAddr() != null
                                         ? modifyMemberDTO.getMemberAddress().getMemberAddr()
                                         : findUser.getAddress().getMemberAddr())
-                                .memberAddrDetail(modifyMemberDTO.getMemberAddress() != null && modifyMemberDTO.getMemberAddress().getMemberAddrDetail() != null
+                                .memberAddrDetail(modifyMemberDTO.getMemberAddress() != null &&
+                                        modifyMemberDTO.getMemberAddress().getMemberAddrDetail() != null
                                         ? modifyMemberDTO.getMemberAddress().getMemberAddrDetail()
                                         : findUser.getAddress().getMemberAddrDetail())
-                                .memberZipCode(modifyMemberDTO.getMemberAddress() != null && modifyMemberDTO.getMemberAddress().getMemberZipCode() != null
+                                .memberZipCode(modifyMemberDTO.getMemberAddress() != null &&
+                                        modifyMemberDTO.getMemberAddress().getMemberZipCode() != null
                                         ? modifyMemberDTO.getMemberAddress().getMemberZipCode()
                                         : findUser.getAddress().getMemberZipCode())
                                 .build()).build();

@@ -199,7 +199,6 @@ public class BoardServiceImpl implements BoardService {
     @Override
     public Page<BoardDTO> getBoards(Pageable pageable,
                                     Long itemId,
-                                    String searchKeyword,
                                     String email) {
 
         // 회원 조회
@@ -212,12 +211,7 @@ public class BoardServiceImpl implements BoardService {
         log.info("상품 : " + findItem);
 
         // 조회해올 게시글을 넣을 곳
-        Page<BoardEntity> findAllBoards;
-        if (StringUtils.isNotBlank(searchKeyword)) {
-            findAllBoards = boardRepository.findByItemItemIdContaining(itemId, pageable, searchKeyword);
-        } else {
-            findAllBoards = boardRepository.findAllByItemItemId(itemId, pageable);
-        }
+        Page<BoardEntity> findAllBoards = findAllBoards = boardRepository.findAllByItemItemId(itemId, pageable);
         // 댓글이 있으면 답변완료, 없으면 미완료
         for(BoardEntity boardCheck : findAllBoards) {
             if(boardCheck.getCommentEntityList().isEmpty()) {

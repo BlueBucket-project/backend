@@ -35,7 +35,7 @@ spring:
         format_sql: true
         # LAZY 로딩 시 기본적으로 사용되는 배치 크기를 설정
         # fetch join 사용시 최적화
-        default_batch_fetch_size: 500
+        default_batch_fetch_size: 100
         # SQL 쿼리에 주석을 추가할지 여부를 지정
         use_sql_comments: true
 
@@ -53,3 +53,4 @@ spring:
     multipart:
       max-file-size: 5MB
       max-request-size: 5MB
+

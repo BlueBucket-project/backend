@@ -46,7 +46,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             // 회원 조회
             MemberEntity findUser = memberRepository.findByEmail(email);
             // 회원 DTO 반환
-            ResponseMemberDTO memberDTO = ResponseMemberDTO.toMemberDTO(findUser);
+            ResponseMemberDTO memberDTO = ResponseMemberDTO.socialMember(findUser);
 
             // 헤더에 담아준다.
             response.addHeader("email", memberDTO.getEmail());
@@ -54,6 +54,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             // 바디에 담아준다.
             Map<String, Object> responseBody = new HashMap<>();
             responseBody.put("providerId", memberDTO.getProviderId());
+            responseBody.put("provider", memberDTO.getProvider());
             responseBody.put("accessToken", tokenDTO.getAccessToken());
             responseBody.put("refreshToken", tokenDTO.getRefreshToken());
             responseBody.put("email", tokenDTO.getMemberEmail());
@@ -66,8 +67,11 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             response.getWriter().write(objectMapper.writeValueAsString(responseBody));
         } catch (Exception e) {
             // 예외가 발생하면 클라이언트에게 오류 응답을 반환
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            response.getWriter().write("정보를 찾아오지 못했습니다.");
             response.getWriter().write("OAuth 2.0 로그인 성공 후 오류 발생: " + e.getMessage());
+            // 이 메서드는 버퍼에 있는 내용을 클라이언트에게 보냅니다.
+            // 데이터를 작성하고 나서는 flush()를 호출하여 실제로 데이터를 클라이언트로 전송합니다.
             response.getWriter().flush();
         }
     }

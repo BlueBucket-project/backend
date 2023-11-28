@@ -117,12 +117,11 @@ public class BoardController {
             @PageableDefault(sort = "boardId", direction = Sort.Direction.DESC)
             Pageable pageable,
             @PathVariable(name = "itemId") Long itemId,
-            @RequestParam(value = "searchKeyword", required = false) String searchKeyword,
             @RequestParam(value = "email", required = false) String email) {
         try {
             log.info("email : " + email);
             // 검색하지 않을 때는 모든 글을 보여준다.
-            Page<BoardDTO> boards = boardService.getBoards(pageable, itemId, searchKeyword, email);
+            Page<BoardDTO> boards = boardService.getBoards(pageable, itemId, email);
             Map<String, Object> response = new HashMap<>();
             // 현재 페이지의 아이템 목록
             response.put("items", boards.getContent());

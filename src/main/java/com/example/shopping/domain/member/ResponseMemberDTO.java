@@ -74,6 +74,7 @@ public class ResponseMemberDTO {
         this.memberPoint = memberPoint;
     }
 
+    // 엔티티를 DTO로 반환
     public static ResponseMemberDTO toMemberDTO(MemberEntity member) {
         return ResponseMemberDTO.builder()
                 .memberId(member.getMemberId())
@@ -91,6 +92,13 @@ public class ResponseMemberDTO {
                         .memberZipCode(member.getAddress() == null
                                 ? null : member.getAddress().getMemberZipCode())
                         .build()).build();
+    }
+    // 소셜 로그인시 필요한 정보만 전달하기 위해서
+    public static ResponseMemberDTO socialMember(MemberEntity member) {
+        return ResponseMemberDTO.builder()
+                .provider(member.getProvider())
+                .providerId(member.getProviderId())
+                .build();
     }
 
     public MemberEntity toMemberInfoEntity() {
