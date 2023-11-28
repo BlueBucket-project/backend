@@ -46,7 +46,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             // 회원 조회
             MemberEntity findUser = memberRepository.findByEmail(email);
             // 회원 DTO 반환
-            ResponseMemberDTO memberDTO = ResponseMemberDTO.toMemberDTO(findUser);
+            ResponseMemberDTO memberDTO = ResponseMemberDTO.socialMember(findUser);
 
             // 헤더에 담아준다.
             response.addHeader("email", memberDTO.getEmail());
@@ -54,6 +54,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             // 바디에 담아준다.
             Map<String, Object> responseBody = new HashMap<>();
             responseBody.put("providerId", memberDTO.getProviderId());
+            responseBody.put("provider", memberDTO.getProvider());
             responseBody.put("accessToken", tokenDTO.getAccessToken());
             responseBody.put("refreshToken", tokenDTO.getRefreshToken());
             responseBody.put("email", tokenDTO.getMemberEmail());
