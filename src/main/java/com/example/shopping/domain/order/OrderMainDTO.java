@@ -17,11 +17,11 @@ public class OrderMainDTO {
     @Min(value = 1, message = "최소 주문 수량은 1개 입니다.")
     private int count;
 
-    @Schema(description = "구매자 아이디")
-    private Long itemReserver;
+    @Schema(description = "구매자 email")
+    private String itemReserver;
 
     @Builder
-    public OrderMainDTO(Long itemId, int count, Long itemReserver) {
+    public OrderMainDTO(Long itemId, int count, String itemReserver) {
         this.itemId = itemId;
         this.count = count;
         this.itemReserver = itemReserver;
