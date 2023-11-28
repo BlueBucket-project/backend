@@ -3,6 +3,7 @@ package com.example.shopping.config.security;
 import com.example.shopping.config.jwt.JwtAccessDeniedHandler;
 import com.example.shopping.config.jwt.JwtAuthenticationEntryPoint;
 import com.example.shopping.config.jwt.JwtProvider;
+import com.example.shopping.config.oauth2.OAuth2FailHandler;
 import com.example.shopping.config.oauth2.OAuth2SuccessHandler;
 import com.example.shopping.config.oauth2.PrincipalOAuth2UserService;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +34,7 @@ public class SecurityConfig {
     private final JwtProvider jwtProvider;
     private final PrincipalOAuth2UserService principalOAuth2UserService;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
+    private final OAuth2FailHandler oAuth2FailHandler;
 
 
     @Bean
@@ -114,7 +116,8 @@ public class SecurityConfig {
                 // OAuth2 로그인 성공 시, 후작업을 진행할 서비스
                 .userService(principalOAuth2UserService)
                 .and()
-                .successHandler(oAuth2SuccessHandler);
+                .successHandler(oAuth2SuccessHandler)
+                .failureHandler(oAuth2FailHandler);
 
         return http.build();
     }
