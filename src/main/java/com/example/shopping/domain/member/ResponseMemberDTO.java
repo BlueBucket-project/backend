@@ -93,6 +93,13 @@ public class ResponseMemberDTO {
                         .build()).build();
     }
 
+    public static ResponseMemberDTO socialMember(MemberEntity member) {
+        return ResponseMemberDTO.builder()
+                .provider(member.getProvider())
+                .providerId(member.getProviderId())
+                .build();
+    }
+
     public MemberEntity toMemberInfoEntity() {
         return MemberEntity.builder()
                 .memberId(this.memberId)
