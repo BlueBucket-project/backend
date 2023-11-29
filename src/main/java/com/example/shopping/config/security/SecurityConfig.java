@@ -93,14 +93,17 @@ public class SecurityConfig {
                 .antMatchers(HttpMethod.POST, "/api/v1/admins/**")
                     .access("hasRole('ROLE_ADMIN')")
                 .antMatchers(HttpMethod.PUT, "/api/v1/admins/**")
-                .access("hasRole('ROLE_ADMIN')")
+                    .access("hasRole('ROLE_ADMIN')")
                 .antMatchers("/swagger-resources/**").permitAll()
                 .antMatchers("/swagger-ui/**").permitAll();
 
+        // JWT
         http
                 // JWT Token을 위한 Filter를 아래에서 만들어 줄건데,
                 // 이 Filter를 어느위치에서 사용하겠다고 등록을 해주어야 Filter가 작동이 됩니다.
                 .apply(new JwtSecurityConfig(jwtProvider));
+
+
 
         // 에러 방지
         http
@@ -108,6 +111,7 @@ public class SecurityConfig {
                 .authenticationEntryPoint(new JwtAuthenticationEntryPoint())
                 .accessDeniedHandler(new JwtAccessDeniedHandler());
 
+        // OAuth2
         http
                 // oauth2Login() 메서드는 OAuth 2.0 프로토콜을 사용하여 소셜 로그인을 처리하는 기능을 제공합니다.
                 .oauth2Login()
@@ -118,6 +122,12 @@ public class SecurityConfig {
                 .and()
                 .successHandler(oAuth2SuccessHandler)
                 .failureHandler(oAuth2FailHandler);
+
+        // actuator
+        http
+                .authorizeRequests()
+                // /actuator/** 엔드포인트에 대해 인증이 필요하도록 설정
+                .antMatchers("/actuator/**").permitAll();
 
         return http.build();
     }

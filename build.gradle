@@ -115,6 +115,10 @@ dependencies {
     runtimeOnly 'com.h2database:h2'
     // StringUtils
     implementation 'org.apache.commons:commons-lang3'
+    // thymeleaf
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    // actuator
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
 }
 jar {
     // ~~plain.jar파일은 생성되지 않게
