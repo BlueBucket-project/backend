@@ -115,6 +115,9 @@ public class SecurityConfig {
         http
                 // oauth2Login() 메서드는 OAuth 2.0 프로토콜을 사용하여 소셜 로그인을 처리하는 기능을 제공합니다.
                 .oauth2Login()
+                .authorizationEndpoint()
+                .baseUri("/oauth2/authorization")
+                .and()
                 // OAuth2 로그인 성공 이후 사용자 정보를 가져올 때 설정 담당
                 .userInfoEndpoint()
                 // OAuth2 로그인 성공 시, 후작업을 진행할 서비스
