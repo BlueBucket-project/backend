@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+// 필요한 정보용
+// 즉, 기능을 구현할 때 필요한 정보만 받아와서 처리하기 위해서
 @ToString
 @Getter
 @NoArgsConstructor
