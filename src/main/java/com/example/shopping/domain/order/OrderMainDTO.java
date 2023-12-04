@@ -8,6 +8,7 @@ import lombok.ToString;
 
 import javax.validation.constraints.Min;
 
+// 관리자가 처리하기 위한 request DTO
 @Getter
 @ToString
 @NoArgsConstructor
