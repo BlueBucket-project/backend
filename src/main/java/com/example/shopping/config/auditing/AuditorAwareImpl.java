@@ -12,6 +12,7 @@ public class AuditorAwareImpl implements AuditorAware<String> {
     public Optional<String> getCurrentAuditor() {
         // 인증된 회원은 SecurityContextHolder에 등록되는데
         // 그것을 불러오는 것이다.
+        // 인증을 받지 못하면 ananymous라고 나옵니다.
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         String email = "";
