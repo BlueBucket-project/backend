@@ -23,6 +23,7 @@ public abstract class OAuth2ProviderUser implements OAuth2UserInfo{
         this.clientRegistration = clientRegistration;
     }
 
+    // 구글이면 google, 네이버면 naver
     @Override
     public String getProvider() {
         return clientRegistration.getRegistrationId();
@@ -33,6 +34,7 @@ public abstract class OAuth2ProviderUser implements OAuth2UserInfo{
         return (String) getAttributes().get("email");
     }
 
+    // 권한에 대한 정보
     @Override
     public Map<String, Object> getAttributes() {
         return attributes;
