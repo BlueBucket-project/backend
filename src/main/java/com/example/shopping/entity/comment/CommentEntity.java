@@ -34,7 +34,10 @@ public class CommentEntity extends BaseEntity {
     private BoardEntity board;
 
     @Builder
-    public CommentEntity(Long commentId, String comment, MemberEntity member, BoardEntity board) {
+    public CommentEntity(Long commentId,
+                         String comment,
+                         MemberEntity member,
+                         BoardEntity board) {
         this.commentId = commentId;
         this.comment = comment;
         this.member = member;

@@ -8,6 +8,7 @@ import lombok.ToString;
 
 import javax.validation.constraints.NotNull;
 
+// 삭제하려고 할때 받아오는 requestDTO
 @Getter
 @NoArgsConstructor
 @ToString

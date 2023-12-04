@@ -52,6 +52,7 @@ public class SwaggerConfig {
                 .build();
     }
 
+    // 액추에이터와 swagger 충돌을 막기위해서 설정
     @Bean
     public WebMvcEndpointHandlerMapping webEndpointServletHandlerMapping(
             // 웹 엔드포인트

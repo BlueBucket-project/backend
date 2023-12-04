@@ -3,19 +3,15 @@ package com.example.shopping.service.cart;
 import com.example.shopping.domain.Item.ItemDTO;
 import com.example.shopping.domain.Item.ItemSellStatus;
 import com.example.shopping.domain.cart.*;
-import com.example.shopping.domain.member.RequestMemberDTO;
-import com.example.shopping.entity.cart.CartItemEntity;
 import com.example.shopping.entity.item.ItemEntity;
 import com.example.shopping.entity.member.MemberEntity;
 import com.example.shopping.exception.cart.CartException;
 import com.example.shopping.exception.item.ItemException;
-import com.example.shopping.exception.member.UserException;
 import com.example.shopping.exception.service.OutOfStockException;
 import com.example.shopping.repository.cart.CartItemRepository;
 import com.example.shopping.repository.cart.CartRepository;
 import com.example.shopping.repository.item.ItemRepository;
 import com.example.shopping.repository.member.MemberRepository;
-import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
@@ -101,7 +97,8 @@ public class CartServiceImpl implements CartService{
             List<Long> cartItemId = new ArrayList<>();
             // 장바구니 상품 삭제하기
             for(CartUpdateDTO item : cartItems){
-                cartItemId.add(cartItemRepository.findByCartItemDTO(item.getCartId(), item.getItemId()).getCartItemId());
+                cartItemId.add(cartItemRepository.findByCartItemDTO(item.getCartId(), item.getItemId())
+                        .getCartItemId());
             }
             for(Long id : cartItemId){
                 cartItemRepository.delete(id);

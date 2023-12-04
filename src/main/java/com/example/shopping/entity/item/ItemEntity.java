@@ -111,6 +111,8 @@ public class ItemEntity extends BaseTimeEntity {
                 .itemRamount(item.getItemRamount())
                 .build();
     }
+
+    // 상품 상태 바꿔주는 메소드
     public void itemSell(int cnt){
         // 아이템 판매 시
         // 재고감소, 상품상태변경, 예약자 및 예약수량 초기화
@@ -128,6 +130,7 @@ public class ItemEntity extends BaseTimeEntity {
     }
 
 
+    // 상태만 바꿔주는 메소드
     public void changeStatus(ItemSellStatus status){
         this.itemSellStatus = status;
     }
@@ -145,6 +148,9 @@ public class ItemEntity extends BaseTimeEntity {
     public void deleteItemImgList(ItemImgEntity itemImg){
         int idx=0;
 
+        // 기존의 이미지리스트와 받아온 itemImgId와 비교해서
+        // 동일하면 break로 빠져나와주고
+        // 아니라면 +1을 해준다. 그리고 그것들을 리스트에서 삭제
         for(ItemImgEntity item:this.itemImgList){
             if(item.getItemImgId() == itemImg.getItemImgId()){
                 break;

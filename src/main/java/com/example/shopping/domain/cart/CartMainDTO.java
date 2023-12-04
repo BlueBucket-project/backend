@@ -9,6 +9,7 @@ import lombok.ToString;
 
 import javax.validation.constraints.Min;
 
+// 장바구니에 담을 때 사용하는 request DTO
 @ToString
 @Getter
 @NoArgsConstructor

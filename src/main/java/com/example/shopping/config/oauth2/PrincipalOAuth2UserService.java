@@ -33,7 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 // 소셜 로그인하면 사용자 정보를 가지고 온다.
-// 가져온 정보와 PrincipalDetails 객체를 생성합니다.
+// 가져온 정보로 회원가입을 시켜주고 JWT를 발급해줍니다.
 @Service
 @Log4j2
 @RequiredArgsConstructor
@@ -66,9 +66,11 @@ public class PrincipalOAuth2UserService implements OAuth2UserService<OAuth2UserR
         String registrationId = clientRegistration.getRegistrationId();
         log.info("registrationId : " + registrationId);
 
+        // 구글로 로그인할경우
         if(registrationId.equals("google")) {
             log.info("구글 로그인");
             oAuth2UserInfo = new GoogleUser(oAuth2User, clientRegistration);
+            // 네이버로 로그인할 경우
         } else  if(registrationId.equals("naver")) {
             log.info("네이버 로그인");
             oAuth2UserInfo = new NaverUser(oAuth2User, clientRegistration);
@@ -139,14 +141,21 @@ public class PrincipalOAuth2UserService implements OAuth2UserService<OAuth2UserR
         }
 
         // 토큰이 제대로 되어 있나 검증
+        // 여기서 이렇게 하는 이유는 OAuth2SuccessHandler에서 인증된 이메일을 뽑아오기 위해서입니다.
         if(StringUtils.hasText(saveToken.getAccessToken())
                 && jwtProvider.validateToken(saveToken.getAccessToken())) {
+            // 토큰에 인증절차를 해줍니다.
+            // 그러면 토큰에 인증과 권한이 주어지게 됩니다.
             Authentication authenticationToken = jwtProvider.getAuthentication(saveToken.getAccessToken());
             log.info("authentication : " + authenticationToken);
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
+            // 유저에 대한 권한을 주기위해서 구현한 로직입니다.
+
             UserDetails userDetails = new User(email, "", authorities);
             log.info("userDetails : " + userDetails);
+            // UserDetails 객체는 사용자의 주요 정보를 캡슐화하고
+            // Authentication 객체는 사용자의 인증 상태와 권한을 나타냅니다
             Authentication authenticationUser =
                     new UsernamePasswordAuthenticationToken(userDetails, authorities);
             log.info("authentication1 : " + authenticationUser);

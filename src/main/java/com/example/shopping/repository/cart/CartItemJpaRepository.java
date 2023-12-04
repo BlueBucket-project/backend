@@ -1,6 +1,5 @@
 package com.example.shopping.repository.cart;
 
-import com.example.shopping.domain.Item.ItemSellStatus;
 import com.example.shopping.domain.cart.CartStatus;
 import com.example.shopping.entity.cart.CartItemEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,8 +10,9 @@ import java.util.*;
 
 public interface CartItemJpaRepository extends JpaRepository<CartItemEntity, Long> {
 
-    CartItemEntity findByCartCartIdAndItemItemIdAndStatusNot(Long cartId, Long itemId, CartStatus status);
-    CartItemEntity findByCartCartIdAndItemItemIdAndStatus(Long cartId, Long itemId, CartStatus status);
+    CartItemEntity findByCartCartIdAndItemItemIdAndStatusNot(Long cartId,
+                                                             Long itemId,
+                                                             CartStatus status);
     CartItemEntity findByCartCartIdAndItemItemId(Long cartId, Long itemId);
 
     List<CartItemEntity> findByCartCartId(Long cartId);
@@ -20,11 +20,13 @@ public interface CartItemJpaRepository extends JpaRepository<CartItemEntity, Lon
 
     @Query("SELECT c FROM cartitem c JOIN FETCH c.cart WHERE c.cart.cartId = :cartId " +
             "AND c.status <> :status")
-    List<CartItemEntity> findByCartCartIdAndStatusNot(@Param("cartId") Long cartId, @Param("status")CartStatus status);
+    List<CartItemEntity> findByCartCartIdAndStatusNot(@Param("cartId") Long cartId,
+                                                      @Param("status")CartStatus status);
 
     @Query("SELECT c FROM cartitem c JOIN FETCH c.cart WHERE c.cart.cartId = :cartId " +
             "AND c.status = :status")
-    List<CartItemEntity> findByCartCartIdAndStatus(@Param("cartId") Long cartId, @Param("status")CartStatus status);
+    List<CartItemEntity> findByCartCartIdAndStatus(@Param("cartId") Long cartId,
+                                                   @Param("status")CartStatus status);
 
     List<CartItemEntity> findByItemItemId(Long itemId);
 }

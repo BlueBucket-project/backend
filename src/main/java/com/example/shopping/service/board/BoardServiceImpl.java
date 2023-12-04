@@ -211,7 +211,7 @@ public class BoardServiceImpl implements BoardService {
         log.info("상품 : " + findItem);
 
         // 조회해올 게시글을 넣을 곳
-        Page<BoardEntity> findAllBoards = findAllBoards = boardRepository.findAllByItemItemId(itemId, pageable);
+        Page<BoardEntity> findAllBoards = boardRepository.findAllByItemItemId(itemId, pageable);
         // 댓글이 있으면 답변완료, 없으면 미완료
         for(BoardEntity boardCheck : findAllBoards) {
             if(boardCheck.getCommentEntityList().isEmpty()) {
