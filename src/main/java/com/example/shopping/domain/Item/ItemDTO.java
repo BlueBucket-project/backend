@@ -146,17 +146,6 @@ public class ItemDTO {
     }
 
     public ItemEntity toEntity(){
-/*
-        List<BoardEntity> boardEntityList = new ArrayList<>();
-        List<BoardDTO> boardDTOS = this.boardDTOList;
-        if(boardDTOS!=null || !boardDTOS.isEmpty()) {
-            for (BoardDTO boardDTO : boardDTOS) {
-                BoardEntity boardEntity = BoardEntity.toBoardEntity(boardDTO);
-                boardEntityList.add(boardEntity);
-            }
-        }
- */
-
         return  ItemEntity.builder()
                 .itemId(this.itemId)
                 .itemDetail(this.itemDetail)
@@ -168,7 +157,6 @@ public class ItemDTO {
                 .price(this.price)
                 .itemSeller(this.itemSeller)
                 .stockNumber(this.stockNumber)
-                //.boardEntityList(boardEntityList)
                 .build();
     }
 }
