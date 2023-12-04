@@ -23,7 +23,13 @@ public class CartItemDTO {
     private CartStatus status;
 
     @Builder
-    public CartItemDTO(Long cartItemId, int price, int count, CartDTO cart, Long mbrId, ItemDTO item, CartStatus status){
+    public CartItemDTO(Long cartItemId,
+                       int price,
+                       int count,
+                       CartDTO cart,
+                       Long mbrId,
+                       ItemDTO item,
+                       CartStatus status){
         this.cartItemId = cartItemId;
         this.price = price;
         this.count = count;
