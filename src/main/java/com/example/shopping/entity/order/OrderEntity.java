@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -52,16 +51,4 @@ public class OrderEntity extends BaseTimeEntity {
                         .map(OrderItemEntity::toOrderItemDTO).collect(Collectors.toList()))
                 .build();
     }
-
-    /*
-    public static OrderEntity createOrder(Long orderAdmin, Long orderMember, List<OrderItemEntity> orderItemList) {
-        return OrderEntity.builder()
-                .orderDate(LocalDateTime.now())
-                .orderAdmin(orderAdmin)
-                .orderMember(orderMember)
-                .orderItem(orderItemList)
-                .build();
-    }
-*/
-
 }
