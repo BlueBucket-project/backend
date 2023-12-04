@@ -30,7 +30,11 @@ public class OrderDTO {
     private List<OrderItemDTO> orderItem;
 
     @Builder
-    public OrderDTO(Long orderId, LocalDateTime orderDate, Long orderAdmin, Long orderMember, List<OrderItemDTO> orderItem) {
+    public OrderDTO(Long orderId,
+                    LocalDateTime orderDate,
+                    Long orderAdmin,
+                    Long orderMember,
+                    List<OrderItemDTO> orderItem) {
         this.orderId = orderId;
         this.orderDate = orderDate;
         this.orderAdmin = orderAdmin;
@@ -38,7 +42,9 @@ public class OrderDTO {
         this.orderItem = orderItem;
     }
 
-    public static OrderDTO createOrder(Long orderAdmin, Long orderMember, List<OrderItemDTO> orderItemList) {
+    public static OrderDTO createOrder(Long orderAdmin,
+                                       Long orderMember,
+                                       List<OrderItemDTO> orderItemList) {
         return OrderDTO.builder()
                 .orderAdmin(orderAdmin)
                 .orderMember(orderMember)
