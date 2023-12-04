@@ -3,6 +3,7 @@ package com.example.shopping.config.oauth2.provider;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
+// Google에 대한 공통적이지 않은 정보를 빼온다.
 public class GoogleUser extends OAuth2ProviderUser{
     public GoogleUser(OAuth2User oAuth2User, ClientRegistration clientRegistration) {
         // 사용자의 정보는 oAuth2User.getAttributes() 여기에 담겨져 있다.
