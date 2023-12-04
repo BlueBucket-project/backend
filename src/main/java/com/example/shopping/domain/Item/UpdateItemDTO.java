@@ -43,7 +43,13 @@ public class UpdateItemDTO {
     private Long itemSeller;
 
     @Builder
-    public UpdateItemDTO(String itemName, int price, String itemDetail, int stockNumber, String sellPlace, List<Long> delImgId, Long itemSeller) {
+    public UpdateItemDTO(String itemName,
+                         int price,
+                         String itemDetail,
+                         int stockNumber,
+                         String sellPlace,
+                         List<Long> delImgId,
+                         Long itemSeller) {
         this.itemName = itemName;
         this.price = price;
         this.itemDetail = itemDetail;
