@@ -1,6 +1,5 @@
 package com.example.shopping.repository.cart;
 
-import com.example.shopping.domain.Item.ItemSellStatus;
 import com.example.shopping.domain.cart.CartItemDTO;
 import com.example.shopping.domain.cart.CartMainDTO;
 import com.example.shopping.domain.cart.CartStatus;
@@ -52,15 +51,6 @@ public class CartItemRepositoryImpl implements CartItemRepository{
     public List<CartItemDTO> findByCartCartId(Long cartId) {
         List<CartItemEntity> items = cartItemJpaRepository.findByCartCartId(cartId);
 
-        if(items == null)
-            return null;
-        else
-            return items.stream().map(CartItemDTO::toDTO).collect(Collectors.toList());
-    }
-
-    @Override
-    public List<CartItemDTO> findCartItemWithStatus(Long cartId, CartStatus status) {
-        List<CartItemEntity> items = cartItemJpaRepository.findByCartCartIdAndStatus(cartId, status);
         if(items == null)
             return null;
         else
