@@ -103,6 +103,43 @@ public class AdminController {
         }
     }
 
+    // 상품에 대한 문의글 보기
+    @GetMapping("/{itemId}/boards")
+    @Tag(name = "admin")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @Operation(summary = "상품의 전체 문의글 보기", description = "상품의 모든 문의글을 보여주는 API입니다.")
+    public ResponseEntity<?> getItemBoards(
+            @PageableDefault(sort = "boardId", direction = Sort.Direction.DESC)
+            Pageable pageable,
+            @PathVariable Long itemId,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        try {
+            Page<BoardDTO> itemBoards = adminService.getItemBoards(pageable, itemId, userDetails);
+            Map<String, Object> response = new HashMap<>();
+            // 현재 페이지의 아이템 목록
+            response.put("items", itemBoards.getContent());
+            // 현재 페이지 번호
+            response.put("nowPageNumber", itemBoards.getNumber()+1);
+            // 전체 페이지 수
+            response.put("totalPage", itemBoards.getTotalPages());
+            // 한 페이지에 출력되는 데이터 개수
+            response.put("pageSize", itemBoards.getSize());
+            // 다음 페이지 존재 여부
+            response.put("hasNextPage", itemBoards.hasNext());
+            // 이전 페이지 존재 여부
+            response.put("hasPreviousPage", itemBoards.hasPrevious());
+            // 첫 번째 페이지 여부
+            response.put("isFirstPage", itemBoards.isFirst());
+            // 마지막 페이지 여부
+            response.put("isLastPage", itemBoards.isLast());
+
+            return ResponseEntity.ok().body(response);
+        }catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
     // 회원 문의글 보기
     @GetMapping("/boards/{nickName}")
     @Tag(name = "admin")

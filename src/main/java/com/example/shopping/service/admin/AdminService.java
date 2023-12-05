@@ -1,7 +1,5 @@
 package com.example.shopping.service.admin;
 
-import com.example.shopping.domain.Item.ItemDTO;
-import com.example.shopping.domain.Item.ItemSellStatus;
 import com.example.shopping.domain.board.BoardDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,4 +21,8 @@ public interface AdminService {
     Page<BoardDTO> getBoardsByNiickName(UserDetails userDetails, Pageable pageable, String nickName, String searchKeyword);
     // 문의글 상세 페이지 보기
     ResponseEntity<BoardDTO> getBoard(Long boardId, UserDetails userDetails);
+    // 관리자가 상품의 문의글 보기
+    Page<BoardDTO> getItemBoards(Pageable pageable,
+                                 Long itemId,
+                                 UserDetails userDetails);
 }
