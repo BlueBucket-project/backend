@@ -340,4 +340,49 @@ public class AdminServiceImpl implements AdminService {
         }
     }
 
+    // 상품에 대한 문의글 보기
+    @Transactional(readOnly = true)
+    @Override
+    public Page<BoardDTO> getItemBoards(Pageable pageable,
+                                    Long itemId,
+                                    UserDetails userDetails) {
+
+        // 권한 조회
+        Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
+        String email = userDetails.getUsername();
+        log.info("관리자 정보 : " + email);
+
+        // 상품 조회
+        ItemEntity findItem = itemRepository.findById(itemId)
+                .orElseThrow(EntityNotFoundException::new);
+        log.info("상품 : " + findItem);
+
+        Page<BoardEntity> allItemBoards;
+
+        // 권한 체크
+        if (!authorities.isEmpty()) {
+            String authority = authorities.iterator().next().getAuthority();
+            log.info("권한 : " + authority);
+            if (authority.equals("ADMIN") || authority.equals("ROLE_ADMIN")) {
+                allItemBoards = boardRepository.findAllByItemItemId(itemId, pageable);
+
+                for(BoardEntity board : allItemBoards) {
+                    if(board.getCommentEntityList().isEmpty()) {
+                        board.changeReply(ReplyStatus.REPLY_X);
+                    } else {
+                        board.changeReply(ReplyStatus.REPLY_O);
+                    }
+                }
+
+                allItemBoards.forEach(board -> board.changeSecret(BoardSecret.UN_LOCK));
+                return allItemBoards.map(board -> BoardDTO.toBoardDTO(
+                        board,
+                        board.getMember().getNickName(),
+                        board.getItem().getItemId()
+                ));
+            }
+        }
+        return null;
+    }
+
 }
