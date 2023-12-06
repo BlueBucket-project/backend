@@ -179,6 +179,11 @@ public class MemberServiceImpl implements MemberService {
             MemberEntity findUser = memberRepository.findByEmail(memberEmail);
             log.info("user : " + findUser);
 
+            // 닉네임 중복 체크
+            if (!nickNameCheck(modifyMemberDTO.getNickName())) {
+                return ResponseEntity.badRequest().body("이미 존재하는 닉네임이 있습니다.");
+            }
+
             if (findUser.getMemberId().equals(memberId)) {
                 findUser = MemberEntity.builder()
                         .memberId(findUser.getMemberId())
