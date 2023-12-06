@@ -134,7 +134,6 @@ public class AdminServiceImpl implements AdminService {
                 if (role.equals("ADMIN") || role.equals("ROLE_ADMIN")) {
                     // 게시글 정보 삭제
                     boardRepository.deleteByBoardId(findBoard.getBoardId());
-                    // S3에서 이미지 삭제
                     return "게시글을 삭제 했습니다.";
                 }
             }

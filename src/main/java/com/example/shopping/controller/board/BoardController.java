@@ -66,9 +66,7 @@ public class BoardController {
     public String removeBoard(@PathVariable Long boardId,
                               @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            String email = userDetails.getUsername();
-            log.info("이메일 : " + email);
-            String result = boardService.removeBoard(boardId, email);
+            String result = boardService.removeBoard(boardId, userDetails);
             return result;
         } catch (Exception e) {
             return "문의를 삭제하는데 실패했습니다.";
