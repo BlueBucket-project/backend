@@ -2,6 +2,7 @@ package com.example.shopping.service.item;
 
 import com.example.shopping.domain.Item.ItemDTO;
 import com.example.shopping.domain.Item.UpdateItemDTO;
+import com.example.shopping.domain.container.ContainerDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
@@ -37,4 +38,5 @@ public interface ItemService {
     Page<ItemDTO> getSearchItems(Pageable pageable,
                                  String searchKeyword);
 
+    List<ContainerDTO> getSellPlaceList();
 }

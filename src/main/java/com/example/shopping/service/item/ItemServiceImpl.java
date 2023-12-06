@@ -4,6 +4,8 @@ import com.example.shopping.domain.Item.*;
 import com.example.shopping.domain.board.BoardDTO;
 import com.example.shopping.domain.board.BoardSecret;
 import com.example.shopping.domain.cart.CartItemDTO;
+import com.example.shopping.domain.container.ContainerDTO;
+import com.example.shopping.entity.Container.ContainerEntity;
 import com.example.shopping.entity.board.BoardEntity;
 import com.example.shopping.entity.item.ItemEntity;
 import com.example.shopping.entity.item.ItemImgEntity;
@@ -11,6 +13,7 @@ import com.example.shopping.entity.member.MemberEntity;
 import com.example.shopping.exception.item.ItemException;
 import com.example.shopping.exception.member.UserException;
 import com.example.shopping.repository.cart.CartItemRepository;
+import com.example.shopping.repository.container.ContainerRepository;
 import com.example.shopping.repository.item.ItemImgRepository;
 import com.example.shopping.repository.item.ItemRepository;
 import com.example.shopping.repository.member.MemberRepository;
@@ -37,6 +40,7 @@ public class ItemServiceImpl implements ItemService {
     private final ItemImgRepository itemImgRepository;
     private final S3ItemImgUploaderService s3ItemImgUploaderService;
     private final CartItemRepository cartItemRepository;
+    private final ContainerRepository containerRepository;
 
     // 상품 등록 메소드
     @Override
@@ -47,6 +51,10 @@ public class ItemServiceImpl implements ItemService {
         MemberEntity findUser = memberRepository.findByEmail(memberEmail);
 
         if (findUser != null) {
+
+            ContainerEntity container = containerRepository.findById(Long.parseLong(itemDTO.getSellPlace())).orElseThrow();
+
+            itemDTO.setSellPlace(container.getContainerName());
             // 상품 등록
             ItemEntity item = ItemEntity.fromUpdateItemDTO(findUser.getMemberId(), itemDTO);
 
@@ -98,6 +106,15 @@ public class ItemServiceImpl implements ItemService {
                     memberRepository.findById(itemDTO.getItemSeller())
                             .orElseThrow(EntityNotFoundException::new)
                             .getNickName());
+
+            ContainerEntity container = containerRepository.findByContainerName(itemDTO.getSellPlace());
+            if(container == null){
+                itemDTO.setSellPlace("폐점된 지점");
+            }
+            else{
+                itemDTO.setSellPlace(container.getContainerName() + "/" + container.getContainerAddr());
+            }
+
             return itemDTO;
 
         } catch (EntityNotFoundException e) {
@@ -383,6 +400,13 @@ public class ItemServiceImpl implements ItemService {
         return searchItems.map(ItemDTO::toItemDTO);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<ContainerDTO> getSellPlaceList() {
+        return containerRepository.findAll().stream()
+                                    .map(ContainerDTO::from).collect(Collectors.toList());
+    }
+
     // 상품 검색 - 여러 조건으로 검색하기
     @Transactional(readOnly = true)
     public Page<ItemDTO> searchItemsConditions(Pageable pageable,
@@ -432,6 +456,14 @@ public class ItemServiceImpl implements ItemService {
                         item.getItemSeller())
                         .orElseThrow()
                         .getNickName());
+
+                ContainerEntity container = containerRepository.findByContainerName(item.getSellPlace());
+                if(container == null){
+                    item.setSellPlace("폐점된 지점");
+                }
+                else{
+                    item.setSellPlace(container.getContainerName() + "/" + container.getContainerAddr());
+                }
             }
 
             int start = (int) pageRequest.getOffset();
