@@ -43,32 +43,39 @@ public class MemberServiceImpl implements MemberService {
         try {
             log.info("email : " + memberDTO.getEmail());
             log.info("nickName : " + memberDTO.getNickName());
+            MemberEntity findEmail = memberRepository.findByEmail(memberDTO.getEmail());
 
-            if (!emailCheck(memberDTO.getEmail()) && !nickNameCheck(memberDTO.getNickName())) {
-                return ResponseEntity.badRequest().body("이미 존재하는 회원이 있습니다.");
-            } else {
-                // 아이디가 없다면 DB에 등록해줍니다.
-                MemberEntity member = MemberEntity.builder()
-                        .email(memberDTO.getEmail())
-                        .memberPw(passwordEncoder.encode(memberDTO.getMemberPw()))
-                        .memberName(memberDTO.getMemberName())
-                        .nickName(memberDTO.getNickName())
-                        .memberRole(memberDTO.getMemberRole())
-                        .address(AddressEntity.builder()
-                                .memberAddr(memberDTO.getMemberAddress().getMemberAddr())
-                                .memberAddrDetail(memberDTO.getMemberAddress().getMemberAddrDetail())
-                                .memberZipCode(memberDTO.getMemberAddress().getMemberZipCode())
-                                .build()).build();
-
-                log.info("member in service : " + member);
-                MemberEntity saveMember = memberRepository.save(member);
-
-                ResponseMemberDTO coverMember = ResponseMemberDTO.toMemberDTO(saveMember);
-                return ResponseEntity.ok().body(coverMember);
+            // 이메일 중복 체크
+            if (!emailCheck(memberDTO.getEmail())) {
+                return ResponseEntity.badRequest().body("이미 존재하는 이메일이 있습니다.");
             }
+
+            // 닉네임 중복 체크
+            if (!nickNameCheck(memberDTO.getNickName())) {
+                return ResponseEntity.badRequest().body("이미 존재하는 닉네임이 있습니다.");
+            }
+
+            // 아이디가 없다면 DB에 등록해줍니다.
+            MemberEntity member = MemberEntity.builder()
+                    .email(memberDTO.getEmail())
+                    .memberPw(passwordEncoder.encode(memberDTO.getMemberPw()))
+                    .memberName(memberDTO.getMemberName())
+                    .nickName(memberDTO.getNickName())
+                    .memberRole(memberDTO.getMemberRole())
+                    .address(AddressEntity.builder()
+                            .memberAddr(memberDTO.getMemberAddress().getMemberAddr())
+                            .memberAddrDetail(memberDTO.getMemberAddress().getMemberAddrDetail())
+                            .memberZipCode(memberDTO.getMemberAddress().getMemberZipCode())
+                            .build()).build();
+
+            log.info("member in service : " + member);
+            MemberEntity saveMember = memberRepository.save(member);
+
+            ResponseMemberDTO coverMember = ResponseMemberDTO.toMemberDTO(saveMember);
+            return ResponseEntity.ok().body(coverMember);
         } catch (Exception e) {
             log.error(e.getMessage());
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body("회원 가입중 오류가 발생했습니다.");
         }
     }
 
@@ -172,7 +179,7 @@ public class MemberServiceImpl implements MemberService {
             MemberEntity findUser = memberRepository.findByEmail(memberEmail);
             log.info("user : " + findUser);
 
-            if(findUser.getMemberId().equals(memberId)) {
+            if (findUser.getMemberId().equals(memberId)) {
                 findUser = MemberEntity.builder()
                         .memberId(findUser.getMemberId())
                         .email(findUser.getEmail())
