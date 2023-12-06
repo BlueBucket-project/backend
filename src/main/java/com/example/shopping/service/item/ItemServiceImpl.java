@@ -4,6 +4,7 @@ import com.example.shopping.domain.Item.*;
 import com.example.shopping.domain.board.BoardDTO;
 import com.example.shopping.domain.board.BoardSecret;
 import com.example.shopping.domain.cart.CartItemDTO;
+import com.example.shopping.domain.container.ContainerDTO;
 import com.example.shopping.entity.Container.ContainerEntity;
 import com.example.shopping.entity.board.BoardEntity;
 import com.example.shopping.entity.item.ItemEntity;
@@ -105,6 +106,15 @@ public class ItemServiceImpl implements ItemService {
                     memberRepository.findById(itemDTO.getItemSeller())
                             .orElseThrow(EntityNotFoundException::new)
                             .getNickName());
+
+            ContainerEntity container = containerRepository.findByContainerName(itemDTO.getSellPlace());
+            if(container == null){
+                itemDTO.setSellPlace("폐점된 지점");
+            }
+            else{
+                itemDTO.setSellPlace(container.getContainerName() + "/" + container.getContainerAddr());
+            }
+
             return itemDTO;
 
         } catch (EntityNotFoundException e) {
@@ -388,6 +398,13 @@ public class ItemServiceImpl implements ItemService {
                                         String searchKeyword) {
         Page<ItemEntity> searchItems = itemRepository.findByItemNameContaining(pageable, searchKeyword);
         return searchItems.map(ItemDTO::toItemDTO);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ContainerDTO> getSellPlaceList() {
+        return containerRepository.findAll().stream()
+                                    .map(ContainerDTO::from).collect(Collectors.toList());
     }
 
     // 상품 검색 - 여러 조건으로 검색하기
