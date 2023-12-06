@@ -20,7 +20,7 @@ public interface BoardService {
                                   String memberEmail);
 
     // 문의 삭제
-    String removeBoard(Long boardId, String memberEmail);
+    String removeBoard(Long boardId, UserDetails userDetails);
 
     // 문의 자세히 보기
     ResponseEntity<?> getBoard(Long boardId, String memberEmail);

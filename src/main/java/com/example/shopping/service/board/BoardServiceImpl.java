@@ -19,10 +19,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
+import java.util.Collection;
 
 @Service
 @RequiredArgsConstructor
@@ -72,19 +75,34 @@ public class BoardServiceImpl implements BoardService {
 
     // 문의 삭제
     @Override
-    public String removeBoard(Long boardId, String memberEmail) {
+    public String removeBoard(Long boardId, UserDetails userDetails) {
+
+        String userEmail = userDetails.getUsername();
+        log.info("유저 : " + userEmail);
+
+        // 권한 가져오기
+        Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
+
         // 게시글 조회
         BoardEntity findBoard = boardRepository.findByBoardId(boardId)
                 .orElseThrow(EntityNotFoundException::new);
         // 유저 조회
-        MemberEntity findUser = memberRepository.findByEmail(memberEmail);
+        MemberEntity findUser = memberRepository.findByEmail(userEmail);
+        boolean equalsEmail = findUser.getEmail().equals(findBoard.getMember().getEmail());
+        String authority = authorities.iterator().next().getAuthority();
+        log.info("권한 : " + authority);
 
-        if (findUser.getEmail().equals(findBoard.getMember().getEmail())) {
+        // 일치하다면 내 글이 맞으므로 삭제할 수 있다.
+        if (equalsEmail) {
             // 게시글 삭제
             boardRepository.deleteById(boardId);
             return "게시글을 삭제했습니다.";
+            // 관리자 등급이 맞다면 삭제할 수 있다.
+        } else if(authority.equals("ADMIN") || authority.equals("ROLE_ADMIN")){
+            boardRepository.deleteById(findBoard.getBoardId());
+            return "게시글을 삭제 했습니다.";
         } else {
-            return "일치하지 않습니다.";
+            return "삭제할 수 없습니다.";
         }
     }
 
