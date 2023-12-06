@@ -159,4 +159,8 @@ public class ItemDTO {
                 .stockNumber(this.stockNumber)
                 .build();
     }
+
+    public void setSellPlace(String place){
+        this.sellPlace = place;
+    }
 }
