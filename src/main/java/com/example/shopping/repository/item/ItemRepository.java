@@ -28,7 +28,7 @@ public interface ItemRepository extends JpaRepository<ItemEntity, Long> {
             "and (:startP is null or i.item_price between :startP and :endP)" +
             "and (:place is null or i.item_place like :place)" +
             "and (:reserver is null or i.item_reserver = :reserver)" +
-            "and (:status is null or i.item_sell_status like :status)", nativeQuery = true)
+            "and (:status is null or i.item_sell_status like :status) order by reg_time DESC", nativeQuery = true)
     List<ItemEntity> findByConditions(@Param("name") String name,
                                       @Param("detail")String detail,
                                       @Param("startP")Long startP,

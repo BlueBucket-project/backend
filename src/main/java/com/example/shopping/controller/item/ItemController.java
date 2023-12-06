@@ -238,4 +238,10 @@ public class ItemController {
         }
     }
 
+    @GetMapping("/sellplace")
+    public ResponseEntity<?> getSellPlaceList(){
+
+        return ResponseEntity.ok().body(itemServiceImpl.getSellPlaceList());
+    }
+
 }
