@@ -51,7 +51,7 @@ logging:
     # root는 로깅의 루트 패키지를 나타냅니다.
     # 따라서 root 패키지 이하의 모든 클래스들에 대한 로그 레벨이 debug로 설정됩니다.
     # 이는 애플리케이션 전체에 적용되는 설정이기 때문에 상세한 로그가 많이 생성될 수 있습니다.
-    root: debug
+#    root: debug
 
 ---
 #multipart upload파일 용량설정
