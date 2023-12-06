@@ -33,7 +33,6 @@ public class OrderEntity extends BaseTimeEntity {
     private List<OrderItemEntity> orderItem = new ArrayList<>();
 
     @Builder
-
     public OrderEntity(Long orderId, Long orderAdmin, Long orderMember, List<OrderItemEntity> orderItem) {
         this.orderId = orderId;
         this.orderAdmin = orderAdmin;
