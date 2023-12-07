@@ -58,4 +58,8 @@ public class UpdateItemDTO {
         this.remainImgId = delImgId;
         this.itemSeller = itemSeller;
     }
+
+    public void setSellPlace(String place) {
+        this.sellPlace = place;
+    }
 }
