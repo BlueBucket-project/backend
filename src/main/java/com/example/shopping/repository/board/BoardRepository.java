@@ -19,6 +19,7 @@ public interface BoardRepository extends JpaRepository<BoardEntity, Long> {
     Optional<BoardEntity> findByBoardId(@Param("boardId") Long boardId);
 
     void deleteByBoardId(Long boardId);
+    void deleteAllByMemberMemberId(Long memberId);
 
     @Query(value = "select b from board b" +
             " join fetch  b.member " +
