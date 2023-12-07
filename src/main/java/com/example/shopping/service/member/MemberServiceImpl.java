@@ -9,6 +9,10 @@ import com.example.shopping.domain.member.Role;
 import com.example.shopping.entity.jwt.TokenEntity;
 import com.example.shopping.entity.member.AddressEntity;
 import com.example.shopping.entity.member.MemberEntity;
+import com.example.shopping.repository.board.BoardRepository;
+import com.example.shopping.repository.cart.CartJpaRepository;
+import com.example.shopping.repository.cart.CartRepository;
+import com.example.shopping.repository.comment.CommentRepository;
 import com.example.shopping.repository.jwt.TokenRepository;
 import com.example.shopping.repository.member.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +40,9 @@ public class MemberServiceImpl implements MemberService {
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
     private final TokenRepository tokenRepository;
+    private final BoardRepository boardRepository;
+    private final CommentRepository commentRepository;
+    private final CartJpaRepository cartRepository;
 
     // 회원가입
     @Override
@@ -98,6 +105,9 @@ public class MemberServiceImpl implements MemberService {
 
         // 회원이 비어있지 않고 넘어온 id가 DB에 등록된 id가 일치할 때
         if (findUser.getMemberId().equals(memberId)) {
+            boardRepository.deleteAllByMemberMemberId(memberId);
+            commentRepository.deleteAllByMemberMemberId(memberId);
+            cartRepository.deleteAllByMemberMemberId(memberId);
             memberRepository.deleteByMemberId(memberId);
             return "회원 탈퇴 완료";
         } else {
