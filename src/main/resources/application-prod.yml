@@ -163,7 +163,7 @@ management:
   endpoint:
     web:
       cors:
-        allowed-origins: http://localhost:3000
+        allowed-origins: http://blue-bucket-front.s3-website.ap-northeast-2.amazonaws.com/
       exposure:
         include: "*"
     health:

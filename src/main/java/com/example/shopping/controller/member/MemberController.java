@@ -126,6 +126,7 @@ public class MemberController {
         try {
             String email = userDetails.getUsername();
             log.info("email : " + email);
+            log.info("비밀번호 체크 : " + modifyMemberDTO.getMemberPw());
             ResponseEntity<?> responseEntity = memberServiceImpl.updateUser(memberId, modifyMemberDTO, email);
             return ResponseEntity.ok().body(responseEntity);
         } catch (Exception e) {
