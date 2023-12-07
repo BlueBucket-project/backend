@@ -138,6 +138,10 @@ public class ItemServiceImpl implements ItemService {
             log.info("member : " + findMember);
             MemberEntity sellMember = memberRepository.findById(itemDTO.getItemSeller()).orElseThrow();
 
+            ContainerEntity container = containerRepository.findById(Long.parseLong(itemDTO.getSellPlace())).orElseThrow();
+
+            itemDTO.setSellPlace(container.getContainerName());
+
             // 상품 엔티티에 있는 List로 된 이미지들을 가져오기
             List<ItemImgEntity> itemImgList = findItem.getItemImgList();
             List<BoardEntity> boardEntityList = findItem.getBoardEntityList();
