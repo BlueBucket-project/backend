@@ -96,7 +96,7 @@ public class MemberController {
             String remove = memberServiceImpl.removeUser(memberId, email);
             return remove;
         } catch (Exception e) {
-            return "회원탈퇴 실패했습니다.";
+            return "회원탈퇴 실패했습니다. :" + e.getMessage();
         }
     }
 
