@@ -86,15 +86,20 @@ public class CartDTO {
         this.cartItems.add(cartItem);
     }
 
+    // 이거는 리스트를 조절하는 메소드
     public void updateCartItems(CartItemDTO cartItem){
         int idx=0;
 
         for(CartItemDTO item : this.cartItems){
+            // 받아온 상품id와 기존의 id를 비교해서 맞다면 true
             if(item.getCartItemId() == cartItem.getCartItemId()){
+                // 리스트에서 삭제
                 this.cartItems.remove(idx);
+                // 리스트에 추가
                 this.cartItems.add(cartItem);
                 break;
             }
+            // id를 비교해서 맞지 않다면 index를 증가시켜준다.
             idx++;
         }
     }

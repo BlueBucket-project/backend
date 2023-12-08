@@ -37,7 +37,11 @@ public class CartItemEntity extends BaseTimeEntity {
     private ItemEntity item;
 
     @Builder
-    public CartItemEntity(Long cartitemId, CartEntity cart, CartStatus status, ItemEntity item, int count) {
+    public CartItemEntity(Long cartitemId,
+                          CartEntity cart,
+                          CartStatus status,
+                          ItemEntity item,
+                          int count) {
         this.cartitemId = cartitemId;
         this.cart =cart;
         this.item = item;

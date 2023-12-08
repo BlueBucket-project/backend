@@ -35,39 +35,47 @@ public class CartServiceImpl implements CartService{
     public CartDTO addCart(CartMainDTO cartItem, String mbrEmail) {
 
         // 장바구니에 최종 저장된 아이템정보
-        CartDTO savedCartItem = new CartDTO();
+        CartDTO savedCartItem;
 
         MemberEntity member = memberRepository.findByEmail(mbrEmail);
-        ItemEntity item = itemRepository.findById(cartItem.getItemId()).orElseThrow(()->new CartException("해당 상품이 존재하지 않습니다."));
+        ItemEntity item = itemRepository.findById(cartItem.getItemId())
+                .orElseThrow(()->new CartException("해당 상품이 존재하지 않습니다."));
 
+        // 상품 재고 확인
         checkItemStock(cartItem.getItemId(), cartItem.getCount());
 
-        //기존 장바구니 여부 확인
+        // 기존 장바구니 여부 확인
         CartDTO cart = cartRepository.findByMemberMemberId(member.getMemberId());
 
         if (cart != null) {
-            log.info("기존 장바구니 여부 확인 : "+ cart.toString());
+            log.info("기존 장바구니 여부 확인 : "+ cart);
             //장바구니 아이템 체크
-            CartMainDTO savedCart = cartItemRepository.findByCartMainDTO(cart.getCartId(), cartItem.getItemId());
-            CartItemDTO itemDetail = new CartItemDTO();
+            CartMainDTO savedCart =
+                    cartItemRepository.findByCartMainDTO(cart.getCartId(), cartItem.getItemId());
+            CartItemDTO itemDetail;
 
-            //기존에 있는 아이템 추가 시
+            // 기존에 있는 아이템 추가 시
             if (savedCart != null) {
-                //수량증가
+                // 수량증가
                 itemDetail = cartItemRepository.findByCartItemDTO(cart.getCartId(), savedCart.getItemId());
 
+                // 예약된 상품을 장바구니에 담을 때
                 if(itemDetail.getStatus().equals(CartStatus.RESERVED)){
                     throw new CartException("이미 예약되어있는 상품을 추가하셨습니다");
                 }
 
+                // 상품 재고 확인
                 checkItemStock(cartItem.getItemId(), itemDetail.getCount() + cartItem.getCount());
+                // 상품 개수 변경
                 itemDetail.modifyCount(itemDetail.getCount() + cartItem.getCount());
                 log.info("기존 상품 - 수량 증가여부 확인 : "+ itemDetail.getCount());
 
+                // 장바구니안에 있는 장바구니아이템에 추가하기 위해서
+                // 이거는 연관관계를 맺지 않고 리스트로 처리하는 방법
                 cart.updateCartItems(itemDetail);
                 savedCartItem = cartRepository.save(cart);
             } else {
-                //아니라면 CartItem Insert
+                // 아니라면 CartItem Insert
                 itemDetail = CartItemDTO.setCartItem(cart, item, cartItem.getCount());
                 cart.addCartItems(itemDetail);
                 savedCartItem = cartRepository.save(cart);
@@ -180,7 +188,7 @@ public class CartServiceImpl implements CartService{
 
     }
 
-    //구매예약상품 취소
+    // 구매예약상품 취소
     @Override
     @Transactional
     public String cancelCartOrder(List<CartOrderDTO> cartOrderList, String email) {
@@ -217,11 +225,11 @@ public class CartServiceImpl implements CartService{
 
     }
 
-    //장바구니 상품 리스트 형태로 조회하기
+    // 장바구니 상품 리스트 형태로 조회하기
     @Override
     public List<CartItemDTO> getCartList(String email) {
 
-        List<CartItemDTO> cartItems = new ArrayList<>();
+        List<CartItemDTO> cartItems;
 
         Long mbrId = memberRepository.findByEmail(email).getMemberId();
         Long cartId = cartRepository.findByMemberMemberId(mbrId).getCartId();
@@ -234,7 +242,7 @@ public class CartServiceImpl implements CartService{
         }
     }
 
-    //장바구니 상품 페이지 형태로 조회하기
+    // 장바구니 상품 페이지 형태로 조회하기
     @Override
     public Page<CartItemDTO> getCartPage(Pageable pageable, String email) {
         Long mbrId = memberRepository.findByEmail(email).getMemberId();
@@ -245,7 +253,7 @@ public class CartServiceImpl implements CartService{
             throw new CartException("장바구니가 없습니다.");
         }
 
-        //Pageable 값 셋팅 - List to Page
+        // Pageable 값 셋팅 - List to Page
         Pageable pageRequest = createPageRequestUsing(pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
 
         List<CartItemDTO> cartItems = null;
@@ -253,7 +261,7 @@ public class CartServiceImpl implements CartService{
         if(cartId == null)
             throw new CartException("장바구니에 물품이 없습니다.");
         else{
-            //PURCHASED 상태를 제외한 cartItem조회
+            // PURCHASED 상태를 제외한 cartItem조회
             cartItems =cartItemRepository.findCartItemNotPurchased(cartId);
             for(CartItemDTO cart : cartItems){
                 if(cart.getItem() != null){
@@ -275,6 +283,7 @@ public class CartServiceImpl implements CartService{
         return PageRequest.of(page, size, sort);
     }
 
+    // 상품 재고 확인
     private void checkItemStock(Long itemId, int modifyCnt){
         ItemEntity item = itemRepository.findByItemId(itemId);
 
