@@ -31,7 +31,9 @@ public class CartEntity extends BaseTimeEntity {
     private List<CartItemEntity> cartItems = new ArrayList<>();
 
     @Builder
-    public CartEntity(Long cartId, MemberEntity member, List<CartItemEntity> carItems) {
+    public CartEntity(Long cartId,
+                      MemberEntity member,
+                      List<CartItemEntity> carItems) {
         this.cartId = cartId;
         this.member = member;
         this.cartItems = carItems == null ? new ArrayList<>() : carItems;
