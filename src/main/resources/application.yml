@@ -25,7 +25,9 @@ spring:
     # 데이터베이스 플랫폼을 지정
     database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
     # JPA Open EntityManager in View 패턴을 활성화 또는 비활성화
-    open-in-view: true
+    # false하는 경우 : 트래픽이 중요할 때
+    # true하는 경우 : 트래픽보다는 성능을 우선하고 싶을 때 (주로 admin - 어드민의 경우 트래픽이 별로 없기 때문)
+    open-in-view: false
     hibernate:
       # Hibernate가 데이터베이스 스키마를 자동으로 생성 또는 갱신할 때 사용
       ddl-auto: update
