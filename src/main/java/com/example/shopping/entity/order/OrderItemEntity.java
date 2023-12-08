@@ -38,7 +38,12 @@ public class OrderItemEntity {
     int count;
 
     @Builder
-    public OrderItemEntity(Long orderitemId, ItemEntity item, int count, Long itemBuyer, Long itemSeller, OrderEntity order) {
+    public OrderItemEntity(Long orderitemId,
+                           ItemEntity item,
+                           int count,
+                           Long itemBuyer,
+                           Long itemSeller,
+                           OrderEntity order) {
         this.orderitemId = orderitemId;
         this.item = item;
         this.count = count;
@@ -60,7 +65,10 @@ public class OrderItemEntity {
                 .build();
     }
 
-    public static OrderItemEntity setOrderItem(ItemEntity item, Long itemBuyer, Long itemSeller, int count){
+    public static OrderItemEntity setOrderItem(ItemEntity item,
+                                               Long itemBuyer,
+                                               Long itemSeller,
+                                               int count){
         return OrderItemEntity.builder()
                 .item(item)
                 .itemBuyer(itemBuyer)
