@@ -6,7 +6,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-
+/*
+ *   writer : 유요한
+ *   work :
+ *          상품 이미지에 대한 정보를 담은 ResponseDTO
+ *   date : 2023/10/05
+ * */
 @Getter
 @ToString
 @NoArgsConstructor
