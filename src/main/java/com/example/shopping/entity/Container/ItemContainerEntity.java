@@ -19,7 +19,9 @@ public class ItemContainerEntity extends BaseEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "container_id")
     private Long id;
+    @Column(name = "container_name")
     private String containerName;
+    @Column(name = "container_addr")
     private String containerAddr;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "item_id")
