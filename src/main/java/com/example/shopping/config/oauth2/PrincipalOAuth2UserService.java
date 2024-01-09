@@ -31,9 +31,13 @@ import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-
-// 소셜 로그인하면 사용자 정보를 가지고 온다.
-// 가져온 정보로 회원가입을 시켜주고 JWT를 발급해줍니다.
+/*
+ *   writer : YuYoHan
+ *   work :
+ *          소셜 로그인을 하면 사용자 정보를 서버에서 가져옵니다.
+ *          가져온 정보로 회원가입을 시켜주고 JWT을 생성해줍니다.
+ *   date : 2023/12/04
+ * */
 @Service
 @Log4j2
 @RequiredArgsConstructor
@@ -151,7 +155,6 @@ public class PrincipalOAuth2UserService implements OAuth2UserService<OAuth2UserR
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
             // 유저에 대한 권한을 주기위해서 구현한 로직입니다.
-
             UserDetails userDetails = new User(email, "", authorities);
             log.info("userDetails : " + userDetails);
             // UserDetails 객체는 사용자의 주요 정보를 캡슐화하고
