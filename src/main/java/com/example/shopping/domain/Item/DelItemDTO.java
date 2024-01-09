@@ -7,8 +7,12 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import javax.validation.constraints.NotNull;
-
-// 삭제하려고 할때 받아오는 requestDTO
+/*
+ *   writer : 오현진
+ *   work :
+ *          삭제하려고 할 때 받아오는 RequestDTO
+ *   date : 2023/11/20
+ * */
 @Getter
 @NoArgsConstructor
 @ToString
