@@ -14,7 +14,12 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-// 소셜 로그인이 실패하면 실패에 대한 메시지를 JSON으로 보내줍니다.
+/*
+ *   writer : YuYoHan
+ *   work :
+ *          소셜 로그인이 실패하면 실패에 대한 메시지를 JSON으로 보내줍니다.
+ *   date : 2023/11/28
+ * */
 @Log4j2
 @RequiredArgsConstructor
 @Component
