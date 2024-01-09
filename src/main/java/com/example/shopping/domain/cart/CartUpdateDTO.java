@@ -4,7 +4,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
+/*
+ *   writer : 오현진
+ *   work :
+ *          장바구니를 업데이트할 때 필요한 정보를 보내주고 있습니다.
+ *   date : 2023/11/16
+ * */
 @Getter
 @NoArgsConstructor
 public class CartUpdateDTO {

@@ -7,7 +7,14 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.*;
-
+/*
+ *   writer : 오현진
+ *   work :
+ *          장바구니 상품 레포지토리
+ *          Spring Data JPA 방식을 사용하였고 fetch Join을 위하여
+ *          JPQL을 사용했습니다.
+ *   date : 2023/12/04
+ * */
 public interface CartItemJpaRepository extends JpaRepository<CartItemEntity, Long> {
 
     CartItemEntity findByCartCartIdAndItemItemIdAndStatusNot(Long cartId,

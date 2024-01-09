@@ -1,6 +1,5 @@
 package com.example.shopping.service.cart;
 
-import com.example.shopping.domain.Item.ItemDTO;
 import com.example.shopping.domain.Item.ItemSellStatus;
 import com.example.shopping.domain.cart.*;
 import com.example.shopping.entity.item.ItemEntity;
@@ -19,7 +18,15 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.*;
-
+/*
+ *   writer : 오현진
+ *   work :
+ *          장바구니 서비스
+ *          - 장바구니 생성, 삭제, 수정 그리고 주문예약과 취소기능이 있습니다.
+ *          이렇게 인터페이스를 만들고 상속해주는 방식을 선택한 이유는
+ *          메소드에 의존하지 않고 필요한 기능만 사용할 수 있게 하고 가독성과 유지보수성을 높이기 위해서 입니다.
+ *   date : 2023/12/08
+ * */
 @Service
 @Slf4j
 @RequiredArgsConstructor

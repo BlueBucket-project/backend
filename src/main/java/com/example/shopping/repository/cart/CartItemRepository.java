@@ -4,7 +4,12 @@ import com.example.shopping.domain.cart.CartItemDTO;
 import com.example.shopping.domain.cart.CartMainDTO;
 
 import java.util.*;
-
+/*
+ *   writer : 오현진
+ *   work :
+ *          장바구니 상품을 DTO반환 받으려고 처리
+ *   date : 2023/11/17
+ * */
 public interface CartItemRepository {
 
     CartItemDTO save(CartItemDTO cartItem);
