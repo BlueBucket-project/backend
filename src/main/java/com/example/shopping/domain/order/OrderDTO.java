@@ -10,7 +10,12 @@ import lombok.ToString;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
-
+/*
+ *   writer : 유요한,오현진
+ *   work :
+ *          주문에 대한 정보를 담은 DTO
+ *   date : 2023/12/04
+ * */
 @ToString
 @Getter
 @NoArgsConstructor

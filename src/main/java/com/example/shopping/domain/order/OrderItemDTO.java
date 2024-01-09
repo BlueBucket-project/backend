@@ -3,18 +3,20 @@ package com.example.shopping.domain.order;
 import com.example.shopping.domain.Item.ItemDTO;
 import com.example.shopping.entity.order.OrderEntity;
 import com.example.shopping.entity.order.OrderItemEntity;
-import com.example.shopping.repository.item.ItemRepository;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.persistence.Column;
 import java.time.LocalDateTime;
-import java.util.*;
 
+/*
+ *   writer : 오현진
+ *   work :
+ *          주문 상품에 대한 정보를 담은 DTO
+ *   date : 2023/10/12
+ * */
 @ToString
 @Getter
 @NoArgsConstructor

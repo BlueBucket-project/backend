@@ -3,17 +3,19 @@ package com.example.shopping.entity.order;
 import com.example.shopping.domain.Item.ItemDTO;
 import com.example.shopping.domain.order.OrderItemDTO;
 import com.example.shopping.entity.item.ItemEntity;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.*;
-
+/*
+ *   writer : 오현진
+ *   work :
+ *          주소에 대한 ResponseDTO
+ *   date : 2023/12/08
+ * */
 @Entity(name = "orderitem")
 @Getter
 @ToString(exclude = "order")
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class OrderItemEntity {
 
     @Id

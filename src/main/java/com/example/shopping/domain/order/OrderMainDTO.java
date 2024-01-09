@@ -7,8 +7,12 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import javax.validation.constraints.Min;
-
-// 관리자가 처리하기 위한 request DTO
+/*
+ *   writer : 유요한,오현진
+ *   work :
+ *          관리자가 처리하기 위한 request DTO
+ *   date : 2023/11/27
+ * */
 @Getter
 @ToString
 @NoArgsConstructor

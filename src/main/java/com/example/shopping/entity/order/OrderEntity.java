@@ -2,20 +2,22 @@ package com.example.shopping.entity.order;
 
 import com.example.shopping.domain.order.OrderDTO;
 import com.example.shopping.entity.Base.BaseTimeEntity;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.*;
 import java.util.stream.Collectors;
-
+/*
+ *   writer : 오현진
+ *   work :
+ *          주문 엔티티
+ *          여기에는 주문번호, 주문받은 관리자, 주문한 유저, 그리고 주문상품이 있습니다.
+ *   date : 2023/10/22
+ * */
 @Table(name = "orders")
 @Entity
 @Getter
-@ToString
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class OrderEntity extends BaseTimeEntity {
 
     @Id
