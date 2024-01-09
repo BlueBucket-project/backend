@@ -37,7 +37,8 @@
 
 ---
 # ERD
-![](https://velog.velcdn.com/images/zxzz45/post/438cfe73-ba11-49e7-be4a-74d22e1ae220/image.png)
+![image](https://github.com/BlueBucket-project/backend/assets/110465572/22fdbe5b-f56a-4432-aa15-a440b6a73af4)
+
 
 # 프로젝트 세부 진행
 
