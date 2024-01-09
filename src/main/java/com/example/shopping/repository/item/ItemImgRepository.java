@@ -5,7 +5,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-
+/*
+ *   writer : 유요한
+ *   work :
+ *          상품 이미지 레포지토리
+ *   date : 2024/01/08
+ * */
 @Repository
 public interface ItemImgRepository extends JpaRepository<ItemImgEntity, Long> {
     //  ItemImgRepository의 findByItemId 메서드에서 ItemEntity의 ID 필드(itemId)를 참조
