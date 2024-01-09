@@ -12,7 +12,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -25,7 +24,13 @@ import javax.persistence.EntityNotFoundException;
 import java.util.HashMap;
 import java.util.Map;
 
-
+/*
+ *   writer : YuYoHan
+ *   work :
+ *          문의글 생성, 삭제, 수정, 페이징 처리한 전체보기와
+ *          상세보기 기능입니다.
+ *   date : 2023/12/06
+ * */
 @RestController
 @Log4j2
 @RequiredArgsConstructor
@@ -112,6 +117,7 @@ public class BoardController {
     public ResponseEntity<?> getBoards(
             // SecuritConfig에 Page 설정을 한 페이지에 10개 보여주도록
             // 설정을 해서 여기서는 할 필요가 없다.
+            // 여기보다 레포지토리에서 적용한것이 우선이 됩니다.
             @PageableDefault(sort = "boardId", direction = Sort.Direction.DESC)
             Pageable pageable,
             @PathVariable(name = "itemId") Long itemId,
