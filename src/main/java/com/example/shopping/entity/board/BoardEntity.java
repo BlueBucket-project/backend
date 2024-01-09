@@ -9,20 +9,24 @@ import com.example.shopping.entity.Base.BaseEntity;
 import com.example.shopping.entity.comment.CommentEntity;
 import com.example.shopping.entity.item.ItemEntity;
 import com.example.shopping.entity.member.MemberEntity;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
-
+/*
+ *   writer : 유요한
+ *   work :
+ *          유저 테이블을 만들어줍니다.
+ *   date : 2024/01/06
+ * */
 @Entity(name = "board")
 @Table
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class BoardEntity extends BaseEntity {
     @Id
     @GeneratedValue
