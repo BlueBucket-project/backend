@@ -10,7 +10,12 @@ import javax.persistence.Column;
 import javax.persistence.EntityListeners;
 import javax.persistence.MappedSuperclass;
 import java.time.LocalDateTime;
-
+/*
+ *   writer : 유요한
+ *   work :
+ *          Auditing 기능을 사용해서 등록 시간과 수정 시간 기록
+ *   date : 2023/09/05
+ * */
 // Auditing을 적용하기 위해서 @EntityListeners 어노테이션을 추가해야 합니다.
 @EntityListeners(value = {AuditingEntityListener.class})
 // 공통 매핑 정보가 필요할 때 사용하는 어노테이션으로
