@@ -7,7 +7,12 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import javax.validation.constraints.NotNull;
-
+/*
+ *   writer : YuYoHan
+ *   work :
+ *          게시글을 만들 때 필요한 값 즉, 제목과 내용만 받습니다.
+ *   date : 2023/11/01
+ * */
 @Getter
 @NoArgsConstructor
 @ToString
