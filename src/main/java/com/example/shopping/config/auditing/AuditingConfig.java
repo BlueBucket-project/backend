@@ -4,7 +4,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
-
+/*
+ *   writer : YuYoHan
+ *   work :
+ *          Auditing 기능을 사용해서 작성자, 수정자, 작성 시간, 업데이트 시간을 나타내기 위한
+ *          역할을 하고 있습니다.
+ *   date : 2023/09/25
+ * */
 @Configuration
 // JPA의 Auditing 기능을 활성화
 @EnableJpaAuditing

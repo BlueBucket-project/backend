@@ -5,7 +5,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Optional;
-
+/*
+ *   writer : YuYoHan
+ *   work :
+ *          Auditing 기능을 사용해서 작성자, 수정자, 작성 시간, 업데이트 시간을 나타내기 위한
+ *          역할을 하고 있습니다.
+ *   date : 2023/09/25
+ * */
 public class AuditorAwareImpl implements AuditorAware<String> {
 
     @Override
