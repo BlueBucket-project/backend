@@ -14,7 +14,6 @@ import com.example.shopping.repository.item.ItemRepository;
 import com.example.shopping.repository.member.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -26,7 +25,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
 import java.util.Collection;
-
+/*
+ *   writer : 유요한
+ *   work :
+ *          게시글 서비스
+ *          - 게시글의 등록, 수정, 삭제, 그리고 작성자의 문의글과 특정 상품에 해당하는 문의글을 확인하는 기능이 있습니다.
+ *          이렇게 인터페이스를 만들고 상속해주는 방식을 선택한 이유는
+ *          메소드에 의존하지 않고 필요한 기능만 사용할 수 있게 하고 가독성과 유지보수성을 높이기 위해서 입니다.
+ *   date : 2024/01/09
+ * */
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -180,14 +187,8 @@ public class BoardServiceImpl implements BoardService {
 
         MemberEntity findUser = memberRepository.findByEmail(memberEmail);
 
-        Page<BoardEntity> findAllBoards;
-        if (StringUtils.isNotBlank(searchKeyword)) {
-            // 작성자의 문의글을 조회해온다.
-            findAllBoards = boardRepository.findByMemberEmailAndTitleContaining(memberEmail, pageable, searchKeyword);
-        } else {
-            findAllBoards = boardRepository.findAllByMemberEmail(memberEmail, pageable);
-        }
-
+        // 작성자의 문의글을 조회해온다.
+        Page<BoardEntity> findAllBoards = boardRepository.findByMemberEmailAndTitleContaining(memberEmail, pageable, searchKeyword);
         // 댓글이 있으면 답변완료, 없으면 미완료
         for(BoardEntity boardCheck : findAllBoards) {
             if(boardCheck.getCommentEntityList().isEmpty()) {
