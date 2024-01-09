@@ -1,13 +1,12 @@
 package com.example.shopping.controller.admin;
 
-import com.example.shopping.config.jwt.JwtAuthenticationEntryPoint;
 import com.example.shopping.domain.Item.ItemDTO;
+import com.example.shopping.domain.Item.ItemSearchCondition;
 import com.example.shopping.domain.Item.ItemSellStatus;
 import com.example.shopping.domain.board.BoardDTO;
 import com.example.shopping.domain.order.OrderDTO;
 import com.example.shopping.domain.order.OrderMainDTO;
 import com.example.shopping.service.admin.AdminServiceImpl;
-import com.example.shopping.service.board.BoardServiceImpl;
 import com.example.shopping.service.item.ItemServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -29,6 +28,16 @@ import javax.persistence.EntityNotFoundException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+/*
+ *   writer : YuYoHan, 오현진
+ *   work :
+ *          관리자 기능입니다.
+ *          관리자가 상품을 삭제, 게시글 삭제, 모든 문의글 볼 수 있고
+ *          상품에 대한 문의글, 회원 문의글을 볼 수 있고 예약된 상품을
+ *          구매확정시켜 줍니다. 그리고 상품을 조건에 따라 검색할 수 있습니다.
+ *   date : 2023/01/06
+ * */
 
 @RestController
 @Log4j2
@@ -180,6 +189,7 @@ public class AdminController {
         }
     }
 
+    // 문의글 확인합니다.
     @GetMapping("/{boardId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Tag(name = "admin")
@@ -196,6 +206,7 @@ public class AdminController {
         }
     }
 
+    // 관리자가 상품을 구매확정하는 API입니다.
     @PostMapping(value = "/orderItem")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Tag(name = "admin")
@@ -228,18 +239,14 @@ public class AdminController {
     @Tag(name = "admin")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Operation(summary = "상품 전체 보기(조건)", description = "상품을 조건대로 전체 볼 수 있는 API")
-    public ResponseEntity<?> searchItemsConditions(@PageableDefault(sort = "itemId", direction = Sort.Direction.DESC)
-                                                   Pageable pageable,
-                                                   @RequestParam(required = false) String itemName,
-                                                   @RequestParam(required = false) String itemPlace,
-                                                   @RequestParam(required = false) String itemReserver,
-                                                   @RequestParam(required = false) ItemSellStatus itemSellStatus
+    public ResponseEntity<?> searchItemsConditions(Pageable pageable,
+                                                   ItemSearchCondition condition
     ){
 
         Page<ItemDTO> items = null;
 
         try{
-            items = itemService.searchItemsConditions(pageable, itemName, null, null, null, itemPlace, itemReserver, itemSellStatus);
+            items = itemService.searchItemsConditions(pageable, condition);
             Map<String, Object> response = new HashMap<>();
             // 현재 페이지의 아이템 목록
             response.put("items", items.getContent());

@@ -28,7 +28,6 @@ import com.example.shopping.repository.order.OrderRepository;
 import com.example.shopping.service.s3.S3ItemImgUploaderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -42,7 +41,15 @@ import javax.persistence.EntityNotFoundException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
+/*
+ *   writer : 유요한, 오현진
+ *   work :
+ *          관리자 서비스
+ *          - 게시글 삭제, 상품 삭제, 구매 확정 기능과 모든 문의글을 보고 특정 상품에 대한 문의글을 보는 기능이 있습니다.
+ *          이렇게 인터페이스를 만들고 상속해주는 방식을 선택한 이유는
+ *          메소드에 의존하지 않고 필요한 기능만 사용할 수 있게 하고 가독성과 유지보수성을 높이기 위해서 입니다.
+ *   date : 2023/12/05
+ * */
 @Service
 @Log4j2
 @RequiredArgsConstructor
@@ -142,9 +149,7 @@ public class AdminServiceImpl implements AdminService {
             return e.getMessage();
         }
     }
-
-
-
+    // 구매 확정 메소드
     public OrderDTO orderItem(List<OrderMainDTO> orders, String adminEmail) {
 
         String mbrEmail = orders.get(0).getItemReserver();
@@ -240,23 +245,10 @@ public class AdminServiceImpl implements AdminService {
             log.info("권한 : " + role);
             // 관리자 권한 체크
             if (role.equals("ADMIN") || role.equals("ROLE_ADMIN")) {
-                // 키워드가 있으면
-                if (StringUtils.isNotBlank(searchKeyword)) {
-                    // 키워드로 페이지 처리해서 검색
-                    allBoards = boardRepository.findByTitleContaining(pageable, searchKeyword);
-                } else {
-                    // 키워드가 없으니 모두 검색
-                    allBoards = boardRepository.findAll(pageable);
-                }
-
-                // 댓글이 없으면 답변 미완료, 있으면 완료
-                for(BoardEntity boardCheck : allBoards) {
-                    if(boardCheck.getCommentEntityList().isEmpty()) {
-                        boardCheck.changeReply(ReplyStatus.REPLY_X);
-                    } else {
-                        boardCheck.changeReply(ReplyStatus.REPLY_O);
-                    }
-                }
+                // 키워드로 페이지 처리해서 검색
+                allBoards = boardRepository.findByTitleContaining(pageable, searchKeyword);
+                // 댓글이 존재하는지 아닌지 체크할 수 있게 상태를 바꿔줍니다.
+                replyCheck(allBoards);
 
                 // 관리자라 모두 읽을 수 있으니 UN_LOCK
                 allBoards.forEach(board -> board.changeSecret(BoardSecret.UN_LOCK));
@@ -267,6 +259,17 @@ public class AdminServiceImpl implements AdminService {
             }
         }
         return null;
+    }
+    // 댓글이 존재하는지 아닌지 체크할 수 있게 상태를 바꿔줍니다.
+    private static void replyCheck(Page<BoardEntity> allBoards) {
+        // 댓글이 없으면 답변 미완료, 있으면 완료
+        for(BoardEntity boardCheck : allBoards) {
+            if(boardCheck.getCommentEntityList().isEmpty()) {
+                boardCheck.changeReply(ReplyStatus.REPLY_X);
+            } else {
+                boardCheck.changeReply(ReplyStatus.REPLY_O);
+            }
+        }
     }
 
 
@@ -279,25 +282,14 @@ public class AdminServiceImpl implements AdminService {
                                                String searchKeyword) {
         // userDetails에서 권한을 가져오기
         Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
-        Page<BoardEntity> allByNickName;
         // 현재는 권한이 1개만 있는 것으로 가정
         if (!authorities.isEmpty()) {
             String role = authorities.iterator().next().getAuthority();
             // 존재하는 권한이 관리자인지 체크
             if (role.equals("ADMIN") || role.equals("ROLE_ADMIN")) {
-                if (StringUtils.isNotBlank(searchKeyword)) {
-                    allByNickName = boardRepository.findByMemberNickNameAndTitleContaining(nickName, pageable, searchKeyword);
-                } else {
-                    allByNickName = boardRepository.findAllByMemberNickName(nickName, pageable);
-                }
-                // 댓글이 없으면 답변 미완료, 있으면 완료
-                for(BoardEntity boardCheck : allByNickName) {
-                    if(boardCheck.getCommentEntityList().isEmpty()) {
-                        boardCheck.changeReply(ReplyStatus.REPLY_X);
-                    } else {
-                        boardCheck.changeReply(ReplyStatus.REPLY_O);
-                    }
-                }
+                Page<BoardEntity> allByNickName = boardRepository.findByMemberNickNameAndTitleContaining(nickName, pageable, searchKeyword);
+                // 댓글이 존재하는지 아닌지 체크할 수 있게 상태를 바꿔줍니다.
+                replyCheck(allByNickName);
                 // 관리자라 모두 읽을 수 있으니 UN_LOCK
                 allByNickName.forEach(board -> board.changeSecret(BoardSecret.UN_LOCK));
                 return allByNickName.map(board -> BoardDTO.toBoardDTO(
@@ -364,14 +356,8 @@ public class AdminServiceImpl implements AdminService {
             log.info("권한 : " + authority);
             if (authority.equals("ADMIN") || authority.equals("ROLE_ADMIN")) {
                 allItemBoards = boardRepository.findAllByItemItemId(itemId, pageable);
-
-                for(BoardEntity board : allItemBoards) {
-                    if(board.getCommentEntityList().isEmpty()) {
-                        board.changeReply(ReplyStatus.REPLY_X);
-                    } else {
-                        board.changeReply(ReplyStatus.REPLY_O);
-                    }
-                }
+                // 댓글이 존재하는지 아닌지 체크할 수 있게 상태를 바꿔줍니다.
+                replyCheck(allItemBoards);
 
                 allItemBoards.forEach(board -> board.changeSecret(BoardSecret.UN_LOCK));
                 return allItemBoards.map(board -> BoardDTO.toBoardDTO(
