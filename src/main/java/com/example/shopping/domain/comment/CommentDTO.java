@@ -8,7 +8,12 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.time.LocalDateTime;
-
+/*
+ *   writer : 유요한
+ *   work :
+ *          댓글에 대한 정보를 담은 ResponseDTO
+ *   date : 2023/11/01
+ * */
 @Getter
 @NoArgsConstructor
 @ToString

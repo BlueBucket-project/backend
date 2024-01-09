@@ -13,6 +13,13 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+
+/*
+ *   writer : YuYoHan
+ *   work :
+ *          댓글 작성, 삭제, 수정하는 기능입니다.
+ *   date : 2023/11/01
+ * */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/{itemId}/boards/{boardId}/comments")
