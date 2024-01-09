@@ -7,7 +7,12 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.util.Date;
-
+/*
+ *   writer : 유요한
+ *   work :
+ *          로그인 시 JWT를 반환학기 위한 ResponseDTO
+ *   date : 2023/11/15
+ * */
 @Getter
 @ToString
 @NoArgsConstructor
