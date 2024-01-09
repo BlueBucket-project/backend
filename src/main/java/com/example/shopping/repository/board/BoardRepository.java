@@ -9,7 +9,14 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
-
+/*
+ *   writer : 유요한
+ *   work :
+ *          게시글 레포지토리
+ *          Spring Data JPA 방식을 사용하였고 fetch Join을 위하여
+ *          JPQL을 사용했습니다.
+ *   date : 2024/01/09
+ * */
 @Repository
 public interface BoardRepository extends JpaRepository<BoardEntity, Long> {
     @Query("select b from board b" +
@@ -24,9 +31,9 @@ public interface BoardRepository extends JpaRepository<BoardEntity, Long> {
     @Query(value = "select b from board b" +
             " join fetch  b.member " +
             " join fetch b.item " +
-            " where b.title like %:searchKeyword%" +
+            " where (:searchKeyword is null or b.title like %:searchKeyword%)" +
             " order by b.boardId DESC ",
-            countQuery = "select count(b) from board b where b.title like %:searchKeyword%")
+            countQuery = "select count(b) from board b where (:searchKeyword is null or b.title like %:searchKeyword%)")
     Page<BoardEntity> findByTitleContaining(Pageable pageable,
                                             @Param("searchKeyword") String searchKeyword);
 
@@ -37,42 +44,26 @@ public interface BoardRepository extends JpaRepository<BoardEntity, Long> {
             countQuery = "select count(b) from board b")
     Page<BoardEntity> findAll(Pageable pageable);
 
-    @Query(value = "select b from board b " +
-            "join fetch b.member " +
-            " join fetch b.item " +
-            "where b.member.email = :email" +
-            " order by b.boardId DESC ",
-            countQuery = "select count(b) from board b where b.member.email = :email"
-    )
-    Page<BoardEntity> findAllByMemberEmail(@Param("email") String email, Pageable pageable);
 
     @Query(value = "select  b from board  b " +
             " join fetch b.member " +
             " join fetch b.item " +
-            " where b.member.email = :email and b.title like %:searchKeyword%" +
+            " where b.member.email = :email and (:searchKeyword is null or b.title like %:searchKeyword%)" +
             " order by b.boardId DESC ",
             countQuery = "select count(b) from board b " +
-                    "where b.member.email = :email and b.title like %:searchKeyword%")
+                    "where b.member.email = :email and (:searchKeyword is null or b.title like %:searchKeyword%)")
     Page<BoardEntity> findByMemberEmailAndTitleContaining(@Param("email") String email,
                                                           Pageable pageable,
                                                           @Param("searchKeyword") String searchKeyword);
 
-    @Query(value = "select b from board b " +
-            " join fetch b.member " +
-            " join fetch b.item " +
-            "where b.member.nickName = :nickName" +
-            " order by b.boardId DESC",
-            countQuery = "select count(b) from board b where b.member.nickName = :nickName")
-    Page<BoardEntity> findAllByMemberNickName(@Param("nickName") String nickName,
-                                              Pageable pageable);
 
     @Query(value = "select b from board b " +
             " join fetch b.member " +
             " join fetch b.item " +
-            "where b.member.nickName = :nickName and b.title like %:searchKeyword%" +
+            "where b.member.nickName = :nickName and (:searchKeyword is null or b.title like %:searchKeyword%)" +
             " order by b.boardId desc ",
             countQuery = "select count(b) from board b " +
-                    "where b.member.nickName = :nickName and b.title like %:searchKeyword%")
+                    "where b.member.nickName = :nickName and (:searchKeyword is null or b.title like %:searchKeyword%)")
     Page<BoardEntity> findByMemberNickNameAndTitleContaining(@Param("nickName") String nickName,
                                                              Pageable pageable,
                                                              @Param("searchKeyword") String searchKeyword);
