@@ -2,17 +2,19 @@ package com.example.shopping.entity.member;
 
 import com.example.shopping.domain.member.Role;
 import com.example.shopping.entity.Base.BaseTimeEntity;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.*;
-
+/*
+ *   writer : 유요한
+ *   work :
+ *          유저 엔티티
+ *   date : 2023/11/15
+ * */
 @Entity(name = "member")
 @Getter
 @ToString
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class MemberEntity extends BaseTimeEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "member_id", nullable = false)

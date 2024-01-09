@@ -9,7 +9,12 @@ import lombok.ToString;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
-
+/*
+ *   writer : 유요한
+ *   work :
+ *          로그인할 때 받는 RequestDTO
+ *   date : 2023/10/10
+ * */
 @ToString
 @Getter
 @NoArgsConstructor

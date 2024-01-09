@@ -7,9 +7,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
-
+/*
+ *   writer : 유요한
+ *   work :
+ *          유저를 업데이트할 때 받는 RequestDTO
+ *   date : 2023/11/16
+ * */
 @ToString
 @Getter
 @NoArgsConstructor
