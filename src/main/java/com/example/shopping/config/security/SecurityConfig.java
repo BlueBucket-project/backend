@@ -23,6 +23,12 @@ import org.springframework.security.web.SecurityFilterChain;
 import java.util.HashMap;
 import java.util.Map;
 
+/*
+ *   writer : YuYoHan
+ *   work :
+ *          시큐리티 기능을 사용하기 위한 클래스입니다.
+ *   date : 2023/12/04
+ * */
 @Configuration
 @RequiredArgsConstructor
 @EnableWebSecurity
@@ -35,7 +41,6 @@ public class SecurityConfig {
     private final PrincipalOAuth2UserService principalOAuth2UserService;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
     private final OAuth2FailHandler oAuth2FailHandler;
-
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
