@@ -69,7 +69,9 @@ spring:
     # JPA 처리 시에 발생하는 SQL을 보여줄 것인지 결정합니다.
     show-sql: true
     hibernate:
-      ddl-auto: update
+      # 운영시에는 validate나 none으로 해야합니다.
+      # 수정되면 안되기 때문입니다.
+      ddl-auto: validate
     properties:
       hibernate:
         show_sql: true
@@ -79,6 +81,13 @@ spring:
         # LAZY 로딩 시 기본적으로 사용되는 배치 크기를 설정
         # fetch join 사용시 최적화
         default_batch_fetch_size: 100
+
+  data:
+    web:
+      pageable:
+        default-page-size: 10
+        max-page-size: 2000
+        one-indexed-parameters: true
 
 ---
 logging:
