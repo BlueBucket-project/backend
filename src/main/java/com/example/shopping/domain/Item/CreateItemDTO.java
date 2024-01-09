@@ -1,5 +1,6 @@
 package com.example.shopping.domain.Item;
 
+import com.example.shopping.domain.container.ContainerDTO;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
@@ -9,7 +10,12 @@ import lombok.ToString;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-
+/*
+ *   writer : 유요한
+ *   work :
+ *          상품을 만들때 사용하는 RequestDTO
+ *   date : 2023/10/31
+ * */
 @Getter
 @NoArgsConstructor
 @ToString
@@ -33,14 +39,14 @@ public class CreateItemDTO {
 
     @Schema(description = "판매지역")
     @NotNull(message = "판매지역을 입력해야 합니다.")
-    private String sellPlace;
+    private ContainerDTO sellPlace;
 
     @Builder
     public CreateItemDTO(String itemName,
                          int price,
                          int stockNumber,
                          String itemDetail,
-                         String sellPlace) {
+                         ContainerDTO sellPlace) {
         this.itemName = itemName;
         this.price = price;
         this.stockNumber = stockNumber;

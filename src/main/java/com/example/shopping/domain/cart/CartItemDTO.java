@@ -8,7 +8,12 @@ import com.example.shopping.entity.member.MemberEntity;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
+/*
+ *   writer : YuYoHan, 오현진
+ *   work :
+ *          장바구니안의 상품에 대한 정보를 가지고 있습니다.
+ *   date : 2023/12/04
+ * */
 @Getter
 @NoArgsConstructor
 public class CartItemDTO {
@@ -16,7 +21,7 @@ public class CartItemDTO {
     private Long cartItemId;
     private int price;
     private int count;
-    //private Long cartId;
+    // private Long cartId;
     private CartDTO cart;
     private ItemDTO item;
     private Long mbrId;

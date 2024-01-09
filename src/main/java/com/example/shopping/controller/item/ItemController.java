@@ -1,7 +1,6 @@
 package com.example.shopping.controller.item;
 
 import com.example.shopping.domain.Item.*;
-import com.example.shopping.exception.member.UserException;
 import com.example.shopping.service.item.ItemServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -9,8 +8,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,6 +23,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/*
+ *   writer : YuYoHan, 오현진
+ *   work :
+ *          상품 작성, 삭제, 수정, 전체 가져오기 그리고 검색하는 기능입니다.
+ *   date : 2024/01/05
+ * */
 @RestController
 @Log4j2
 @RequiredArgsConstructor
@@ -34,36 +37,24 @@ import java.util.Map;
 public class ItemController {
     private final ItemServiceImpl itemServiceImpl;
 
-
     // 상품 등록
     @PostMapping("")
-    @PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Tag(name = "item")
     @Operation(summary = "상품 등록", description = "상품을 등록하는 API입니다.")
     public ResponseEntity<?> createItem(@Valid @RequestPart("key") CreateItemDTO item,
-                                        @RequestPart(value = "files", required = false)List<MultipartFile>itemFiles,
+                                        @RequestPart(value = "files", required = false) List<MultipartFile> itemFiles,
                                         BindingResult result
-                                        ,@AuthenticationPrincipal UserDetails userDetails
-    ){
+            , @AuthenticationPrincipal UserDetails userDetails
+    ) {
         try {
-            if(result.hasErrors()) {
+            if (result.hasErrors()) {
                 log.error("bindingResult error : " + result.hasErrors());
                 return ResponseEntity.badRequest().body(result.getClass().getSimpleName());
             }
 
-                ItemDTO itemInfo = ItemDTO.builder()
-                        .itemName(item.getItemName())
-                        .price(item.getPrice())
-                        .itemDetail(item.getItemDetail())
-                        .stockNumber(item.getStockNumber())
-                        .sellPlace(item.getSellPlace())
-                        .itemSellStatus(ItemSellStatus.SELL)
-                        .itemReserver(null)
-                        .itemRamount(0)
-                        .build();
-
             String email = userDetails.getUsername();
-            ItemDTO savedItem = itemServiceImpl.saveItem(itemInfo, itemFiles, email);
+            ItemDTO savedItem = itemServiceImpl.saveItem(item, itemFiles, email);
             //testData
             //ItemDTO savedItem = itemServiceImpl.saveItem(itemInfo, itemFiles, "mem123@test.com");
             return ResponseEntity.ok().body(savedItem);
@@ -89,13 +80,13 @@ public class ItemController {
 
     // 상품 수정
     @PutMapping("/{itemId}")
-    @PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Tag(name = "item")
     @Operation(summary = "상품 수정", description = "상품을 수정하는 API입니다.")
     public ResponseEntity<?> updateItem(@PathVariable Long itemId,
                                         @RequestPart("key") UpdateItemDTO itemDTO,
                                         @RequestPart(value = "files", required = false) List<MultipartFile> itemFiles
-                                        ,@AuthenticationPrincipal UserDetails userDetails
+            , @AuthenticationPrincipal UserDetails userDetails
     ) {
         try {
 
@@ -112,12 +103,12 @@ public class ItemController {
 
     // 상품 삭제
     @DeleteMapping("/{itemId}")
-    @PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Tag(name = "item")
     @Operation(summary = "상품 삭제", description = "상품을 삭제하는 API입니다.")
     public ResponseEntity<?> deleteItem(@PathVariable Long itemId
-                                        , @RequestBody DelItemDTO itemDTO
-                                        , @AuthenticationPrincipal UserDetails userDetails
+            , @RequestBody DelItemDTO itemDTO
+            , @AuthenticationPrincipal UserDetails userDetails
     ) {
         try {
             String email = userDetails.getUsername();
@@ -131,44 +122,24 @@ public class ItemController {
         }
     }
 
-    // 이미지 삭제
-    @DeleteMapping("/{itemId}/img/{itemImgId}")
-    public String removeImg(@PathVariable Long itemId,
-                            @PathVariable Long itemImgId,
-                            @AuthenticationPrincipal UserDetails userDetails) {
-        String email = userDetails.getUsername();
-        log.info("email : " + email);
-        String result = itemServiceImpl.removeImg(itemId, itemImgId, email);
-        return result;
-    }
-
-
-    // 전체 상품 보여주기
-    // 파라미터로 받는다.
-    // 예) localhost:8080/api/v1/items?page=1&searchKeyword=내용
-    @GetMapping("")
+    // 전체 상품을 볼 수 있고 상품조건 여러개의 경우 조건 조회하기
+    // http://localhost:8080/api/v1/items/search?name=당&page=1&sort=itemId,asc&place=종로
+    @GetMapping("/search")
     @Tag(name = "item")
     @Operation(summary = "상품 전체", description = "모든 상품을 보여주는 API입니다.")
-    public ResponseEntity<?> getItems(
-            // SecuritConfig에 Page 설정을 한 페이지에 10개 보여주도록
-            // 설정을 해서 여기서는 할 필요가 없다.
-            @PageableDefault(sort = "itemId", direction = Sort.Direction.DESC)
-            Pageable pageable,
-            String searchKeyword) {
+    public ResponseEntity<?> searchItemsConditions(Pageable pageable,
+                                                   ItemSearchCondition condition) {
+        Page<ItemDTO> items;
         try {
-            // 검색하지 않을 때는 모든 글을 보여준다.
-            Page<ItemDTO> items = null;
-            if(searchKeyword == null) {
-                items = itemServiceImpl.getItems(pageable);
-            } else {
-                // 검색할 때는 검색한 것을 보여줌
-                items = itemServiceImpl.getSearchItems(pageable, searchKeyword);
-            }
+            log.info("condition : " + condition);
+            items = itemServiceImpl.searchItemsConditions(pageable, condition);
+            log.info("상품 조회 {}", items);
+
             Map<String, Object> response = new HashMap<>();
             // 현재 페이지의 아이템 목록
             response.put("items", items.getContent());
             // 현재 페이지 번호
-            response.put("nowPageNumber", items.getNumber()+1);
+            response.put("nowPageNumber", items.getNumber() + 1);
             // 전체 페이지 수
             response.put("totalPage", items.getTotalPages());
             // 한 페이지에 출력되는 데이터 개수
@@ -184,62 +155,13 @@ public class ItemController {
 
             return ResponseEntity.ok().body(response);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
-    // 상품조건 여러개의 경우 조회하기
-    @GetMapping("/search")
-    public ResponseEntity<?> searchItemsConditions(@PageableDefault(sort = "regTime", direction = Sort.Direction.DESC)
-                                                   Pageable pageable,
-                                                   @RequestParam(required = false) String itemName,
-                                                   @RequestParam(required = false) String itemDetail,
-                                                   @RequestParam(required = false) Long startPrice,
-                                                   @RequestParam(required = false) Long endPrice,
-                                                   @RequestParam(required = false) String itemPlace,
-                                                   @RequestParam(required = false) ItemSellStatus itemSellStatus
-    ){
-
-        Page<ItemDTO> items = null;
-
-        try{
-            items = itemServiceImpl.searchItemsConditions(
-                    pageable,
-                    itemName,
-                    itemDetail,
-                    startPrice,
-                    endPrice,
-                    itemPlace,
-                    null,
-                    itemSellStatus);
-
-            Map<String, Object> response = new HashMap<>();
-            // 현재 페이지의 아이템 목록
-            response.put("items", items.getContent());
-            // 현재 페이지 번호
-            response.put("nowPageNumber", items.getNumber()+1);
-            // 전체 페이지 수
-            response.put("totalPage", items.getTotalPages());
-            // 한 페이지에 출력되는 데이터 개수
-            response.put("pageSize", items.getSize());
-            // 다음 페이지 존재 여부
-            response.put("hasNextPage", items.hasNext());
-            // 이전 페이지 존재 여부
-            response.put("hasPreviousPage", items.hasPrevious());
-            // 첫 번째 페이지 여부
-            response.put("isFirstPage", items.isFirst());
-            // 마지막 페이지 여부
-            response.put("isLastPage", items.isLast());
-
-            return ResponseEntity.ok().body(response);
-        }
-        catch (Exception e){
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
+    // 상품의 판매 지역을 반환해줍니다.
     @GetMapping("/sellplace")
-    public ResponseEntity<?> getSellPlaceList(){
+    public ResponseEntity<?> getSellPlaceList() {
 
         return ResponseEntity.ok().body(itemServiceImpl.getSellPlaceList());
     }

@@ -1,33 +1,28 @@
 package com.example.shopping.domain.container;
 
-import com.example.shopping.entity.Container.ContainerEntity;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+/*
+ *   writer : 오현진
+ *   work :
+ *          판매 지역과 지점에 대한 정보를 보내주는 RequestDTO
+ *   date : 2023/01/07
+ * */
 @Getter
 @NoArgsConstructor
 @ToString
 public class ContainerDTO {
-    private Long containerId;
-
     private String containerName;
-
     private String containerAddr;
 
     @Builder
-    public ContainerDTO(Long containerId, String containerName, String containerAddr) {
-        this.containerId = containerId;
+    public ContainerDTO(String containerName, String containerAddr) {
         this.containerName = containerName;
         this.containerAddr = containerAddr;
     }
 
-    public static ContainerDTO from(ContainerEntity container){
-        return ContainerDTO.builder()
-                .containerId(container.getContainerId())
-                .containerName(container.getContainerName())
-                .containerAddr(container.getContainerAddr())
-                .build();
-    }
+
 }

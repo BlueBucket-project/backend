@@ -18,7 +18,14 @@ import org.springframework.stereotype.Service;
 import javax.persistence.EntityNotFoundException;
 import java.util.*;
 import java.util.ArrayList;
-
+/*
+ *   writer : 오현진
+ *   work :
+ *          주문 서비스
+ *          이렇게 인터페이스를 만들고 상속해주는 방식을 선택한 이유는
+ *          메소드에 의존하지 않고 필요한 기능만 사용할 수 있게 하고 가독성과 유지보수성을 높이기 위해서 입니다.
+ *   date : 2023/11/06
+ * */
 @Slf4j
 @Service
 @RequiredArgsConstructor

@@ -6,9 +6,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-
-// 필요한 정보용
-// 즉, 기능을 구현할 때 필요한 정보만 받아와서 처리하기 위해서
+/*
+ *   writer : 유요한
+ *   work :
+ *          유저에 대한 필요한 정보를 받는 RequestDTO
+ *   date : 2023/11/16
+ * */
 @ToString
 @Getter
 @NoArgsConstructor

@@ -23,6 +23,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+/*
+ *   writer : YuYoHan
+ *   work :
+ *          프로젝트 문서화를 위해 설정하는 클래스입니다.
+ *   date : 2023/11/29
+ * */
 @Configuration
 public class SwaggerConfig {
 

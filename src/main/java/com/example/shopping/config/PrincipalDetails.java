@@ -1,5 +1,6 @@
 package com.example.shopping.config;
 
+import com.example.shopping.domain.member.Role;
 import com.example.shopping.entity.member.MemberEntity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,12 +14,17 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
+/*
+ *   writer : YuYoHan
+ *   work :
+ *          PrincipalDetailsService과 PrincipalOAuth2UserService에서 넘어온
+ *          유저의 정보와 권한을 받아와서 JWT를 만드는데 도움을 준다.
+ *   date : 2023/10/04
+ * */
 
-// PrincipalDetailsService과 PrincipalOAuth2UserService에서 넘어온
-// 유저의 정보와 권한을 받아와서 JWT를 만드는데 도움을 준다.
 @Setter
 @Getter
 @ToString
@@ -46,9 +52,10 @@ public class PrincipalDetails implements UserDetails, OAuth2User {
 
     // 해당 유저의 권한을 권한을 리턴
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        Collection<GrantedAuthority> collection = new ArrayList<>();
-        collection.add(new SimpleGrantedAuthority("ROLE_" + member.getMemberRole().toString()));
+    public List<? extends GrantedAuthority> getAuthorities() {
+        List<GrantedAuthority> collection = new ArrayList<>();
+        Role memberRole = member.getMemberRole();
+        collection.add(new SimpleGrantedAuthority("ROLE_" + memberRole.name()));
         return collection;
     }
 

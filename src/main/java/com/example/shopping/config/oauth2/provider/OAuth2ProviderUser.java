@@ -4,10 +4,14 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import java.util.Map;
-
-// 여기는 소셜 로그인 정보를 담아둘 곳의 공통적인 요소들을 모아놓은 곳입니다.
-// 소셜 로그인 즉, 구글, 네이버 등은 각자 다르므로 관리하기 쉽게 공통적인 요소는
-// 모아놓고 코드의 중복화를 줄입니다.
+/*
+ *   writer : YuYoHan
+ *   work :
+ *          여기는 소셜 로그인 정보를 담아둘 곳의 공통적인 요소들을 모아놓은 곳입니다.
+ *          소셜 로그인 즉, 구글, 네이버 등은 각자 다르므로 관리하기 쉽게 공통적인 요소는
+ *          모아놓고 코드의 중복화를 줄입니다.
+ *   date : 2023/10/04
+ * */
 public abstract class OAuth2ProviderUser implements OAuth2UserInfo{
     private Map<String, Object> attributes;
     private OAuth2User oAuth2User;

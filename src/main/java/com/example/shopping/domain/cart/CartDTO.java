@@ -1,11 +1,8 @@
 package com.example.shopping.domain.cart;
 
-import com.example.shopping.domain.Item.ItemDTO;
 import com.example.shopping.domain.member.InfoMemberDTO;
-import com.example.shopping.domain.member.ResponseMemberDTO;
 import com.example.shopping.entity.cart.CartEntity;
 import com.example.shopping.entity.cart.CartItemEntity;
-import com.example.shopping.entity.item.ItemImgEntity;
 import com.example.shopping.entity.member.MemberEntity;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
@@ -15,7 +12,12 @@ import lombok.NoArgsConstructor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
+/*
+ *   writer : 오현진
+ *   work :
+ *          장바군니 리턴 값을 담고 있습니다.
+ *   date : 2023/12/08
+ * */
 @Getter
 @NoArgsConstructor
 public class CartDTO {

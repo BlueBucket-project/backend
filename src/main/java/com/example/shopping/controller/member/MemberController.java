@@ -34,6 +34,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/*
+ *   writer : YuYoHan
+ *   work :
+ *          유저의 CRUD 기능과 이메일 조회와 닉네임 조회 기능이 있고
+ *          주문 조회와 나의 문의글을 보는 기능이 있습니다.
+ *   date : 2023/11/06
+ * */
 @RestController
 // @Slf4j를 사용하지 않고 Log4j2를 사용하는 이유는
 // 기능면에서 더 좋기 때문입니다.

@@ -12,11 +12,16 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+/*
+ *   writer : YuYoHan
+ *   work :
+ *          프론트에서 헤더에 토큰을 담아서 보내주면 검증을 하는 역할을 하고 있습니다.
+ *   date : 2023/10/04
+ * */
 
-// 프론트에서 헤더에 토큰이 담겨져오면 검증을 하는 곳
-// OncePerRequestFilter을 하는 이유는 한번만 작동하도록 하기 위해서 입니다.
 @Log4j2
 @RequiredArgsConstructor
+// OncePerRequestFilter을 하는 이유는 한번만 작동하도록 하기 위해서 입니다.
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     public static final String HEADER_AUTHORIZATION = "Authorization";
     private final JwtProvider jwtProvider;
@@ -34,6 +39,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = resolveToken(httpServletRequest);
         log.info("token : " + token);
 
+        // 토큰이 존재하고 토큰 유효성 검사를 통과하면 true
         if(StringUtils.hasText(token) && jwtProvider.validateToken(token)) {
             // 토큰이 유효할 경우 토큰에서 Authentication 객체를 가지고 와서 SecurityContext에 저장
             // 여기까지 통과하면 토큰은 인증도 받았고 권한도 있다.
@@ -64,3 +70,4 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
     }
 }
+

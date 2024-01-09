@@ -6,8 +6,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-
-// 주소 정보를 따로 뺀 이유는 객체지향에 맞게 관리하기 편하도록 따로 빼놓음
+/*
+ *   writer : 유요한
+ *   work :
+ *          주소에 대한 ResponseDTO
+ *   date : 2023/11/01
+ * */
 @ToString
 @Getter
 @NoArgsConstructor

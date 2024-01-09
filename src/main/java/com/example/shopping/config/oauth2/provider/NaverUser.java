@@ -5,7 +5,12 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import java.util.Map;
 
-// 네이버에 대한 공통적이지 않은 정보를 가져옴
+/*
+ *   writer : YuYoHan
+ *   work :
+ *          네이버에 대한 공통적이지 않은 정보를 빼오는 역할을 하고 있습니다.
+ *   date : 2023/10/04
+ * */
 public class NaverUser extends OAuth2ProviderUser{
     public NaverUser(OAuth2User oAuth2User, ClientRegistration clientRegistration) {
         super((Map<String, Object>) oAuth2User.getAttributes().get("response"),

@@ -1,22 +1,22 @@
 package com.example.shopping.entity.item;
 
-import com.example.shopping.domain.Item.ItemDTO;
 import com.example.shopping.domain.Item.ItemImgDTO;
 import com.example.shopping.entity.Base.BaseEntity;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.*;
-import java.util.stream.Collectors;
-
+/*
+ *   writer : 유요한
+ *   work :
+ *          상품 이미지에 대한 엔티티
+ *   date : 2023/10/22
+ * */
 @Entity(name = "item_img")
 @Table
 @ToString(exclude = "item")
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ItemImgEntity extends BaseEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "item_img_id")
@@ -59,4 +59,23 @@ public class ItemImgEntity extends BaseEntity {
     public void changeRepImgY(){
         this.repImgYn = "Y";
     }
+    public void changeRepImgN(){
+        this.repImgYn = "N";
+    }
+    public static ItemImgEntity toEntity(List<ItemImgDTO> productImg, ItemEntity itemEntity) {
+        ItemImgEntity itemImg = null;
+        for (int i = 0; i < productImg.size(); i++) {
+            ItemImgDTO itemImgDTO = productImg.get(i);
+            itemImg = ItemImgEntity.builder()
+                    .oriImgName(itemImgDTO.getOriImgName())
+                    .uploadImgPath(itemImgDTO.getUploadImgPath())
+                    .uploadImgUrl(itemImgDTO.getUploadImgUrl())
+                    .uploadImgName(itemImgDTO.getUploadImgName())
+                    .item(itemEntity)
+                    .repImgYn(i == 0 ? "Y" : "N")
+                    .build();
+        }
+        return itemImg;
+    }
+
 }

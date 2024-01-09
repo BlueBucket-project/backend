@@ -8,6 +8,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/*
+ *   writer : YuYoHan
+ *   work :
+ *          S3에 이미지나 파일을 올리기 위해서 S3설정 클래스입니다.
+ *   date : 2023/12/04
+ * */
 @Configuration
 public class S3Config {
     @Value("${cloud.aws.credentials.access-key}")

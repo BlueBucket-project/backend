@@ -1,22 +1,28 @@
 package com.example.shopping.entity.item;
 
+import com.example.shopping.domain.Item.CreateItemDTO;
 import com.example.shopping.domain.Item.ItemDTO;
 import com.example.shopping.domain.Item.ItemSellStatus;
 import com.example.shopping.domain.Item.UpdateItemDTO;
 import com.example.shopping.entity.Base.BaseTimeEntity;
+import com.example.shopping.entity.Container.ContainerEntity;
 import com.example.shopping.entity.board.BoardEntity;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
-
+/*
+ *   writer : 유요한, 오현진
+ *   work :
+ *          상품 엔티티
+ *   date : 2024/01/08
+ * */
 @Entity(name = "item")
 @Table
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@ToString(of = {"itemId", "itemName", "price", "stockNumber","itemDetail", "itemSellStatus","itemPlace","itemSeller"})
 public class ItemEntity extends BaseTimeEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "item_id")
@@ -39,11 +45,12 @@ public class ItemEntity extends BaseTimeEntity {
     private String itemDetail;  // 상품 상세 설명
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "item_sell_status")
+    @Column(name = "item_sell_status", nullable = false)
     private ItemSellStatus itemSellStatus;  // 상품 판매 상태
 
-    @Column(name = "item_place")
-    private String itemPlace;
+    @Embedded
+    @Column(name = "item_place", nullable = false)
+    private ContainerEntity itemPlace;
 
     @Column(name="item_reserver")
     private String itemReserver;
@@ -79,7 +86,7 @@ public class ItemEntity extends BaseTimeEntity {
                       String itemDetail,
                       ItemSellStatus itemSellStatus,
                       List<ItemImgEntity> itemImgList,
-                      String itemPlace,
+                      ContainerEntity itemPlace,
                       String itemReserver,
                       int itemRamount,
                       Long itemSeller,
@@ -97,18 +104,38 @@ public class ItemEntity extends BaseTimeEntity {
         this.boardEntityList = boardEntityList;
         this.itemSeller = itemSeller;
     }
-
-    public static ItemEntity fromUpdateItemDTO(Long sellerId, ItemDTO item){
+    public static ItemEntity saveEntity(ItemDTO itemDTO, CreateItemDTO saveItem) {
         return ItemEntity.builder()
-                .itemSeller(sellerId)
+                .itemName(itemDTO.getItemName())
+                .itemDetail(itemDTO.getItemDetail())
+                .itemPlace(ContainerEntity.builder()
+                        .containerName(saveItem.getSellPlace().getContainerName())
+                        .containerAddr(saveItem.getSellPlace().getContainerAddr())
+                        .build())
+                .itemSellStatus(itemDTO.getItemSellStatus())
+                .stockNumber(itemDTO.getStockNumber())
+                .price(itemDTO.getPrice())
+                .itemSeller(itemDTO.getItemSeller())
+                .itemRamount(itemDTO.getItemRamount())
+                .itemReserver(itemDTO.getItemReserver() == null ? null : itemDTO.getItemReserver())
+                .build();
+    }
+
+
+    public ItemEntity updateItem(UpdateItemDTO item, Long sellerId) {
+        return ItemEntity.builder()
+                .itemId(this.itemId)
                 .itemName(item.getItemName())
                 .itemDetail(item.getItemDetail())
-                .itemSellStatus(item.getItemSellStatus())
+                .itemPlace(this.itemPlace)
+                .itemSellStatus(this.itemSellStatus)
                 .stockNumber(item.getStockNumber())
                 .price(item.getPrice())
-                .itemPlace(item.getSellPlace())
-                .itemReserver(item.getItemReserver())
-                .itemRamount(item.getItemRamount())
+                .itemSeller(sellerId)
+                .itemRamount(this.itemRamount)
+                .itemReserver(this.itemReserver == null ? null : this.itemReserver)
+                .itemImgList(this.itemImgList)
+                .boardEntityList(this.boardEntityList)
                 .build();
     }
 
@@ -141,22 +168,23 @@ public class ItemEntity extends BaseTimeEntity {
         this.itemRamount = amount;
     }
 
+    // ItemEntity에 있는 이미지 리스트에 추가
     public void addItemImgList(ItemImgEntity itemImg){
         this.itemImgList.add(itemImg);
     }
 
-    public void deleteItemImgList(ItemImgEntity itemImg){
-        int idx=0;
 
-        // 기존의 이미지리스트와 받아온 itemImgId와 비교해서
-        // 동일하면 break로 빠져나와주고
-        // 아니라면 +1을 해준다. 그리고 그것들을 리스트에서 삭제
-        for(ItemImgEntity item:this.itemImgList){
-            if(item.getItemImgId() == itemImg.getItemImgId()){
-                break;
-            }
-            idx +=1;
+    public void remainImgId(List<Long> remainImgId) {
+        for (Long remainImg : remainImgId) {
+            // 남겨줄 이미지id와 엔티티안에 있는 이미지 리스트의 id와 비교해준다.
+            this.itemImgList.forEach(img -> {
+                if(!img.getItemImgId().equals(remainImg)) {
+                    // 엔티티 이미지id와 넘겨받은 남겨줄 이미지id가 같지않으면
+                    // 기존의 이미지에서 삭제해줍니다.
+                    this.itemImgList.remove(img);
+                }
+            });
         }
-        this.itemImgList.remove(idx);
     }
+
 }

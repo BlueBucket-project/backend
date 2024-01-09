@@ -11,7 +11,6 @@ import com.example.shopping.entity.member.AddressEntity;
 import com.example.shopping.entity.member.MemberEntity;
 import com.example.shopping.repository.board.BoardRepository;
 import com.example.shopping.repository.cart.CartJpaRepository;
-import com.example.shopping.repository.cart.CartRepository;
 import com.example.shopping.repository.comment.CommentRepository;
 import com.example.shopping.repository.jwt.TokenRepository;
 import com.example.shopping.repository.member.MemberRepository;
@@ -30,7 +29,15 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
-
+/*
+ *   writer : 유요한
+ *   work :
+ *          유저 서비스
+ *          - 유저의 등록, 수정, 삭제, 로그인기능과 이메일 중복체크, 닉네임 중복체크 기능이 있습니다.
+ *          이렇게 인터페이스를 만들고 상속해주는 방식을 선택한 이유는
+ *          메소드에 의존하지 않고 필요한 기능만 사용할 수 있게 하고 가독성과 유지보수성을 높이기 위해서 입니다.
+ *   date : 2023/12/07
+ * */
 @Service
 @RequiredArgsConstructor
 @Log4j2

@@ -10,8 +10,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-// 무엇인가를 실행하려고 할 때
-// 권한이 없을 때 동작함
+/*
+ *   writer : YuYoHan
+ *   work :
+ *          JWT를 통한 인증이 실패할 때 호출되는 역할입니다.
+ *   date : 2023/10/04
+ * */
+
 @Component
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     @Override

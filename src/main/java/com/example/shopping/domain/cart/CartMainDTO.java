@@ -8,8 +8,12 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import javax.validation.constraints.Min;
-
-// 장바구니에 담을 때 사용하는 request DTO
+/*
+ *   writer : 오현진
+ *   work :
+ *          장바구니에 담을 때 사용하는 request DTO
+ *   date : 2023/11/16
+ * */
 @ToString
 @Getter
 @NoArgsConstructor

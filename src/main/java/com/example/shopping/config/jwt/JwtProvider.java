@@ -9,6 +9,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -17,6 +18,13 @@ import javax.xml.bind.DatatypeConverter;
 import java.security.Key;
 import java.util.*;
 import java.util.stream.Collectors;
+
+/*
+ *   writer : YuYoHan
+ *   work :
+ *          토큰을 생성하는 역할을 가지고 있습니다.
+ *   date : 2023/11/15
+ * */
 
 // PrincipalDetails 정보를 가지고 토큰을 만들어준다.
 @Log4j2
@@ -52,6 +60,7 @@ public class JwtProvider {
         // role in JwtProvider : ROLE_USER
         log.info("memberRole in JwtProvider : " + authorities);
 
+
         // 권한 가져오기
         // authentication객체에서 권한 정보(GrantedAuthority)를 가져와 문자열로 변환
         Map<String, Object> claims = new HashMap<>();
@@ -60,6 +69,7 @@ public class JwtProvider {
                 .collect(Collectors.toList()));
         // 클레임에 "sub"라는 key로 등록해줌
         claims.put("sub", authentication.getName());
+
 
         // claims in JwtProvider : {auth=[ROLE_USER]}
         log.info("claims in JwtProvider : " + claims);

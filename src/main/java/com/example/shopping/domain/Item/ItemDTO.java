@@ -1,6 +1,7 @@
 package com.example.shopping.domain.Item;
 
 import com.example.shopping.domain.board.BoardDTO;
+import com.example.shopping.entity.Container.ContainerEntity;
 import com.example.shopping.entity.board.BoardEntity;
 import com.example.shopping.entity.item.ItemEntity;
 import com.example.shopping.entity.item.ItemImgEntity;
@@ -15,7 +16,12 @@ import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
+/*
+ *   writer : 유요한, 오현진
+ *   work :
+ *          상품에 대한 정보를 담은 ResponseDTO
+ *   date : 2023/12/06
+ * */
 @ToString
 @Getter
 @NoArgsConstructor
@@ -128,15 +134,15 @@ public class ItemDTO {
                 .itemId(item.getItemId())
                 .itemName(item.getItemName())
                 .price(item.getPrice())
+                .stockNumber(item.getStockNumber())
                 .itemDetail(item.getItemDetail())
                 .itemSellStatus(item.getItemSellStatus())
                 .regTime(item.getRegTime())
-                .sellPlace(item.getItemPlace())
-                .stockNumber(item.getStockNumber())
+                .sellPlace(item.getItemPlace().getContainerName() + "/" + item.getItemPlace().getContainerAddr())
                 .itemReserver(item.getItemReserver())
                 .itemRamount(item.getItemRamount())
-                .itemImgList(itemImgDTOList)
                 .itemSeller(item.getItemSeller())
+                .itemImgList(itemImgDTOList)
                 .boardDTOList(boardDTOS)
                 .build();
     }
@@ -146,11 +152,16 @@ public class ItemDTO {
     }
 
     public ItemEntity toEntity(){
+        String[] splitPlace = this.sellPlace.split("/");
+
         return  ItemEntity.builder()
                 .itemId(this.itemId)
                 .itemDetail(this.itemDetail)
                 .itemName(this.itemName)
-                .itemPlace(this.sellPlace)
+                .itemPlace(ContainerEntity.builder()
+                        .containerName(splitPlace[0])
+                        .containerAddr(splitPlace[1])
+                        .build())
                 .itemRamount(this.itemRamount)
                 .itemReserver(this.itemReserver)
                 .itemSellStatus(this.itemSellStatus)
@@ -160,7 +171,7 @@ public class ItemDTO {
                 .build();
     }
 
-    public void setSellPlace(String place){
-        this.sellPlace = place;
+    public void setSellPlace(String placeName, String placeAddr){
+        this.sellPlace = placeName + "/"+ placeAddr;
     }
 }

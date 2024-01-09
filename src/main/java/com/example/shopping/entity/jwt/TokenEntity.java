@@ -7,9 +7,13 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
 import java.util.Date;
-
+/*
+ *   writer : 유요한
+ *   work :
+ *          JWT 엔티티
+ *   date : 2023/11/15
+ * */
 @Entity(name = "token")
 @Table
 @NoArgsConstructor

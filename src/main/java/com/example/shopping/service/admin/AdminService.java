@@ -5,16 +5,19 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
-
+/*
+ *   writer : 유요한
+ *   work :
+ *          관리자 서비스
+ *          이렇게 인터페이스를 만들고 상속해주는 방식을 선택한 이유는
+ *          메소드에 의존하지 않고 필요한 기능만 사용할 수 있게 하고 가독성과 유지보수성을 높이기 위해서 입니다.
+ *   date : 2023/10/13
+ * */
 public interface AdminService {
     // 상품 삭제
     String removeItem(Long itemId, UserDetails userDetails);
     // 게시글 삭제
     String removeBoard(Long boardId, UserDetails userDetails);
-    // 상품 관리
-//    Page<ItemDTO> superitendItem(Pageable pageable, UserDetails userDetails, ItemSellStatus itemSellStatus);
-//    // 상품 보기
-//    ResponseEntity<ItemDTO> getItem(Long itemId, UserDetails userDetails);
     // 문의글 전체 보기
     Page<BoardDTO> getAllBoards(Pageable pageable, String searchKeyword, UserDetails userDetails);
     // 작성자의 문의글 보기

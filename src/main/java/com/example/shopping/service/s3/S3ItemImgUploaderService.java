@@ -16,7 +16,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.*;
-
+/*
+ *   writer : 유요한
+ *   work :
+ *          S3 이미지 등록, 삭제 서비스
+ *          이렇게 인터페이스를 만들고 상속해주는 방식을 선택한 이유는
+ *          메소드에 의존하지 않고 필요한 기능만 사용할 수 있게 하고 가독성과 유지보수성을 높이기 위해서 입니다.
+ *   date : 2023/10/22
+ * */
 @Log4j2
 @RequiredArgsConstructor
 @Service

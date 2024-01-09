@@ -9,7 +9,12 @@ import lombok.ToString;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.*;
-
+/*
+ *   writer : 유요한, 오현진
+ *   work :
+ *          상품을 업데이트할 때 사용하는 RequestDTO
+ *   date : 2023/12/07
+ * */
 @Getter
 @NoArgsConstructor
 @ToString
@@ -30,10 +35,6 @@ public class UpdateItemDTO {
     @NotNull(message = "재고 수량은 필수 입력입니다.")
     private int stockNumber;    // 재고수량
 
-    @Schema(description = "판매지역")
-    @NotNull(message = "판매지역을 입력해야 합니다.")
-    private String sellPlace;
-
     @NotNull(message = "남길 이미지를 입력해주셔야 합니다. 공백으로라도 보내주세요.")
     @Schema(description = "남길 이미지id")
     private List<Long> remainImgId;
@@ -47,19 +48,13 @@ public class UpdateItemDTO {
                          int price,
                          String itemDetail,
                          int stockNumber,
-                         String sellPlace,
                          List<Long> delImgId,
                          Long itemSeller) {
         this.itemName = itemName;
         this.price = price;
         this.itemDetail = itemDetail;
         this.stockNumber = stockNumber;
-        this.sellPlace = sellPlace;
         this.remainImgId = delImgId;
         this.itemSeller = itemSeller;
-    }
-
-    public void setSellPlace(String place) {
-        this.sellPlace = place;
     }
 }

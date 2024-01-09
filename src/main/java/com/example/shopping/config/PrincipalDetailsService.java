@@ -9,7 +9,12 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-// 이 클래스의 기능은 로그인시 회원을 조회하고 찾아서 PrincipalDetails에 넘겨준다.
+/*
+ *   writer : YuYoHan
+ *   work :
+ *          이 클래스의 기능은 로그인시 회원을 조회하고 찾아서 PrincipalDetails에 넘겨준다.
+ *   date : 2023/10/04
+ * */
 @Service
 @Log4j2
 @RequiredArgsConstructor

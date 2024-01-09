@@ -1,20 +1,19 @@
 package com.example.shopping.service.item;
 
 import com.example.shopping.domain.Item.*;
-import com.example.shopping.domain.board.BoardDTO;
-import com.example.shopping.domain.board.BoardSecret;
 import com.example.shopping.domain.cart.CartItemDTO;
-import com.example.shopping.domain.container.ContainerDTO;
+import com.example.shopping.domain.container.ItemContainerDTO;
 import com.example.shopping.entity.Container.ContainerEntity;
-import com.example.shopping.entity.board.BoardEntity;
+import com.example.shopping.entity.Container.ItemContainerEntity;
 import com.example.shopping.entity.item.ItemEntity;
 import com.example.shopping.entity.item.ItemImgEntity;
 import com.example.shopping.entity.member.MemberEntity;
 import com.example.shopping.exception.item.ItemException;
 import com.example.shopping.exception.member.UserException;
 import com.example.shopping.repository.cart.CartItemRepository;
-import com.example.shopping.repository.container.ContainerRepository;
+import com.example.shopping.repository.container.ItemContainerRepository;
 import com.example.shopping.repository.item.ItemImgRepository;
+import com.example.shopping.repository.item.ItemQuerydslRepository;
 import com.example.shopping.repository.item.ItemRepository;
 import com.example.shopping.repository.member.MemberRepository;
 import com.example.shopping.service.s3.S3ItemImgUploaderService;
@@ -26,11 +25,19 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.EntityNotFoundException;
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
+/*
+ *   writer : 유요한, 오현진
+ *   work :
+ *          상품 서비스
+ *          - 상품 CRUD기능과 상품의 판매지역을 가져올 수 있고 조건에 맞춰서 검색할 수 있습니다.
+ *          이렇게 인터페이스를 만들고 상속해주는 방식을 선택한 이유는
+ *          메소드에 의존하지 않고 필요한 기능만 사용할 수 있게 하고 가독성과 유지보수성을 높이기 위해서 입니다.
+ *   date : 2024/01/09
+ * */
 @RequiredArgsConstructor
 @Service
 @Log4j2
@@ -40,51 +47,49 @@ public class ItemServiceImpl implements ItemService {
     private final ItemImgRepository itemImgRepository;
     private final S3ItemImgUploaderService s3ItemImgUploaderService;
     private final CartItemRepository cartItemRepository;
-    private final ContainerRepository containerRepository;
+    private final ItemContainerRepository itemContainerRepository;
+    private final ItemQuerydslRepository itemQuerydslRepository;
 
     // 상품 등록 메소드
     @Override
     @Transactional
-    public ItemDTO saveItem(ItemDTO itemDTO,
+    public ItemDTO saveItem(CreateItemDTO item,
                             List<MultipartFile> itemFiles,
                             String memberEmail) throws Exception {
+        // 유저 조회
         MemberEntity findUser = memberRepository.findByEmail(memberEmail);
 
         if (findUser != null) {
+            ItemDTO itemInfo = ItemDTO.builder()
+                    .itemName(item.getItemName())
+                    .price(item.getPrice())
+                    .itemDetail(item.getItemDetail())
+                    .stockNumber(item.getStockNumber())
+                    .sellPlace(item.getSellPlace().getContainerName()
+                            + "/" + item.getSellPlace().getContainerAddr())
+                    .itemSellStatus(ItemSellStatus.SELL)
+                    .itemReserver(null)
+                    .itemRamount(0)
+                    .itemSeller(findUser.getMemberId())
+                    .build();
 
-            ContainerEntity container = containerRepository.findById(Long.parseLong(itemDTO.getSellPlace())).orElseThrow();
+            // DTO를 엔티티로 변환
+            ItemEntity itemEntity = ItemEntity.saveEntity(itemInfo, item);
 
-            itemDTO.setSellPlace(container.getContainerName());
-            // 상품 등록
-            ItemEntity item = ItemEntity.fromUpdateItemDTO(findUser.getMemberId(), itemDTO);
-
-            if (itemFiles.size() != 0) {
-                //업로드할 이미지가 없다면 업로드 안하기 위한 로직
-                if ((itemFiles.get(0)).getSize() != 0) {
-                    // S3에 업로드
-                    List<ItemImgDTO> productImg = s3ItemImgUploaderService.upload("product", itemFiles);
-
-                    for (int i = 0; i < productImg.size(); i++) {
-                        ItemImgDTO itemImgDTO = productImg.get(i);
-                        ItemImgEntity imgEntity = ItemImgEntity.builder()
-                                .oriImgName(itemImgDTO.getOriImgName())
-                                .uploadImgPath(itemImgDTO.getUploadImgPath())
-                                .uploadImgUrl(itemImgDTO.getUploadImgUrl())
-                                .uploadImgName(itemImgDTO.getUploadImgName())
-                                .item(item)
-                                .repImgYn(i == 0 ? "Y" : "N")
-                                .build();
-
-                        item.addItemImgList(imgEntity);
-                    }
-                }
+            if (!itemFiles.isEmpty()) {
+                // S3에 업로드
+                List<ItemImgDTO> productImg = s3ItemImgUploaderService.upload("product", itemFiles);
+                ItemImgEntity itemImg = ItemImgEntity.toEntity(productImg, itemEntity);
+                // ItemEntity에 있는 이미지 리스트에 추가
+                itemEntity.addItemImgList(itemImg);
             }
+            // container안에 저장해서 테이블로 관리하기 위해서 저장
+            ItemContainerEntity saveContainer = ItemContainerEntity.saveContainer(itemEntity);
+            itemContainerRepository.save(saveContainer);
 
             //Cascade특징을 활용하여 ItemRepository.save만 진행해도 ItemImg도 같이 인서트됨
-            ItemEntity savedItem = itemRepository.save(item);
-            ItemDTO toItemDTO = ItemDTO.toItemDTO(savedItem);
-            toItemDTO.setMemberNickName(findUser.getNickName());
-            return toItemDTO;
+            ItemEntity savedItem = itemRepository.save(itemEntity);
+            return ItemDTO.toItemDTO(savedItem);
         } else {
             throw new UserException("회원이 없습니다.");
         }
@@ -102,21 +107,15 @@ public class ItemServiceImpl implements ItemService {
                     .orElseThrow(EntityNotFoundException::new);
 
             ItemDTO itemDTO = ItemDTO.toItemDTO(findItem);
-            itemDTO.setMemberNickName(
-                    memberRepository.findById(itemDTO.getItemSeller())
-                            .orElseThrow(EntityNotFoundException::new)
-                            .getNickName());
-
-            ContainerEntity container = containerRepository.findByContainerName(itemDTO.getSellPlace());
-            if(container == null){
-                itemDTO.setSellPlace("폐점된 지점");
+            // 상품 컨테이너 조회
+            ContainerEntity container =
+                    itemContainerRepository.findByContainerName(findItem.getItemPlace().getContainerName());
+            if (container == null) {
+                itemDTO.setSellPlace("폐점된 지점", null);
+            } else {
+                itemDTO.setSellPlace(container.getContainerName(), container.getContainerAddr());
             }
-            else{
-                itemDTO.setSellPlace(container.getContainerName() + "/" + container.getContainerAddr());
-            }
-
             return itemDTO;
-
         } catch (EntityNotFoundException e) {
             throw new ItemException("상품이 없습니다. {}, " + e.getMessage());
         }
@@ -129,200 +128,92 @@ public class ItemServiceImpl implements ItemService {
                               UpdateItemDTO itemDTO,
                               List<MultipartFile> itemFiles,
                               String memberEmail,
-                              String role) throws Exception {
+                              String role) {
         try {
+            // 상품 조회
             ItemEntity findItem = itemRepository.findById(itemId)
                     .orElseThrow(EntityNotFoundException::new);
             log.info("item : " + findItem);
+            // 유저 조회
             MemberEntity findMember = memberRepository.findByEmail(memberEmail);
             log.info("member : " + findMember);
-            MemberEntity sellMember = memberRepository.findById(itemDTO.getItemSeller()).orElseThrow();
+            // 이미지 조회
+            List<ItemImgEntity> itemImgs = itemImgRepository.findByItemItemId(itemId);
 
-            ContainerEntity container = containerRepository.findById(Long.parseLong(itemDTO.getSellPlace())).orElseThrow();
-
-            itemDTO.setSellPlace(container.getContainerName());
-
-            // 상품 엔티티에 있는 List로 된 이미지들을 가져오기
-            List<ItemImgEntity> itemImgList = findItem.getItemImgList();
-            List<BoardEntity> boardEntityList = findItem.getBoardEntityList();
-
-            // 로그인한 본인 그리고 관리자의 경우는 수정가능
-            if (findMember.getMemberId().equals(findItem.getItemSeller())
-                    || (role.equals("ROLE_ADMIN") && (findItem.getItemSeller().equals(sellMember.getMemberId())))) {
+            if (role.equals("ROLE_ADMIN")) {
                 // 상품 정보 수정
-                findItem = ItemEntity.builder()
-                        .itemId(findItem.getItemId())
-                        .itemName(itemDTO.getItemName())
-                        .itemDetail(itemDTO.getItemDetail())
-                        .itemPlace(itemDTO.getSellPlace())
-                        .itemSellStatus(findItem.getItemSellStatus())
-                        .stockNumber(itemDTO.getStockNumber())
-                        .price(itemDTO.getPrice())
-                        //관리자로 수정작업 시, UpdateItemDTO의 itemSeller
-                        //본인이 수정작업 시, userDetails의 email로 id조회
-                        .itemSeller(role.equals("ROLE_ADMIN") ? sellMember.getMemberId() : findMember.getMemberId())
-                        .itemRamount(findItem.getItemRamount())
-                        .itemReserver(findItem.getItemReserver() == null ? null : findItem.getItemReserver())
-                        .itemImgList(itemImgList)
-                        .boardEntityList(boardEntityList)
-                        .build();
+                findItem.updateItem(itemDTO, itemDTO.getItemSeller());
+                // 남겨줄 이미지id를 받지 못한다는 것은 전부 삭제한다는 의미이니
+                // 삭제처리
+                removeAllImg(itemDTO, itemImgs, findItem);
 
-                //삭제할 이미지가 있다면 이미지만 삭제 - 삭제를 먼저해야 대표이미지가 없을 때 남은 것 중 대표이미지 셋팅가능
-                //삭제 이미지 id받아오기에서 남아있는 이미지 id받아오기로 바뀌어서 해당 작업 추가
-                List<ItemImgEntity> itemImgs = itemImgRepository.findByItemItemId(itemId);
-                List<Long> itemImgIds = new ArrayList<>();
-                if (itemImgs != null && itemImgs.size() != 0) {
-                    //기존 이미지들 확인후
-                    for (ItemImgEntity imgId : itemImgs) {
-                        itemImgIds.add(imgId.getItemImgId());
-                    }
-
-                    if (itemDTO.getRemainImgId() != null) {
-                        //남기는 이미지 제외 - 삭제할 이미지 아이디 추출과정
-                        for (Long imgId : itemDTO.getRemainImgId()) {
-                            itemImgIds.remove(imgId);
-                        }
-                    }
-                }
-                for (Long imgId : itemImgIds) {
-                    ItemImgEntity itemImg = itemImgRepository.findById(imgId).orElseThrow(EntityNotFoundException::new);
-                    findItem.deleteItemImgList(itemImg);
-                    String result = s3ItemImgUploaderService.deleteFile(itemImg.getUploadImgPath(), itemImg.getUploadImgName());
-                }
-                if (itemFiles.size() != 0) {
-                    //추가 업로드 할 이미지가 있다면 업로드
-                    if ((itemFiles.get(0)).getSize() != 0) {
-                        List<ItemImgDTO> products = s3ItemImgUploaderService.upload("product", itemFiles);
-
-                        itemImgList = findItem.getItemImgList();
-
-                        //기존 이미지가 없다면 첫 번째 추가 이미지를 대표이미지로 설정
-                        if (itemImgList.isEmpty()) {
-                            for (int i = 0; i < products.size(); i++) {
-                                ItemImgDTO itemImgDTO = products.get(i);
-                                ItemImgEntity imgEntity = ItemImgEntity.builder()
-                                        .oriImgName(itemImgDTO.getOriImgName())
-                                        .uploadImgName(itemImgDTO.getUploadImgName())
-                                        .uploadImgPath(itemImgDTO.getUploadImgPath())
-                                        .uploadImgUrl(itemImgDTO.getUploadImgUrl())
-                                        .repImgYn(i == 0 ? "Y" : "N")
-                                        .item(findItem)
-                                        .build();
-
-                                findItem.addItemImgList(imgEntity);
-                            }
-                        }
-                        //기존 이미지가 있다면 추가할 이미지들의 대표이미지여부는 N
-                        else {
-                            //기존 이미지 중에 대표이미지여부가 Y인 것이 있는지 확인 후
-                            if (itemImgList.stream().filter(img -> img.getRepImgYn().equals("Y")).count() == 0) {
-                                //하나도 없다면 첫번째 이미지의 대표이미지 플래그값 수정
-                                itemImgList.get(0).changeRepImgY();
-                            }
-
-                            for (int i = 0; i < products.size(); i++) {
-                                ItemImgDTO itemImgDTO = products.get(i);
-                                ItemImgEntity imgEntity = ItemImgEntity.builder()
-                                        .oriImgName(itemImgDTO.getOriImgName())
-                                        .uploadImgPath(itemImgDTO.getUploadImgPath())
-                                        .uploadImgUrl(itemImgDTO.getUploadImgUrl())
-                                        .uploadImgName(itemImgDTO.getUploadImgName())
-                                        .repImgYn("N")
-                                        .item(findItem)
-                                        .build();
-
-                                findItem.addItemImgList(imgEntity);
-                            }
-                        }
-                    }
-                }
-
-                ItemEntity saveItem = itemRepository.save(findItem);
-                ItemDTO toItemDTO = ItemDTO.toItemDTO(saveItem);
-                toItemDTO.setMemberNickName(role.equals("ROLE_ADMIN") ? sellMember.getNickName() : findMember.getNickName());
-                return toItemDTO;
-
+                // 이미지가 있으면 남겨줄 이미지id를 받고 남겨주고 나머지는 삭제
+                // 남겨줄id와 상품 엔티티의 이미지리스트 id를 비교해서 맞지않으면 삭제
+                removeImg(itemDTO, itemImgs, findItem);
+                // 수정시 추가로 이미지를 넣으려고 하면 s3에 저장하고 엔티티로 변경 후
+                // 상품 엔티티의 이미지 리스트에 넣고 썸네일 작업을 해줍니다.
+                saveImg(itemFiles, findItem);
+                ItemEntity updateItem = itemRepository.save(findItem);
+                ItemDTO returnItem = ItemDTO.toItemDTO(updateItem);
+                log.info("업데이트 상품 : " + returnItem);
+                return returnItem;
             } else {
-                throw new UserException("로그인한 아이디가 상품을 등록한 본인이 아니거나\n관리자로 로그인 하셨을 경우 itemSeller와 상품등록자가 달라 수정작업을 진행할 수 없습니다.");
+                throw new UserException("관리자가 아니라 수정작업을 진행할 수 없습니다.");
             }
-        } catch (UserException e) {
-            throw e;
         } catch (Exception e) {
             throw new ItemException("상품 수정하는 작업을 실패했습니다.\n" + e.getMessage());
         }
     }
 
-    // 이미지 삭제
-    @Override
-    @Transactional
-    public String removeImg(Long itemId, Long itemImgId, String memberEmail) {
-        try {
-            // 이미지 조회
-            ItemImgEntity imgEntity = itemImgRepository.findById(itemImgId)
-                    .orElseThrow(EntityNotFoundException::new);
-            // 회원 조회
-            MemberEntity findUser = memberRepository.findByEmail(memberEmail);
-            // 상품 조회
-            ItemEntity findItem = itemRepository.findById(itemId)
-                    .orElseThrow(EntityNotFoundException::new);
-
-            String uploadFilePath = imgEntity.getUploadImgPath();
-            String uuidFileName = imgEntity.getUploadImgName();
-
-            // 이미지 엔티티에 있는 Item엔티티에 담겨있는 id와 조회한 Item엔티티 id와 일치하면 true
-            if (imgEntity.getItem().getItemId().equals(findItem.getItemId())) {
-                // SellerId와 MemberId 일치 시 true
-                if (findItem.getItemSeller().equals(findUser.getMemberId())) {
-                    itemImgRepository.deleteById(imgEntity.getItemImgId());
-                    String result = s3ItemImgUploaderService.deleteFile(uploadFilePath, uuidFileName);
-                    log.info("result : " + result);
-
-                    // 상품 번호로 담겨져있는 이미지 불러옴
-                    List<ItemImgEntity> findItemIdImgList = itemImgRepository.findByItemItemId(itemId);
-
-                    if (!findItemIdImgList.isEmpty()) {
-                        for (int i = 0; i < findItemIdImgList.size(); i++) {
-                            ItemImgEntity itemImgEntity = findItemIdImgList.get(i);
-                            ItemImgEntity itemImg = ItemImgEntity.builder()
-                                    .itemImgId(itemImgEntity.getItemImgId())
-                                    .oriImgName(itemImgEntity.getOriImgName())
-                                    .uploadImgPath(itemImgEntity.getUploadImgPath())
-                                    .uploadImgUrl(itemImgEntity.getUploadImgUrl())
-                                    .uploadImgName(itemImgEntity.getUploadImgName())
-                                    .repImgYn(i == 0 ? "Y" : "N")
-                                    .item(findItem)
-                                    .build();
-                            ItemImgEntity saveImg = itemImgRepository.save(itemImg);
-                            log.info("img : " + saveImg);
-                            findItemIdImgList.add(saveImg);
-                        }
-                    } else {
-                        // 모든 이미지를 삭제했으므로 상품의 이미지 목록을 비웁니다.
-                        findItemIdImgList = new ArrayList<>();
-                    }
-                    findItem = ItemEntity.builder()
-                            .itemId(findItem.getItemId())
-                            .itemName(findItem.getItemName())
-                            .itemDetail(findItem.getItemDetail())
-                            .itemPlace(findItem.getItemPlace())
-                            .stockNumber(findItem.getStockNumber())
-                            .price(findItem.getPrice())
-                            .itemImgList(findItemIdImgList)
-                            .build();
-                    ItemEntity saveItem = itemRepository.save(findItem);
-                    log.info("item : " + saveItem);
-                    return result;
-                }
-            } else {
-                throw new UserException("상품을 등록한 본인이 아닙니다.");
-            }
-        } catch (UserException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new ItemException("상품 삭제에 실패했습니다.");
+    private void removeAllImg(UpdateItemDTO itemDTO, List<ItemImgEntity> itemImgs, ItemEntity findItem) {
+        // 남겨줄 이미지가 존재하지 않으면 모두 삭제이니
+        if (itemDTO.getRemainImgId().isEmpty()) {
+            // 조회한 이미지를 이용해서 s3 삭제
+            itemImgs.forEach(itemimg ->
+                    s3ItemImgUploaderService.deleteFile(
+                            itemimg.getUploadImgPath(),
+                            itemimg.getUploadImgName()));
+            // 전부 삭제해줄것이니 해당 상품의 이미지 리스트를 삭제
+            findItem.getItemImgList().removeAll(itemImgs);
         }
+    }
 
-        return "상품삭제에 성공하였습니다.";
+    private void removeImg(UpdateItemDTO itemDTO, List<ItemImgEntity> itemImgs, ItemEntity findItem) {
+        // 상품에 이미지가 이미지가 비어 있지 않으면 true
+        if (!itemImgs.isEmpty()) {
+            // 남겨줄 이미지id를 넘겨받으면
+            if (!itemDTO.getRemainImgId().isEmpty()) {
+                // itemDTO.getRemainImgId()에 포함되지 않은
+                // 상품 이미지id를 가진 이미지만이 필터링되어 삭제됩니다.
+                findItem.getItemImgList().stream()
+                        .filter(img -> !itemDTO.getRemainImgId().contains(img.getItemImgId()))
+                        .forEach(img -> s3ItemImgUploaderService.deleteFile(img.getUploadImgPath(), img.getUploadImgName()));
+
+                // 넘겨받은 이미지id를 리스트에서 유지하고 나머지를 삭제해줍니다.
+                findItem.remainImgId(itemDTO.getRemainImgId());
+            }
+        }
+    }
+
+    private void saveImg(List<MultipartFile> itemFiles, ItemEntity findItem) throws IOException {
+        // 추가로 저장할 이미지가 있을 경우
+        if (!itemFiles.isEmpty()) {
+            // s3에 저장
+            List<ItemImgDTO> products = s3ItemImgUploaderService.upload("product", itemFiles);
+            // 리스트 이미지 DTO를 리스트 엔티티 이미지로 변경
+            ItemImgEntity itemImg = ItemImgEntity.toEntity(products, findItem);
+            // 상품의 이미지 리스트에 넣기
+            findItem.addItemImgList(itemImg);
+            // 추가로 넣은 것과 기존의 것을 합쳤을 때 첫번째인 것을 썸네일로 처리하기 위해서
+            for (int i = 0; i < findItem.getItemImgList().size(); i++) {
+                ItemImgEntity itemImgEntity = findItem.getItemImgList().get(i);
+                if (i == 0) {
+                    itemImgEntity.changeRepImgY();
+                } else {
+                    itemImgEntity.changeRepImgN();
+                }
+            }
+        }
     }
 
     // 상품 삭제
@@ -342,13 +233,11 @@ public class ItemServiceImpl implements ItemService {
             // 이미지 조회
             List<ItemImgEntity> findImg = itemImgRepository.findByItemItemId(itemId);
             // 회원 조회
-            MemberEntity findUser = memberRepository.findByEmail(memberEmail);
             MemberEntity sellUser = memberRepository.findById(sellerId).orElseThrow();
 
-            if (findUser.getMemberId().equals(findItem.getItemSeller())
-                    || (role.equals("ROLE_ADMIN") && sellUser.getMemberId().equals(findItem.getItemSeller()))) {
+            if (role.equals("ROLE_ADMIN") && sellUser.getMemberId().equals(findItem.getItemSeller())) {
 
-                //item을 참조하고 있는 자식Entity값 null셋팅
+                // item을 참조하고 있는 자식Entity값 null셋팅
                 List<CartItemDTO> items = cartItemRepository.findByItemId(itemId);
 
                 for (CartItemDTO item : items) {
@@ -366,123 +255,54 @@ public class ItemServiceImpl implements ItemService {
                     String result = s3ItemImgUploaderService.deleteFile(uploadFilePath, uuidFileName);
                     log.info(result);
                 }
-            } else {
-                throw new UserException("로그인한 아이디가 상품을 등록한 본인이 아니거나\n관리자로 로그인 하셨을 경우 itemSeller와 상품등록자가 달라 삭제작업을 진행할 수 없습니다.");
             }
-        } catch (ItemException e) {
-            throw e;
-        } catch (UserException userException) {
-            throw userException;
         } catch (Exception ignored) {
             throw new ItemException("상품 삭제에 실패하였습니다.\n" + ignored.getMessage());
         }
-
         return "상품과 이미지를 삭제했습니다.";
     }
 
-    // 전체 상품 보여주기
-    @Transactional(readOnly = true)
-    @Override
-    public Page<ItemDTO> getItems(Pageable pageable) {
-        Page<ItemEntity> allItem = itemRepository.findAll(pageable);
-        // 각 아이템 엔티티를 ItemDTO로 변환합니다.
-        // 이 변환은 ItemDTO::toItemDTO 메서드를 사용하여 수행됩니다.
-        Page<ItemDTO> allItemDTO = allItem.map(ItemDTO::toItemDTO);
-        for (ItemDTO item : allItemDTO) {
-            item.setMemberNickName(memberRepository.findById(item.getItemSeller()).orElseThrow().getNickName());
-        }
 
-        return allItemDTO;
-    }
 
-    // 검색
-    @Transactional(readOnly = true)
-    @Override
-    public Page<ItemDTO> getSearchItems(Pageable pageable,
-                                        String searchKeyword) {
-        Page<ItemEntity> searchItems = itemRepository.findByItemNameContaining(pageable, searchKeyword);
-        return searchItems.map(ItemDTO::toItemDTO);
-    }
-
+    // 상품의 판매지역을 보여줍니다.
     @Override
     @Transactional(readOnly = true)
-    public List<ContainerDTO> getSellPlaceList() {
-        return containerRepository.findAll().stream()
-                                    .map(ContainerDTO::from).collect(Collectors.toList());
+    public List<ItemContainerDTO> getSellPlaceList() {
+        // 반환값이 컬렉션이기 때문에 .stream().map()을 사용합니다.
+        return itemContainerRepository.findAll()
+                        .stream()
+                        .map(ItemContainerDTO::from)
+                        .collect(Collectors.toList());
     }
 
     // 상품 검색 - 여러 조건으로 검색하기
     @Transactional(readOnly = true)
-    public Page<ItemDTO> searchItemsConditions(Pageable pageable,
-                                               String name,
-                                               String detail,
-                                               Long startP,
-                                               Long endP,
-                                               String place,
-                                               String reserver,
-                                               ItemSellStatus status) {
-        //Pageable 값 셋팅 - List to Page
-        Pageable pageRequest =
-                createPageRequestUsing(pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
-
+    @Override
+    public Page<ItemDTO> searchItemsConditions(Pageable pageable, ItemSearchCondition condition) {
         try {
-            if (name == null || name.isEmpty()) name = null;
-            else name = "%" + name + "%";
+            Page<ItemEntity> findItemConditions = itemQuerydslRepository.itemSearch(condition, pageable);
+            log.info("items : {}", findItemConditions.getContent());
 
-            if (detail == null || detail.isEmpty()) detail = null;
-            else detail = "%" + detail + "%";
-
-            if (Optional.ofNullable(startP).isEmpty()) startP = null;
-            if (Optional.ofNullable(endP).isEmpty()) endP = null;
-
-            if (place == null || place.isEmpty()) place = null;
-            else place = "%" + place + "%";
-
-            if (reserver == null || reserver.isEmpty()) reserver = null;
-            else reserver = reserver;
-
-            String statusString = "";
-            if (status == null) statusString = "%";
-            else statusString = status.toString();
-
-            List<ItemDTO> items =
-                    itemRepository.findByConditions(name, detail, startP, endP, place, reserver, statusString)
-                            .stream()
-                            .map(ItemDTO::toItemDTO)
-                            .collect(Collectors.toList());
-
-            if (items.isEmpty()) {
+            if (findItemConditions.isEmpty()) {
                 throw new EntityNotFoundException("조건에 만족하는 상품이 없습니다.");
             }
 
-            for (ItemDTO item : items) {
-                item.setMemberNickName(memberRepository.findById(
-                        item.getItemSeller())
-                        .orElseThrow()
-                        .getNickName());
+            Page<ItemDTO> pageItem = findItemConditions.map(ItemDTO::toItemDTO);
 
-                ContainerEntity container = containerRepository.findByContainerName(item.getSellPlace());
-                if(container == null){
-                    item.setSellPlace("폐점된 지점");
+            pageItem.forEach(status -> {
+                String[] split = status.getSellPlace().split("/");
+                ContainerEntity container = itemContainerRepository.findByContainerName(split[0]);
+                if(container == null) {
+                    status.setSellPlace("폐점된 지점", null);
+                } else {
+                    status.setSellPlace(container.getContainerName(), container.getContainerAddr());
                 }
-                else{
-                    item.setSellPlace(container.getContainerName() + "/" + container.getContainerAddr());
-                }
-            }
-
-            int start = (int) pageRequest.getOffset();
-            int end = Math.min((start + pageRequest.getPageSize()), items.size());
-
-            List<ItemDTO> subItems = items.subList(start, end);
-            return new PageImpl<>(subItems, pageRequest, items.size());
-        } catch (EntityNotFoundException e) {
-            throw e;
+            });
+            return pageItem;
         } catch (Exception e) {
+            log.error("error : " + e.getMessage());
             throw new EntityNotFoundException("상품 조회에 실패하였습니다.\n" + e.getMessage());
         }
     }
 
-    private Pageable createPageRequestUsing(int page, int size, Sort sort) {
-        return PageRequest.of(page, size, sort);
-    }
 }

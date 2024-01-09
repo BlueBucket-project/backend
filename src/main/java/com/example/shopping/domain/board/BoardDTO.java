@@ -14,7 +14,12 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
+/*
+ *   writer : YuYoHan
+ *   work :
+ *          게시글을 필요한 값을 리턴해줍니다.
+ *   date : 2023/11/23
+ * */
 @Getter
 @ToString
 @NoArgsConstructor

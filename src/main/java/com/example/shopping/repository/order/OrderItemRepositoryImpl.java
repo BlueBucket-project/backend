@@ -5,14 +5,18 @@ import com.example.shopping.domain.order.OrderItemDTO;
 import com.example.shopping.entity.order.OrderItemEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.repository.query.JpaQueryMethodFactory;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityNotFoundException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
+/*
+ *   writer : 오현진
+ *   work :
+ *          주문 상품 레포지토리
+ *          여기서는 조회 후 엔티티 반환이 아니라 DTO로 반환처리 받기 위한 곳입니다.
+ *   date : 2023/11/01
+ * */
 @Repository
 @RequiredArgsConstructor
 

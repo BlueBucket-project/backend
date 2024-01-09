@@ -5,18 +5,22 @@ import com.example.shopping.domain.comment.ModifyCommentDTO;
 import com.example.shopping.entity.Base.BaseEntity;
 import com.example.shopping.entity.board.BoardEntity;
 import com.example.shopping.entity.member.MemberEntity;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
-
+/*
+ *   writer : 유요한
+ *   work :
+ *          주소에 대한 ResponseDTO
+ *   date : 2023/11/01
+ * */
 @Entity(name = "comment")
 @Table
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class CommentEntity extends BaseEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "comment_id")

@@ -20,9 +20,12 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-// 소셜로그인이 성공하면
-// providerId, provider, acessToken, refreshToken, email, memberId, grantType을 JSON으로
-// http body에 담아서 보내준다.
+/*
+ *   writer : YuYoHan
+ *   work :
+ *          소셜 로그인을 성공하면 프론트에게 필요한 정보들을 JSON으로 보내줍니다.
+ *   date : 2023/11/28
+ * */
 @Log4j2
 @RequiredArgsConstructor
 @Component

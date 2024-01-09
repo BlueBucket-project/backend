@@ -1,15 +1,12 @@
 package com.example.shopping.service.comment;
 
-import com.example.shopping.domain.board.ReplyStatus;
 import com.example.shopping.domain.comment.CommentDTO;
 import com.example.shopping.domain.comment.ModifyCommentDTO;
 import com.example.shopping.entity.board.BoardEntity;
 import com.example.shopping.entity.comment.CommentEntity;
-import com.example.shopping.entity.item.ItemEntity;
 import com.example.shopping.entity.member.MemberEntity;
 import com.example.shopping.repository.board.BoardRepository;
 import com.example.shopping.repository.comment.CommentRepository;
-import com.example.shopping.repository.item.ItemRepository;
 import com.example.shopping.repository.member.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -18,9 +15,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
-import java.util.ArrayList;
-import java.util.List;
-
+/*
+ *   writer : 유요한
+ *   work :
+ *          댓글 서비스
+ *          - 댓글의 생성, 삭제, 업데이트 기능이 있습니다.
+ *          이렇게 인터페이스를 만들고 상속해주는 방식을 선택한 이유는
+ *          메소드에 의존하지 않고 필요한 기능만 사용할 수 있게 하고 가독성과 유지보수성을 높이기 위해서 입니다.
+ *   date : 2023/11/16
+ * */
 @Service
 @RequiredArgsConstructor
 @Log4j2
