@@ -161,6 +161,8 @@ public class ItemController {
 
     // 상품의 판매 지역을 반환해줍니다.
     @GetMapping("/sellplace")
+    @Tag(name = "item")
+    @Operation(summary = "상품 판매지역 리스트", description = "모든 상품의 판매지역을 보여주는 API입니다.")
     public ResponseEntity<?> getSellPlaceList() {
 
         return ResponseEntity.ok().body(itemServiceImpl.getSellPlaceList());
