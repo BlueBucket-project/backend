@@ -3,7 +3,9 @@ package com.example.shopping.controller.admin;
 import com.example.shopping.domain.Item.ItemDTO;
 import com.example.shopping.domain.Item.ItemSearchCondition;
 import com.example.shopping.domain.Item.ItemSellStatus;
+import com.example.shopping.domain.admin.CodeDTO;
 import com.example.shopping.domain.board.BoardDTO;
+import com.example.shopping.domain.member.RequestMemberDTO;
 import com.example.shopping.domain.order.OrderDTO;
 import com.example.shopping.domain.order.OrderMainDTO;
 import com.example.shopping.service.admin.AdminServiceImpl;
@@ -22,6 +24,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.EntityNotFoundException;
@@ -36,7 +39,7 @@ import java.util.Map;
  *          관리자가 상품을 삭제, 게시글 삭제, 모든 문의글 볼 수 있고
  *          상품에 대한 문의글, 회원 문의글을 볼 수 있고 예약된 상품을
  *          구매확정시켜 줍니다. 그리고 상품을 조건에 따라 검색할 수 있습니다.
- *   date : 2023/01/06
+ *   date : 2024/01/10
  * */
 
 @RestController
@@ -270,5 +273,51 @@ public class AdminController {
         catch (Exception e){
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    // 관리자 회원가입
+    @PostMapping("")
+    @Tag(name = "admin")
+    @Operation(summary = "관리자 회원가입", description = "관리자 회원가입 API")
+    public ResponseEntity<?> joinAdmin(@Validated @RequestBody RequestMemberDTO admin,
+                                       BindingResult result) {
+        try {
+            // 입력값 검증 예외가 발생하면 예외 메시지를 응답한다.
+            if (result.hasErrors()) {
+                log.info("BindingResult error : " + result.hasErrors());
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result.getClass().getSimpleName());
+            }
+
+            ResponseEntity<?> adminSignUp = adminService.adminSignUp(admin);
+            log.info("결과 : " + adminSignUp);
+            return ResponseEntity.ok().body(adminSignUp);
+        }catch (Exception e) {
+            log.error("예외 : " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+    // 관리자 회원가입시 이메일 인증
+    @PostMapping("/mails")
+    @Tag(name = "admin")
+    @Operation(summary = "관리자 이메일 인증 신청", description = "관리자 이메일 인증 신청 API")
+    public String emailAuthentication(@RequestParam("email") String email) {
+        try {
+            String code = adminService.sendMail(email);
+            log.info("사용자에게 발송한 인증코드 ==> " + code);
+            return "이메일 인증코드가 발급완료";
+        } catch (Exception e) {
+            log.error("예외 : " + e.getMessage());
+            return e.getMessage();
+        }
+    }
+    // 인증 코드 검증
+    @PostMapping("/verifications")
+    @Tag(name = "admin")
+    @Operation(summary = "관리자 이메일 인증 검증", description = "관리자 이메일 인증 검증 API")
+    public ResponseEntity<?> verificationEmail(@RequestBody CodeDTO code) {
+        log.info("코드 : " + code);
+        String result = adminService.verifyCode(code.getCode());
+        log.info("result : " + result);
+        return ResponseEntity.ok().body(result);
     }
 }
