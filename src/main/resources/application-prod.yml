@@ -177,3 +177,11 @@ management:
         include: "*"
     health:
       show-details: always
+---
+#multipart upload파일 용량설정
+#default : 1MB
+spring:
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
