@@ -1,22 +1,25 @@
 package com.example.shopping.entity.member;
 
+import com.example.shopping.domain.member.ModifyMemberDTO;
 import com.example.shopping.domain.member.Role;
 import com.example.shopping.entity.Base.BaseTimeEntity;
 import lombok.*;
 
 import javax.persistence.*;
+
 /*
  *   writer : 유요한
  *   work :
  *          유저 엔티티
- *   date : 2023/11/15
+ *   date : 2024/01/10
  * */
 @Entity(name = "member")
 @Getter
 @ToString
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class MemberEntity extends BaseTimeEntity {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "member_id", nullable = false)
     private Long memberId;
 
@@ -67,7 +70,30 @@ public class MemberEntity extends BaseTimeEntity {
         this.memberPoint = memberPoint;
     }
 
-    public void addPoint(int point){
+    public void updateMember(ModifyMemberDTO updateMember, String encodePw) {
+        MemberEntity.builder()
+                .memberId(this.memberId)
+                .email(this.email)
+                .memberPw(updateMember.getMemberPw() == null
+                        ? this.memberPw
+                        : encodePw)
+                .nickName(updateMember.getNickName() == null
+                ? this.getNickName() : updateMember.getNickName())
+                .memberRole(this.memberRole)
+                .memberPoint(this.memberPoint)
+                .memberName(this.memberName)
+                .address(AddressEntity.builder()
+                        .memberAddr(updateMember.getMemberAddress().getMemberAddr() == null
+                        ? this.address.getMemberAddr() : updateMember.getMemberAddress().getMemberAddr())
+                        .memberAddrDetail(updateMember.getMemberAddress().getMemberAddrDetail() == null
+                        ? this.address.getMemberAddrDetail() : updateMember.getMemberAddress().getMemberAddrDetail())
+                        .memberZipCode(updateMember.getMemberAddress().getMemberZipCode() == null
+                        ? this.address.getMemberZipCode() : updateMember.getMemberAddress().getMemberZipCode())
+                        .build()).build();
+    }
+
+
+    public void addPoint(int point) {
         this.memberPoint += point;
     }
 }
