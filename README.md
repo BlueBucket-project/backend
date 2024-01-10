@@ -195,6 +195,7 @@
 <img src="https://img.shields.io/badge/Gradle-02303A?style=flat-square&logo=Gradle&logoColor=white">
 <img src="https://img.shields.io/badge/JaCoCo-181717?style=flat-square&logo=JaCoCo&logoColor=white"> 
 <img src="https://img.shields.io/badge/Swagger-85EA2D?style=flat-square&logo=Swagger&logoColor=white"> 
+<img src="https://img.shields.io/badge/QueryDsl-blue?style=flat-square&logo=QueryDsl&logoColor=white"> 
 <br/>
 
 #### 배포
