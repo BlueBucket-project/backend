@@ -36,7 +36,7 @@ import java.util.List;
  *          - 유저의 등록, 수정, 삭제, 로그인기능과 이메일 중복체크, 닉네임 중복체크 기능이 있습니다.
  *          이렇게 인터페이스를 만들고 상속해주는 방식을 선택한 이유는
  *          메소드에 의존하지 않고 필요한 기능만 사용할 수 있게 하고 가독성과 유지보수성을 높이기 위해서 입니다.
- *   date : 2023/12/07
+ *   date : 2024/01/10
  * */
 @Service
 @RequiredArgsConstructor
@@ -57,7 +57,6 @@ public class MemberServiceImpl implements MemberService {
         try {
             log.info("email : " + memberDTO.getEmail());
             log.info("nickName : " + memberDTO.getNickName());
-            MemberEntity findEmail = memberRepository.findByEmail(memberDTO.getEmail());
 
             // 이메일 중복 체크
             if (!emailCheck(memberDTO.getEmail())) {
@@ -75,7 +74,7 @@ public class MemberServiceImpl implements MemberService {
                     .memberPw(passwordEncoder.encode(memberDTO.getMemberPw()))
                     .memberName(memberDTO.getMemberName())
                     .nickName(memberDTO.getNickName())
-                    .memberRole(memberDTO.getMemberRole())
+                    .memberRole(Role.USER)
                     .address(AddressEntity.builder()
                             .memberAddr(memberDTO.getMemberAddress().getMemberAddr())
                             .memberAddrDetail(memberDTO.getMemberAddress().getMemberAddrDetail())
@@ -153,15 +152,6 @@ public class MemberServiceImpl implements MemberService {
                         tokenRepository.save(tokenEntity);
                     } else {
                         log.info("이미 발급한 토큰이 있습니다. 토큰을 업데이트합니다.");
-                        token = TokenDTO.builder()
-                                .grantType(token.getGrantType())
-                                .accessToken(token.getAccessToken())
-                                .accessTokenTime(token.getAccessTokenTime())
-                                .refreshToken(token.getRefreshToken())
-                                .refreshTokenTime(token.getRefreshTokenTime())
-                                .memberEmail(token.getMemberEmail())
-                                .memberId(token.getMemberId())
-                                .build();
                         // 이미 존재하는 토큰이니 토큰id가 있다.
                         // 그 id로 토큰을 업데이트 시켜준다.
                         TokenEntity tokenEntity = TokenEntity.updateToken(findToken.getId(), token);
@@ -200,34 +190,10 @@ public class MemberServiceImpl implements MemberService {
             if (!nickNameCheck(modifyMemberDTO.getNickName())) {
                 return ResponseEntity.badRequest().body("이미 존재하는 닉네임이 있습니다.");
             }
+            String encodePw = passwordEncoder.encode(modifyMemberDTO.getMemberPw());
 
             if (findUser.getMemberId().equals(memberId)) {
-                findUser = MemberEntity.builder()
-                        .memberId(findUser.getMemberId())
-                        .email(findUser.getEmail())
-                        .memberPw(
-                                modifyMemberDTO.getMemberPw() == null
-                                        ? findUser.getMemberPw()
-                                        : passwordEncoder.encode(modifyMemberDTO.getMemberPw()))
-                        .nickName(modifyMemberDTO.getNickName() == null
-                                ? findUser.getNickName() : modifyMemberDTO.getNickName())
-                        .memberRole(findUser.getMemberRole())
-                        .memberPoint(findUser.getMemberPoint())
-                        .memberName(findUser.getMemberName())
-                        .address(AddressEntity.builder()
-                                .memberAddr(modifyMemberDTO.getMemberAddress() != null &&
-                                        modifyMemberDTO.getMemberAddress().getMemberAddr() != null
-                                        ? modifyMemberDTO.getMemberAddress().getMemberAddr()
-                                        : findUser.getAddress().getMemberAddr())
-                                .memberAddrDetail(modifyMemberDTO.getMemberAddress() != null &&
-                                        modifyMemberDTO.getMemberAddress().getMemberAddrDetail() != null
-                                        ? modifyMemberDTO.getMemberAddress().getMemberAddrDetail()
-                                        : findUser.getAddress().getMemberAddrDetail())
-                                .memberZipCode(modifyMemberDTO.getMemberAddress() != null &&
-                                        modifyMemberDTO.getMemberAddress().getMemberZipCode() != null
-                                        ? modifyMemberDTO.getMemberAddress().getMemberZipCode()
-                                        : findUser.getAddress().getMemberZipCode())
-                                .build()).build();
+                findUser.updateMember(modifyMemberDTO, encodePw);
                 log.info("유저 수정 : " + findUser);
 
                 MemberEntity updateUser = memberRepository.save(findUser);
