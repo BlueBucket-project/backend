@@ -27,7 +27,7 @@ import java.util.Map;
  *   writer : YuYoHan
  *   work :
  *          시큐리티 기능을 사용하기 위한 클래스입니다.
- *   date : 2023/12/04
+ *   date : 2024/01/10
  * */
 @Configuration
 @RequiredArgsConstructor
@@ -100,11 +100,14 @@ public class SecurityConfig {
                     .access("hasRole('ROLE_ADMIN')")
                 .antMatchers("/api/v1/items/**").permitAll()
                 .antMatchers(HttpMethod.POST, "/api/v1/items")
-                    .access("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
+                    .access("hasRole('ROLE_ADMIN')")
                 .antMatchers(HttpMethod.PUT, "/api/v1/items/{itemId}")
-                    .access("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
+                    .access("hasRole('ROLE_ADMIN')")
                 .antMatchers(HttpMethod.DELETE, "/api/v1/items/{itemId}")
-                    .access("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
+                    .access("hasRole('ROLE_ADMIN')")
+                .antMatchers(HttpMethod.POST,"/api/v1/admins").permitAll()
+                .antMatchers(HttpMethod.POST, "/api/v1/admins/mails").permitAll()
+                .antMatchers(HttpMethod.POST, "/api/v1/admins/verifications").permitAll()
                 .antMatchers("/api/v1/cart")
                     .access("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
                 .antMatchers("/api/v1/cart/**")
