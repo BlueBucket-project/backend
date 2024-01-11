@@ -33,7 +33,17 @@
 > 노션으로 회의를 진행한 것을 작성했고 프론트에게 의견을 제시할 때 기록하는 용으로 사용했으며 프론트와 백엔드 파트를 나누는 용으로 사용했습니다. 그리고 배포전 프론트가 API문서화를 볼 수 있게 스샷으로 남기고 후에 배포해서 API문서를 직접 볼 수 있게 했습니다.
 - 디스코드
  
-
+---
+## 화면 구성 (일반 유저)📺
+| 로그인 팝업 | 회원가입 팝업 | 
+| :-------------------------------------------: | :------------: |
+|  <img width="320" src="https://github.com/YuYoHan/Belog/assets/43868558/8b744b55-7a88-411c-9ddd-cd49e7313520/image.gif"/> |  <img width="320" src="https://github.com/YuYoHan/Belog/assets/43868558/5b4a27b5-de49-476c-bf64-1d8cdc3ec9b5/image.gif"/>| 
+| 메인 페이지  | 설정 페이지 |
+| <img width="320" src="https://github.com/YuYoHan/Belog/assets/43868558/e70a8be9-f362-4359-8b49-5701290c52f1/image.gif"/> | <img width="320" src="https://github.com/YuYoHan/Belog/assets/43868558/0ae10d02-a743-4b87-9777-4fd0aa4bbbc5/image.gif"/> |
+| 게시글 등록 |  게시글 수정 |
+| <img width="320" src="https://velog.velcdn.com/images/cleooo5857/post/7f35b58a-e0f6-487e-b667-e93b0aef4e6b/image.gif"/>   |  <img width="320" src="https://velog.velcdn.com/images/cleooo5857/post/9a63a18b-daa2-4f50-9433-a2ea47c87803/image.gif"/>     |  
+|   게시글 삭제 | 댓글 | 
+|   <img width="320" src="https://velog.velcdn.com/images/cleooo5857/post/6925dc0d-1fda-44a2-be1e-245cb9a3276d/image.gif"/>  |  <img width="320" src="https://github.com/YuYoHan/Belog/assets/43868558/895f0056-69ab-4298-8d77-199cc0f1e766/image.gif"/>     |
 
 ---
 # ERD
