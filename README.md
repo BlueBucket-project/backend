@@ -334,19 +334,16 @@ JPQL로 fetch Join을 사용하려고 했는데 에러가 발생했습니다. <b
  # 프로젝트 세부 진행
 ## 유저 기능
 
-### 메인페이지(비로그인) & 검색
+### 메인페이지(비로그인) 
 
 ![](https://velog.velcdn.com/images/zxzz45/post/47376a57-7459-47ea-921e-76d5a1bef9c9/image.png)
 
-![](https://velog.velcdn.com/images/zxzz45/post/4e39ea4f-8ece-475e-b4a3-74858a758079/image.gif)
 
-검색은 처음에는 상품 이름으로 검색하고 그 후에 상세 검색을 통해서 가격, 지역을 설정해서 검색할 수 있습니다.
 
 ### 회원가입
 
 ![](https://velog.velcdn.com/images/zxzz45/post/ab987016-5939-4bdd-8cb7-75f79da51d4c/image.png)
-
-![](https://velog.velcdn.com/images/zxzz45/post/50692da9-7d4a-454a-bad4-f31998a2a1c8/image.gif)
+![회원가입](https://github.com/BlueBucket-project/backend/assets/110465572/3d19209c-e933-416a-a43a-aa545b8ca2c6)
 
 
 
@@ -360,6 +357,11 @@ JPQL로 fetch Join을 사용하려고 했는데 에러가 발생했습니다. <b
 
 ![](https://velog.velcdn.com/images/zxzz45/post/b8908a5f-3251-4e93-ac07-fe6ca1518296/image.png)
 
+### 검색
+
+![](https://velog.velcdn.com/images/zxzz45/post/4e39ea4f-8ece-475e-b4a3-74858a758079/image.gif)
+
+검색은 처음에는 상품 이름으로 검색하고 그 후에 상세 검색을 통해서 가격, 지역을 설정해서 검색할 수 있습니다.
 
 ### 장바구니
 **장바구니 등록**
@@ -376,7 +378,7 @@ JPQL로 fetch Join을 사용하려고 했는데 에러가 발생했습니다. <b
 **수정**
 ![](https://velog.velcdn.com/images/zxzz45/post/dbcccaf7-da0f-4753-a68e-518436ad9fff/image.gif)
 **삭제**
-![](https://velog.velcdn.com/images/zxzz45/post/06de44ad-c2e3-4651-a39a-edf537ffb5ed/image.gif)
+![장바구니삭제](https://github.com/BlueBucket-project/backend/assets/110465572/cd7b44ce-dfd5-4e93-b805-4ced96ccffdc)
 
 **예약중인 상품 처리**
 ![](https://velog.velcdn.com/images/zxzz45/post/b645ec18-6816-4d89-b5c2-8066558b36e6/image.png)
@@ -401,15 +403,15 @@ JPQL로 fetch Join을 사용하려고 했는데 에러가 발생했습니다. <b
 
 **회원탈퇴**
 ![](https://velog.velcdn.com/images/zxzz45/post/e3e81bbf-6498-44b2-8439-9c20c1e62737/image.png)
+![회원탈퇴](https://github.com/BlueBucket-project/backend/assets/110465572/80dc7bef-8350-46d5-b206-17c2488fb505)
 
-![](https://velog.velcdn.com/images/zxzz45/post/2f373513-6bf1-436d-b7a8-20570c58f78c/image.gif)
 
 
 ### 문의글
 
 **문의글 등록 & 수정 & 삭제**
 
-![](https://velog.velcdn.com/images/zxzz45/post/1f6bf470-ab14-43cd-8154-7b3ea5d2b4a2/image.png)
+![문의글등록](https://github.com/BlueBucket-project/backend/assets/110465572/51c11c88-b7db-4456-bc5d-238f60f42478)
 
 ![](https://velog.velcdn.com/images/zxzz45/post/738d799d-5dde-477e-a74d-a14ac9ecb86f/image.gif)
 
