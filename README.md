@@ -10,10 +10,8 @@
 
 ---
 # 링크
-## GitHub 주소
-[코드보러 가기](https://github.com/orgs/BlueBucket-project/repositories)
 ## Velog 주소
-[프로젝트 블로그](https://velog.io/write?id=32ca9a46-42b9-41da-bcc2-28eb45cec5c6)
+[프로젝트 블로그](https://velog.io/@zxzz45/series/%EC%B7%A8%EC%97%85%ED%95%98%EC%9E%90)
 
 ---
 # 백엔드 소개
