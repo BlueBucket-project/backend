@@ -10,13 +10,13 @@ import javax.persistence.Embeddable;
  *          주소에 대한 값을 값타입 엔티티를 사용해서 받음
  *          이렇게 한 이유는 나중에 필요할 때 재활용하기 위해서
  *          그리고 유지보수하기 좋게 하기 위해서입니다.
- *   date : 2023/10/18
+ *   date : 2024/01/17
  * */
 // 임베디드 타입을 사용하려면 넣어야한다.
 @Embeddable
 @ToString
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class AddressEntity {
     private String memberAddr;
     private String memberAddrDetail;
