@@ -18,7 +18,7 @@ import java.util.List;
  *   writer : YuYoHan
  *   work :
  *          게시글을 필요한 값을 리턴해줍니다.
- *   date : 2023/11/23
+ *   date : 2024/01/18
  * */
 @Getter
 @ToString
@@ -75,9 +75,7 @@ public class BoardDTO {
     }
 
     // 엔티티를 DTO로 변환하는 작업
-    public static BoardDTO toBoardDTO(BoardEntity board,
-                                      String nickName,
-                                      Long itemId) {
+    public static BoardDTO toBoardDTO(BoardEntity board) {
         // 게시글 댓글 처리
         List<CommentEntity> commentEntityList = board.getCommentEntityList();
         List<CommentDTO> commentDTOS = new ArrayList<>();
@@ -97,17 +95,13 @@ public class BoardDTO {
                 .boardId(board.getBoardId())
                 .title(board.getTitle())
                 .content(board.getContent())
-                .nickName(nickName)
+                .nickName(board.getMember().getNickName())
                 .commentDTOList(commentDTOS)
-                .itemId(itemId)
+                .itemId(board.getItem().getItemId())
                 // 답글 미완료 상태로 등록
                 .replyStatus(board.getReplyStatus())
                 .regTime(board.getRegTime())
                 .boardSecret(board.getBoardSecret())
                 .build();
-    }
-
-    public void viewPermission(BoardSecret boardSecret) {
-        this.boardSecret = boardSecret;
     }
 }
