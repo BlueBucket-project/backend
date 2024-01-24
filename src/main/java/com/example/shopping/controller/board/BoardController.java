@@ -3,7 +3,7 @@ package com.example.shopping.controller.board;
 
 import com.example.shopping.domain.board.BoardDTO;
 import com.example.shopping.domain.board.CreateBoardDTO;
-import com.example.shopping.service.board.BoardServiceImpl;
+import com.example.shopping.service.board.BoardService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -37,7 +37,7 @@ import java.util.Map;
 @RequestMapping("/api/v1/{itemId}/boards")
 @Tag(name = "board", description = "상품 문의 API")
 public class BoardController {
-    private final BoardServiceImpl boardService;
+    private final BoardService boardService;
 
     // 문의 등록
     @PostMapping("")
