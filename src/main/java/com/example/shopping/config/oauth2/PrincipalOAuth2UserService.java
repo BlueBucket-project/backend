@@ -130,8 +130,8 @@ public class PrincipalOAuth2UserService implements OAuth2UserService<OAuth2UserR
             log.info("token : " + saveToken);
         } else {
             // 기존의 토큰이 있다면 업데이트 해준다.
-            TokenEntity tokenEntity = TokenEntity.updateToken(findToken.getId(), tokenForOAuth2);
-            saveToken = tokenRepository.save(tokenEntity);
+            findToken.updateToken(tokenForOAuth2);
+            saveToken = tokenRepository.save(findToken);
             log.info("token : " + saveToken);
         }
 
