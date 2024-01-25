@@ -19,7 +19,7 @@ import javax.validation.constraints.NotNull;
 public class DelItemDTO {
 
     @NotNull(message = "아이템 판매자를 입력해야합니다. 공백으로라도 보내주세요.")
-    @Schema(description = "아이템 판매자")
+    @Schema(description = "아이템 판매자 번호")
     private Long itemSeller;
 
     @Builder
