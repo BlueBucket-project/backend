@@ -1,7 +1,7 @@
 package com.example.shopping.controller.item;
 
 import com.example.shopping.domain.Item.*;
-import com.example.shopping.service.item.ItemServiceImpl;
+import com.example.shopping.service.item.ItemService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +27,7 @@ import java.util.Map;
  *   writer : YuYoHan, 오현진
  *   work :
  *          상품 작성, 삭제, 수정, 전체 가져오기 그리고 검색하는 기능입니다.
- *   date : 2024/01/05
+ *   date : 2024/01/23
  * */
 @RestController
 @Log4j2
@@ -35,17 +35,18 @@ import java.util.Map;
 @RequestMapping("/api/v1/items")
 @Tag(name = "item", description = "상품 API")
 public class ItemController {
-    private final ItemServiceImpl itemServiceImpl;
+    private final ItemService itemService;
 
     // 상품 등록
     @PostMapping("")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Tag(name = "item")
     @Operation(summary = "상품 등록", description = "상품을 등록하는 API입니다.")
-    public ResponseEntity<?> createItem(@Valid @RequestPart("key") CreateItemDTO item,
-                                        @RequestPart(value = "files", required = false) List<MultipartFile> itemFiles,
-                                        BindingResult result
-            , @AuthenticationPrincipal UserDetails userDetails
+    public ResponseEntity<?> createItem(
+            @Valid @RequestPart("key") CreateItemDTO item,
+            @RequestPart(value = "files", required = false) List<MultipartFile> itemFiles,
+            BindingResult result,
+            @AuthenticationPrincipal UserDetails userDetails
     ) {
         try {
             if (result.hasErrors()) {
@@ -54,7 +55,7 @@ public class ItemController {
             }
 
             String email = userDetails.getUsername();
-            ItemDTO savedItem = itemServiceImpl.saveItem(item, itemFiles, email);
+            ItemDTO savedItem = itemService.saveItem(item, itemFiles, email);
             //testData
             //ItemDTO savedItem = itemServiceImpl.saveItem(itemInfo, itemFiles, "mem123@test.com");
             return ResponseEntity.ok().body(savedItem);
@@ -69,7 +70,7 @@ public class ItemController {
     @Operation(summary = "상품 상세 정보 보기", description = "상품의 상세정보를 볼 수 있습니다.")
     public ResponseEntity<?> itemDetail(@PathVariable Long itemId) {
         try {
-            ItemDTO item = itemServiceImpl.getItem(itemId);
+            ItemDTO item = itemService.getItem(itemId);
             log.info("item : " + item);
             return ResponseEntity.ok().body(item);
         } catch (EntityNotFoundException e) {
@@ -93,7 +94,7 @@ public class ItemController {
             String email = userDetails.getUsername();
             String role = userDetails.getAuthorities().iterator().next().getAuthority();
 
-            ItemDTO updateItem = itemServiceImpl.updateItem(itemId, itemDTO, itemFiles, email, role);
+            ItemDTO updateItem = itemService.updateItem(itemId, itemDTO, itemFiles, email, role);
 
             return ResponseEntity.ok().body(updateItem);
         } catch (Exception e) {
@@ -114,7 +115,7 @@ public class ItemController {
             String email = userDetails.getUsername();
             String role = userDetails.getAuthorities().iterator().next().getAuthority();
 
-            String result = itemServiceImpl.removeItem(itemId, itemDTO.getItemSeller(), email, role);
+            String result = itemService.removeItem(itemId, itemDTO.getItemSeller(), email, role);
 
             return ResponseEntity.ok().body(result);
         } catch (Exception e) {
@@ -132,7 +133,7 @@ public class ItemController {
         Page<ItemDTO> items;
         try {
             log.info("condition : " + condition);
-            items = itemServiceImpl.searchItemsConditions(pageable, condition);
+            items = itemService.searchItemsConditions(pageable, condition);
             log.info("상품 조회 {}", items);
 
             Map<String, Object> response = new HashMap<>();
@@ -165,7 +166,7 @@ public class ItemController {
     @Operation(summary = "상품 판매지역 리스트", description = "모든 상품의 판매지역을 보여주는 API입니다.")
     public ResponseEntity<?> getSellPlaceList() {
 
-        return ResponseEntity.ok().body(itemServiceImpl.getSellPlaceList());
+        return ResponseEntity.ok().body(itemService.getSellPlaceList());
     }
 
 }
