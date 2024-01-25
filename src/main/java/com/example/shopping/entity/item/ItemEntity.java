@@ -122,7 +122,7 @@ public class ItemEntity extends BaseTimeEntity {
     }
 
 
-    public ItemEntity updateItem(UpdateItemDTO item, Long sellerId) {
+    public ItemEntity updateItem(UpdateItemDTO item) {
         return ItemEntity.builder()
                 .itemId(this.itemId)
                 .itemName(item.getItemName())
@@ -131,7 +131,7 @@ public class ItemEntity extends BaseTimeEntity {
                 .itemSellStatus(this.itemSellStatus)
                 .stockNumber(item.getStockNumber())
                 .price(item.getPrice())
-                .itemSeller(sellerId)
+                .itemSeller(item.getItemSeller())
                 .itemRamount(this.itemRamount)
                 .itemReserver(this.itemReserver == null ? null : this.itemReserver)
                 .itemImgList(this.itemImgList)
