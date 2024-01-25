@@ -36,11 +36,12 @@ import java.util.stream.Collectors;
  *          - 상품 CRUD기능과 상품의 판매지역을 가져올 수 있고 조건에 맞춰서 검색할 수 있습니다.
  *          이렇게 인터페이스를 만들고 상속해주는 방식을 선택한 이유는
  *          메소드에 의존하지 않고 필요한 기능만 사용할 수 있게 하고 가독성과 유지보수성을 높이기 위해서 입니다.
- *   date : 2024/01/09
+ *   date : 2024/01/24
  * */
 @RequiredArgsConstructor
 @Service
 @Log4j2
+@Transactional
 public class ItemServiceImpl implements ItemService {
     private final MemberRepository memberRepository;
     private final ItemRepository itemRepository;
@@ -52,7 +53,6 @@ public class ItemServiceImpl implements ItemService {
 
     // 상품 등록 메소드
     @Override
-    @Transactional
     public ItemDTO saveItem(CreateItemDTO item,
                             List<MultipartFile> itemFiles,
                             String memberEmail) throws Exception {
@@ -99,12 +99,11 @@ public class ItemServiceImpl implements ItemService {
     // 상품의 데이터를 읽어오는 트랜잭션을 읽기 전용으로 설정합니다.
     // 이럴 경우 JPA가 더티체킹(변경감지)를 수행하지 않아서 성능을 향상 시킬 수 있다.
     @Transactional(readOnly = true)
-    @Override
     public ItemDTO getItem(Long itemId) {
         try {
             // 상품 조회
             ItemEntity findItem = itemRepository.findById(itemId)
-                    .orElseThrow(EntityNotFoundException::new);
+                    .orElseThrow(() -> new EntityNotFoundException("상품이 없습니다."));
 
             ItemDTO itemDTO = ItemDTO.toItemDTO(findItem);
             // 상품 컨테이너 조회
@@ -117,13 +116,12 @@ public class ItemServiceImpl implements ItemService {
             }
             return itemDTO;
         } catch (EntityNotFoundException e) {
-            throw new ItemException("상품이 없습니다. {}, " + e.getMessage());
+            throw new ItemException(e.getMessage());
         }
     }
 
     // 상품 수정
     @Override
-    @Transactional
     public ItemDTO updateItem(Long itemId,
                               UpdateItemDTO itemDTO,
                               List<MultipartFile> itemFiles,
@@ -142,7 +140,7 @@ public class ItemServiceImpl implements ItemService {
 
             if (role.equals("ROLE_ADMIN")) {
                 // 상품 정보 수정
-                findItem.updateItem(itemDTO, itemDTO.getItemSeller());
+                findItem.updateItem(itemDTO);
                 // 남겨줄 이미지id를 받지 못한다는 것은 전부 삭제한다는 의미이니
                 // 삭제처리
                 removeAllImg(itemDTO, itemImgs, findItem);
@@ -179,7 +177,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private void removeImg(UpdateItemDTO itemDTO, List<ItemImgEntity> itemImgs, ItemEntity findItem) {
-        // 상품에 이미지가 이미지가 비어 있지 않으면 true
+        // 상품에 이미지가 비어 있지 않으면 true
         if (!itemImgs.isEmpty()) {
             // 남겨줄 이미지id를 넘겨받으면
             if (!itemDTO.getRemainImgId().isEmpty()) {
@@ -205,12 +203,14 @@ public class ItemServiceImpl implements ItemService {
             // 상품의 이미지 리스트에 넣기
             findItem.addItemImgList(itemImg);
             // 추가로 넣은 것과 기존의 것을 합쳤을 때 첫번째인 것을 썸네일로 처리하기 위해서
-            for (int i = 0; i < findItem.getItemImgList().size(); i++) {
-                ItemImgEntity itemImgEntity = findItem.getItemImgList().get(i);
-                if (i == 0) {
-                    itemImgEntity.changeRepImgY();
+            // 썸네일 작업
+            boolean isFirstImage = true;
+            for (ItemImgEntity img : findItem.getItemImgList()) {
+                if(isFirstImage) {
+                    img.changeRepImgY();
+                    isFirstImage = false;
                 } else {
-                    itemImgEntity.changeRepImgN();
+                    img.changeRepImgN();
                 }
             }
         }
@@ -218,7 +218,6 @@ public class ItemServiceImpl implements ItemService {
 
     // 상품 삭제
     @Override
-    @Transactional
     public String removeItem(Long itemId, Long sellerId, String memberEmail, String role) {
 
         try {
