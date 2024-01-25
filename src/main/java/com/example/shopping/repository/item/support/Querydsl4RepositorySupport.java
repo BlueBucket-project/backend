@@ -20,6 +20,7 @@ import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
 import java.util.List;
 import java.util.function.Function;
+
 /*
  *   writer : YuYoHan
  *   work :
@@ -62,6 +63,7 @@ public abstract class Querydsl4RepositorySupport {
         this.querydsl = new Querydsl(entityManager, new PathBuilder<>(path.getType(), path.getMetadata()));
         this.queryFactory = new JPAQueryFactory(entityManager);
     }
+
     // 해당 클래스의 빈(Bean)이 초기화될 때 자동으로 실행되는 메서드
     @PostConstruct
     public void validate() {
@@ -69,60 +71,48 @@ public abstract class Querydsl4RepositorySupport {
         Assert.notNull(querydsl, "Querydsl must not be null!");
         Assert.notNull(queryFactory, "QueryFactory must not be null!");
     }
+
     // 이 팩토리는 JPA 쿼리를 생성하는 데 사용됩니다.
     protected JPAQueryFactory getQueryFactory() {
         return queryFactory;
     }
+
     // 이 객체는 Querydsl의 핵심 기능을 사용하는 데 도움이 됩니다.
     protected Querydsl getQuerydsl() {
         return querydsl;
     }
+
     // EntityManager는 JPA 엔터티를 관리하고 JPA 쿼리를 실행하는 데 사용됩니다.
     protected EntityManager getEntityManager() {
         return entityManager;
     }
+
     // Querydsl을 사용하여 쿼리의 SELECT 절을 생성하는 메서드입니다.
     // expr은 선택할 엔터티나 엔터티의 속성에 대한 표현식입니다.
     protected <T> JPAQuery<T> select(Expression<T> expr) {
         return getQueryFactory().select(expr);
     }
+
     // Querydsl을 사용하여 쿼리의 FROM 절을 생성하는 메서드입니다.
     // from은 엔터티에 대한 경로 표현식입니다.
     protected <T> JPAQuery<T> selectFrom(EntityPath<T> from) {
         return getQueryFactory().selectFrom(from);
     }
 
-    // 이 메서드는 주어진 contentQuery를 사용하여 Querydsl을 통해 JPA 쿼리를 생성하고 실행하고,
-    // 그 결과를 Spring Data의 Page 객체로 변환하는 기능을 제공
-    protected <T> Page<T> applyPagination(Pageable pageable,
-                                          Function<JPAQueryFactory, JPAQuery> contentQuery) {
-        // 1. contentQuery를 사용하여 JPAQuery 객체를 생성
-        JPAQuery jpaQuery = contentQuery.apply(getQueryFactory());
-        // 2. Querydsl을 사용하여 페이징 및 정렬된 결과를 가져옴
-        List<T> content = getQuerydsl().applyPagination(pageable,
-                jpaQuery).fetch();
-        // 3. contentQuery를 다시 사용하여 countQuery를 생성
-        JPAQuery<Long> countQuery = contentQuery.apply(getQueryFactory());
-        // 4. countQuery를 실행하고 총 레코드 수를 얻음
-        long total = countQuery.fetchOne();
-        // 5. content와 pageable 정보를 사용하여 Spring Data의 Page 객체를 생성하고 반환
-        return PageableExecutionUtils.getPage(content, pageable,
-                () -> total);
-    }
+
     // 이 메서드는 contentQuery와 함께 countQuery를 인자로 받아서 사용합니다.
     // contentQuery를 사용하여 페이징된 결과를 가져오고, countQuery를 사용하여 전체 레코드 수를 얻습니다.
-
     protected <T> Page<T> applyPagination(Pageable pageable,
-                                          Function<JPAQueryFactory, JPAQuery> contentQuery, Function<JPAQueryFactory,
-            JPAQuery> countQuery) {
+                                          Function<JPAQueryFactory, JPAQuery> contentQuery,
+                                          Function<JPAQueryFactory, JPAQuery> countQuery) {
+        // 1. contentQuery를 사용하여 JPAQuery 객체를 생성
         JPAQuery jpaContentQuery = contentQuery.apply(getQueryFactory());
+        // 2. Querydsl을 사용하여 페이징 및 정렬된 결과를 가져옴
         List<T> content = getQuerydsl().applyPagination(pageable,
                 jpaContentQuery).fetch();
-
         JPAQuery<Long> countResult = countQuery.apply(getQueryFactory());
-        Long total = countResult.fetchOne();
-        return PageableExecutionUtils.getPage(content, pageable,
-                () -> total);
+//        Long total = countResult.fetchOne();
+        return PageableExecutionUtils.getPage(content, pageable, countResult::fetchOne);
     }
 
 }
