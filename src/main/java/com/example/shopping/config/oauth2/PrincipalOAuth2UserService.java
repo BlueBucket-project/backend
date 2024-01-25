@@ -130,15 +130,6 @@ public class PrincipalOAuth2UserService implements OAuth2UserService<OAuth2UserR
             log.info("token : " + saveToken);
         } else {
             // 기존의 토큰이 있다면 업데이트 해준다.
-            tokenForOAuth2 = TokenDTO.builder()
-                    .grantType(tokenForOAuth2.getGrantType())
-                    .accessToken(tokenForOAuth2.getAccessToken())
-                    .accessTokenTime(tokenForOAuth2.getAccessTokenTime())
-                    .refreshToken(tokenForOAuth2.getRefreshToken())
-                    .refreshTokenTime(tokenForOAuth2.getRefreshTokenTime())
-                    .memberEmail(tokenForOAuth2.getMemberEmail())
-                    .memberId(tokenForOAuth2.getMemberId())
-                    .build();
             TokenEntity tokenEntity = TokenEntity.updateToken(findToken.getId(), tokenForOAuth2);
             saveToken = tokenRepository.save(tokenEntity);
             log.info("token : " + saveToken);
@@ -164,7 +155,7 @@ public class PrincipalOAuth2UserService implements OAuth2UserService<OAuth2UserR
             log.info("authentication1 : " + authenticationUser);
             SecurityContextHolder.getContext().setAuthentication(authenticationUser);
         } else {
-            log.info("검증 실패");
+            log.error("검증 실패");
         }
         // attributes가 있는 생성자를 사용하여 PrincipalDetails 객체 생성
         // 소셜 로그인인 경우에는 attributes도 함께 가지고 있는 PrincipalDetails 객체를 생성하게 됩니다.
