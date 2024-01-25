@@ -1,6 +1,7 @@
 package com.example.shopping.exception;
 
 import com.example.shopping.exception.board.BoardException;
+import com.example.shopping.exception.comment.CommentException;
 import com.example.shopping.exception.externalService.ExternalServiceException;
 import com.example.shopping.exception.file.FileDownloadException;
 import com.example.shopping.exception.file.FileUploadException;
@@ -17,7 +18,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  *   writer : 유요한
  *   work :
  *          전역으로 발생한 예외를 처리해줄 수 있는 Class를 생성
- *   date : 2023/10/12
+ *   date : 2024/01/22
  * */
 @RestControllerAdvice
 public class GlobalExceptionAdvice {
@@ -38,6 +39,11 @@ public class GlobalExceptionAdvice {
     @ExceptionHandler(BoardException.class)
     public ResponseEntity<BoardException> handleCustomException2(BoardException boardException) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(boardException);
+    }
+    // 댓글을 못찾을 경우 발생하는 예외처리
+    @ExceptionHandler(CommentException.class)
+    public ResponseEntity<CommentException> handleCustomException2(CommentException commentException) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(commentException);
     }
 
     // 상품을 못찾을 경우 발생하는 예외처리
