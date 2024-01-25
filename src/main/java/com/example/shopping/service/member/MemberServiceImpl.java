@@ -7,8 +7,8 @@ import com.example.shopping.domain.member.ResponseMemberDTO;
 import com.example.shopping.domain.member.ModifyMemberDTO;
 import com.example.shopping.domain.member.Role;
 import com.example.shopping.entity.jwt.TokenEntity;
-import com.example.shopping.entity.member.AddressEntity;
 import com.example.shopping.entity.member.MemberEntity;
+import com.example.shopping.exception.member.UserException;
 import com.example.shopping.repository.board.BoardRepository;
 import com.example.shopping.repository.cart.CartJpaRepository;
 import com.example.shopping.repository.comment.CommentRepository;
@@ -36,7 +36,7 @@ import java.util.List;
  *          - 유저의 등록, 수정, 삭제, 로그인기능과 이메일 중복체크, 닉네임 중복체크 기능이 있습니다.
  *          이렇게 인터페이스를 만들고 상속해주는 방식을 선택한 이유는
  *          메소드에 의존하지 않고 필요한 기능만 사용할 수 있게 하고 가독성과 유지보수성을 높이기 위해서 입니다.
- *   date : 2024/01/10
+ *   date : 2024/01/18
  * */
 @Service
 @RequiredArgsConstructor
@@ -54,6 +54,7 @@ public class MemberServiceImpl implements MemberService {
     // 회원가입
     @Override
     public ResponseEntity<?> signUp(RequestMemberDTO memberDTO) {
+        String encodePw = passwordEncoder.encode(memberDTO.getMemberPw());
         try {
             log.info("email : " + memberDTO.getEmail());
             log.info("nickName : " + memberDTO.getNickName());
@@ -69,36 +70,28 @@ public class MemberServiceImpl implements MemberService {
             }
 
             // 아이디가 없다면 DB에 등록해줍니다.
-            MemberEntity member = MemberEntity.builder()
-                    .email(memberDTO.getEmail())
-                    .memberPw(passwordEncoder.encode(memberDTO.getMemberPw()))
-                    .memberName(memberDTO.getMemberName())
-                    .nickName(memberDTO.getNickName())
-                    .memberRole(Role.USER)
-                    .address(AddressEntity.builder()
-                            .memberAddr(memberDTO.getMemberAddress().getMemberAddr())
-                            .memberAddrDetail(memberDTO.getMemberAddress().getMemberAddrDetail())
-                            .memberZipCode(memberDTO.getMemberAddress().getMemberZipCode())
-                            .build()).build();
-
-            log.info("member in service : " + member);
+            MemberEntity member = MemberEntity.saveMember(memberDTO, encodePw);
+            log.info("member : " + member);
             MemberEntity saveMember = memberRepository.save(member);
 
             ResponseMemberDTO coverMember = ResponseMemberDTO.toMemberDTO(saveMember);
             return ResponseEntity.ok().body(coverMember);
         } catch (Exception e) {
             log.error(e.getMessage());
-            return ResponseEntity.badRequest().body("회원 가입중 오류가 발생했습니다.");
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     // 회원 조회
     @Override
     public ResponseMemberDTO search(Long memberId) {
-        MemberEntity member = memberRepository.findById(memberId)
-                .orElseThrow(EntityNotFoundException::new);
-
-        return ResponseMemberDTO.toMemberDTO(member);
+        try {
+            MemberEntity findUser = memberRepository.findById(memberId)
+                    .orElseThrow(EntityNotFoundException::new);
+            return ResponseMemberDTO.toMemberDTO(findUser);
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException("회원이 존재 하지 않습니다.");
+        }
     }
 
     // 회원 삭제
@@ -133,7 +126,9 @@ public class MemberServiceImpl implements MemberService {
                 // DB에 넣어져 있는 비밀번호는 암호화가 되어 있어서 비교하는 기능을 사용해야 합니다.
                 // 사용자가 입력한 패스워드를 암호화하여 사용자 정보와 비교
                 if (passwordEncoder.matches(memberPw, findUser.getMemberPw())) {
-                    Authentication authentication = new UsernamePasswordAuthenticationToken(memberEmail, memberPw);
+                    //  Spring Security의 인증 매커니즘을 통해 사용자를 인증하는데 사용
+                    Authentication authentication =
+                            new UsernamePasswordAuthenticationToken(memberEmail, memberPw);
                     log.info("authentication : " + authentication);
                     List<GrantedAuthority> authoritiesForUser = getAuthoritiesForUser(findUser);
 
@@ -142,30 +137,27 @@ public class MemberServiceImpl implements MemberService {
                     // 토큰 조회
                     TokenEntity findToken = tokenRepository.findByMemberEmail(token.getMemberEmail());
 
+                    TokenEntity tokenEntity;
                     // 토큰이 없다면 새로 발급
                     if (findToken == null) {
                         log.info("발급한 토큰이 없습니다. 새로운 토큰을 발급합니다.");
 
                         // 토큰 생성과 조회한 memberId를 넘겨줌
-                        TokenEntity tokenEntity = TokenEntity.tokenEntity(token);
+                        tokenEntity = TokenEntity.tokenEntity(token);
                         // 토큰id는 자동생성
-                        tokenRepository.save(tokenEntity);
                     } else {
                         log.info("이미 발급한 토큰이 있습니다. 토큰을 업데이트합니다.");
                         // 이미 존재하는 토큰이니 토큰id가 있다.
                         // 그 id로 토큰을 업데이트 시켜준다.
-                        TokenEntity tokenEntity = TokenEntity.updateToken(findToken.getId(), token);
-                        tokenRepository.save(tokenEntity);
+                        tokenEntity = TokenEntity.updateToken(findToken.getId(), token);
                     }
+                    tokenRepository.save(tokenEntity);
                     return ResponseEntity.ok().body(token);
-                } else {
-                    return ResponseEntity.badRequest().build();
                 }
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("유저가 없습니다.");
             }
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+            throw new EntityNotFoundException("회원이 존재하지 않습니다.");
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
 
@@ -188,7 +180,7 @@ public class MemberServiceImpl implements MemberService {
 
             // 닉네임 중복 체크
             if (!nickNameCheck(modifyMemberDTO.getNickName())) {
-                return ResponseEntity.badRequest().body("이미 존재하는 닉네임이 있습니다.");
+                throw new UserException("이미 존재하는 닉네임이 있습니다.");
             }
             String encodePw = passwordEncoder.encode(modifyMemberDTO.getMemberPw());
 
@@ -200,11 +192,11 @@ public class MemberServiceImpl implements MemberService {
                 ResponseMemberDTO toResponseMemberDTO = ResponseMemberDTO.toMemberDTO(updateUser);
                 return ResponseEntity.ok().body(toResponseMemberDTO);
             } else {
-                return ResponseEntity.badRequest().body("일치하지 않습니다.");
+                throw new UserException("회원 정보가 일치 하지 않습니다.");
             }
 
         } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("회원 정보가 없습니다.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
 
