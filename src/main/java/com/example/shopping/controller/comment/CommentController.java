@@ -1,12 +1,12 @@
 package com.example.shopping.controller.comment;
 
-import com.example.shopping.domain.comment.CommentDTO;
 import com.example.shopping.domain.comment.ModifyCommentDTO;
-import com.example.shopping.service.comment.CommentServiceImpl;
+import com.example.shopping.service.comment.CommentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
  *   writer : YuYoHan
  *   work :
  *          댓글 작성, 삭제, 수정하는 기능입니다.
- *   date : 2023/11/01
+ *   date : 2024/01/22
  * */
 @RestController
 @RequiredArgsConstructor
@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.*;
 @Log4j2
 @Tag(name = "comment", description = "댓글 API")
 public class CommentController {
-    private final CommentServiceImpl commentService;
+    private final CommentService commentService;
 
     // 댓글 작성
     @PostMapping("")
@@ -36,10 +36,14 @@ public class CommentController {
     public ResponseEntity<?> saveComment(@PathVariable Long boardId,
                                          @RequestBody ModifyCommentDTO commentDTO,
                                          @AuthenticationPrincipal UserDetails userDetails) {
-        String email = userDetails.getUsername();
-        log.info("email : " + email);
-        ResponseEntity<?> save = commentService.save(boardId, commentDTO, email);
-        return ResponseEntity.ok().body(save);
+       try {
+           String email = userDetails.getUsername();
+           log.info("email : " + email);
+           ResponseEntity<?> responseComment = commentService.save(boardId, commentDTO, email);
+           return ResponseEntity.ok().body(responseComment);
+       } catch (Exception e) {
+           return ResponseEntity.badRequest().body(e.getMessage());
+       }
     }
 
     // 댓글 삭제
@@ -47,12 +51,15 @@ public class CommentController {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Tag(name = "comment")
     @Operation(summary = "댓글 삭제", description = "댓글을 삭제하는 API입니다.")
-    public String removeComment(@PathVariable Long boardId,
+    public ResponseEntity<?> removeComment(@PathVariable Long boardId,
                                 @PathVariable Long commentId,
                                 @AuthenticationPrincipal UserDetails userDetails) {
-        String email = userDetails.getUsername();
-        log.info("email : " + email);
-        return commentService.remove(boardId, commentId, email);
+        try {
+            String responseComment = commentService.remove(boardId, commentId, userDetails);
+            return ResponseEntity.ok().body(responseComment);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
     }
 
     // 댓글 수정
@@ -64,9 +71,13 @@ public class CommentController {
                                            @PathVariable Long commentId,
                                            @RequestBody ModifyCommentDTO commentDTO,
                                            @AuthenticationPrincipal UserDetails userDetails) {
-        String email = userDetails.getUsername();
-        log.info("email : " + email);
-        ResponseEntity<?> update = commentService.update(boardId, commentId, commentDTO, email);
-        return update;
+       try {
+           String email = userDetails.getUsername();
+           log.info("email : " + email);
+           ResponseEntity<?> update = commentService.update(boardId, commentId, commentDTO, email);
+           return update;
+       } catch (Exception e) {
+           return ResponseEntity.badRequest().body(e.getMessage());
+       }
     }
 }
