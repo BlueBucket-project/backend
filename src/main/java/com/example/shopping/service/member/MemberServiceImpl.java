@@ -137,21 +137,19 @@ public class MemberServiceImpl implements MemberService {
                     // 토큰 조회
                     TokenEntity findToken = tokenRepository.findByMemberEmail(token.getMemberEmail());
 
-                    TokenEntity tokenEntity;
                     // 토큰이 없다면 새로 발급
                     if (findToken == null) {
                         log.info("발급한 토큰이 없습니다. 새로운 토큰을 발급합니다.");
-
                         // 토큰 생성과 조회한 memberId를 넘겨줌
-                        tokenEntity = TokenEntity.tokenEntity(token);
+                        findToken = TokenEntity.tokenEntity(token);
                         // 토큰id는 자동생성
                     } else {
                         log.info("이미 발급한 토큰이 있습니다. 토큰을 업데이트합니다.");
                         // 이미 존재하는 토큰이니 토큰id가 있다.
                         // 그 id로 토큰을 업데이트 시켜준다.
-                        tokenEntity = TokenEntity.updateToken(findToken.getId(), token);
+                        findToken.updateToken(token);
                     }
-                    tokenRepository.save(tokenEntity);
+                    tokenRepository.save(findToken);
                     return ResponseEntity.ok().body(token);
                 }
             }
