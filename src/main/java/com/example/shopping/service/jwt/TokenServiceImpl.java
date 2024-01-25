@@ -26,7 +26,7 @@ import java.util.List;
  *          - accessToken이 만료되었을 경우 refreshToken을 받아서 재발급해주는 기능이 있습니다.
  *          이렇게 인터페이스를 만들고 상속해주는 방식을 선택한 이유는
  *          메소드에 의존하지 않고 필요한 기능만 사용할 수 있게 하고 가독성과 유지보수성을 높이기 위해서 입니다.
- *   date : 2023/11/11
+ *   date : 2024/01/22
  * */
 @Service
 @RequiredArgsConstructor
@@ -38,39 +38,35 @@ public class TokenServiceImpl implements TokenService {
     private final MemberRepository memberRepository;
 
     @Override
-    public ResponseEntity<TokenDTO> createAccessToken(String email) {
-        // 토큰 조회
-        TokenEntity findToken = tokenRepository.findByMemberEmail(email);
-        log.info("토큰 : " + findToken);
-        // 유저 조회
-        MemberEntity findUser = memberRepository.findByEmail(email);
-        log.info("유저 : " + findUser);
+    public ResponseEntity<?> createAccessToken(String email) {
+        try {
+            // 토큰 조회
+            TokenEntity findToken = tokenRepository.findByMemberEmail(email);
+            log.info("토큰 : " + findToken);
+            // 유저 조회
+            MemberEntity findUser = memberRepository.findByEmail(email);
+            log.info("유저 : " + findUser);
 
-        // refreshToken 2차 검증
-        if (jwtProvider.validateToken(findToken.getRefreshToken())) {
-            // 권한 가져오기
-            List<GrantedAuthority> authorities = getAuthoritiesForUser(findUser);
-            // 토큰 생성
-            TokenDTO accessToken = jwtProvider.createAccessToken(findUser.getEmail(), authorities);
-            log.info("accessToken : " + accessToken);
+            // refreshToken 2차 검증
+            if (jwtProvider.validateToken(findToken.getRefreshToken())) {
+                // 권한 가져오기
+                List<GrantedAuthority> authorities = getAuthoritiesForUser(findUser);
+                // 토큰 생성
+                TokenDTO accessToken = jwtProvider.createAccessToken(findUser.getEmail(), authorities);
+                log.info("accessToken : " + accessToken);
 
-            findToken = TokenEntity.builder()
-                    .id(findToken.getId())
-                    .grantType(accessToken.getGrantType())
-                    .accessToken(accessToken.getAccessToken())
-                    .accessTokenTime(accessToken.getAccessTokenTime())
-                    .memberEmail(accessToken.getMemberEmail())
-                    .refreshToken(findToken.getRefreshToken())
-                    .refreshTokenTime(findToken.getAccessTokenTime())
-                    .build();
+                findToken.updateToken(accessToken);
 
-            log.info("token : " + findToken);
-            TokenEntity saveToken = tokenRepository.save(findToken);
-            TokenDTO returnToken = TokenDTO.toTokenDTO(saveToken);
+                log.info("token : " + findToken);
+                TokenEntity saveToken = tokenRepository.save(findToken);
+                TokenDTO returnToken = TokenDTO.toTokenDTO(saveToken);
 
-            return new ResponseEntity<>(returnToken, HttpStatus.OK);
-        } else {
-            throw new IllegalArgumentException("Unexpected token");
+                return new ResponseEntity<>(returnToken, HttpStatus.OK);
+            } else {
+                throw new IllegalArgumentException("Unexpected token");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
@@ -89,3 +85,4 @@ public class TokenServiceImpl implements TokenService {
         return authorities;
     }
 }
+
