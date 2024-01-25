@@ -1,8 +1,8 @@
 package com.example.shopping.service.comment;
 
-import com.example.shopping.domain.comment.CommentDTO;
 import com.example.shopping.domain.comment.ModifyCommentDTO;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
 
 public interface CommentService {
     // 댓글 작성
@@ -13,7 +13,7 @@ public interface CommentService {
     // 댓글 삭제
     String remove(Long boardId,
                   Long commentId,
-                  String memberEmail);
+                  UserDetails userDetails);
 
     // 댓글 수정
     ResponseEntity<?> update(Long boardId,
