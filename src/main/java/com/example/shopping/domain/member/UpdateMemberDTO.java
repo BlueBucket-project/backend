@@ -17,7 +17,7 @@ import javax.validation.constraints.Pattern;
 @ToString
 @Getter
 @NoArgsConstructor
-public class ModifyMemberDTO {
+public class UpdateMemberDTO {
     @Schema(description = "닉네임")
     @Pattern(regexp = "^[a-zA-Z가-힣]*$", message = "사용자이름은 영어와 한글만 가능합니다.")
     private String nickName;
@@ -30,7 +30,7 @@ public class ModifyMemberDTO {
     private AddressDTO memberAddress;
 
     @Builder
-    public ModifyMemberDTO(String nickName, String memberPw, AddressDTO memberAddress) {
+    public UpdateMemberDTO(String nickName, String memberPw, AddressDTO memberAddress) {
         this.nickName = nickName;
         this.memberPw = memberPw;
         this.memberAddress = memberAddress;
