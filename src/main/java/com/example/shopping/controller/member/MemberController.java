@@ -4,7 +4,7 @@ import com.example.shopping.domain.board.BoardDTO;
 import com.example.shopping.domain.member.LoginDTO;
 import com.example.shopping.domain.member.RequestMemberDTO;
 import com.example.shopping.domain.member.ResponseMemberDTO;
-import com.example.shopping.domain.member.ModifyMemberDTO;
+import com.example.shopping.domain.member.UpdateMemberDTO;
 import com.example.shopping.domain.order.OrderItemDTO;
 import com.example.shopping.service.board.BoardService;
 import com.example.shopping.service.jwt.TokenService;
@@ -127,13 +127,13 @@ public class MemberController {
     @Operation(summary = "수정 API", description = "유저 정보를 수정하는 API입니다.")
     @PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
     public ResponseEntity<?> update(@PathVariable Long memberId,
-                                    @Validated @RequestBody ModifyMemberDTO modifyMemberDTO,
+                                    @Validated @RequestBody UpdateMemberDTO updateMemberDTO,
                                     @AuthenticationPrincipal UserDetails userDetails) {
         try {
             String email = userDetails.getUsername();
             log.info("email : " + email);
-            log.info("비밀번호 체크 : " + modifyMemberDTO.getMemberPw());
-            ResponseEntity<?> responseEntity = memberService.updateUser(memberId, modifyMemberDTO, email);
+            log.info("비밀번호 체크 : " + updateMemberDTO.getMemberPw());
+            ResponseEntity<?> responseEntity = memberService.updateUser(memberId, updateMemberDTO, email);
             return ResponseEntity.ok().body(responseEntity);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
