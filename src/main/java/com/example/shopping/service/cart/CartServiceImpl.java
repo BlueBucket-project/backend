@@ -2,6 +2,7 @@ package com.example.shopping.service.cart;
 
 import com.example.shopping.domain.Item.ItemSellStatus;
 import com.example.shopping.domain.cart.*;
+import com.example.shopping.entity.cart.CartEntity;
 import com.example.shopping.entity.item.ItemEntity;
 import com.example.shopping.entity.member.MemberEntity;
 import com.example.shopping.exception.cart.CartException;
@@ -42,7 +43,7 @@ public class CartServiceImpl implements CartService{
     public CartDTO addCart(CartMainDTO cartItem, String mbrEmail) {
 
         // 장바구니에 최종 저장된 아이템정보
-        CartDTO savedCartItem;
+        CartDTO savedCartItem = null;
 
         MemberEntity member = memberRepository.findByEmail(mbrEmail);
         ItemEntity item = itemRepository.findById(cartItem.getItemId())
@@ -88,35 +89,38 @@ public class CartServiceImpl implements CartService{
                 savedCartItem = cartRepository.save(cart);
             }
         }
-        //기존에 생성된 장바구니 없다면 생성
-        else {
-            log.info("기존 장바구니 없음");
-            CartDTO newCart = new CartDTO();
-            newCart = newCart.createCart(member);
-            log.info("새로운 장바구니 생성 : " + newCart.toString());
-
-            CartItemDTO itemDetail = CartItemDTO.setCartItem(newCart, item, cartItem.getCount());
-            newCart.addCartItems(itemDetail);
-
-            savedCartItem = cartRepository.create(newCart);
-        }
-
+//        //기존에 생성된 장바구니 없다면 생성
+//        else {
+//            log.info("기존 장바구니 없음");
+//            CartDTO newCart = CartDTO.createCart(member);
+//            log.info("새로운 장바구니 생성 : " + newCart.toString());
+//
+//            CartItemDTO itemDetail = CartItemDTO.setCartItem(newCart, item, cartItem.getCount());
+//            newCart.addCartItems(itemDetail);
+//
+//            savedCartItem = cartRepository.create(newCart);
+//        }
         return savedCartItem;
     }
 
     @Override
     @Transactional
-    public String deleteCart(List<CartUpdateDTO> cartItems, String mbrEmail){
-
+    public String deleteCart(List<UpdateCartDTO> cartItems, String memberEmail){
         try{
+            // 회원 조회
+            MemberEntity findUser = memberRepository.findByEmail(memberEmail);
+            // 장바구니 조회
+            CartDTO findCart = cartRepository.findByMemberMemberId(findUser.getMemberId());
             List<Long> cartItemId = new ArrayList<>();
             // 장바구니 상품 삭제하기
-            for(CartUpdateDTO item : cartItems){
+            for(UpdateCartDTO item : cartItems){
                 cartItemId.add(cartItemRepository.findByCartItemDTO(item.getCartId(), item.getItemId())
                         .getCartItemId());
             }
-            for(Long id : cartItemId){
-                cartItemRepository.delete(id);
+            if(findUser.getMemberId().equals(findCart.getMember().getId())) {
+                for(Long id : cartItemId){
+                    cartItemRepository.delete(id);
+                }
             }
         }
         catch(NullPointerException e){
@@ -125,26 +129,21 @@ public class CartServiceImpl implements CartService{
         catch (Exception e){
             throw new CartException("장바구니에서 상품을 삭제하는데 실패하였습니다.\n" + e.getMessage());
         }
-
         return "장바구니에서 상품을 삭제하였습니다.";
     }
 
     @Override
     @Transactional
-    public String updateCart(CartUpdateDTO updateItem, String email) {
-
+    public String updateCart(UpdateCartDTO updateItem, String email) {
         checkItemStock(updateItem.getItemId(), updateItem.getCount());
-
         try{
             CartItemDTO cartItem = cartItemRepository.findByCartItemDTO(updateItem.getCartId(), updateItem.getItemId());
-
             cartItem.modifyCount(updateItem.getCount());
             cartItemRepository.save(cartItem);
         }
         catch (Exception e){
             throw new CartException("상품 수량 수정에 실패하였습니다.");
         }
-
         return "상품 수량 수정에 성공하였습니다.";
     }
 
