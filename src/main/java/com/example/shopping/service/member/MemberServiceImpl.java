@@ -1,16 +1,20 @@
 package com.example.shopping.service.member;
 
 import com.example.shopping.config.jwt.JwtProvider;
+import com.example.shopping.domain.cart.CartDTO;
+import com.example.shopping.domain.cart.CartItemDTO;
 import com.example.shopping.domain.jwt.TokenDTO;
 import com.example.shopping.domain.member.RequestMemberDTO;
 import com.example.shopping.domain.member.ResponseMemberDTO;
-import com.example.shopping.domain.member.ModifyMemberDTO;
+import com.example.shopping.domain.member.UpdateMemberDTO;
 import com.example.shopping.domain.member.Role;
+import com.example.shopping.entity.cart.CartEntity;
 import com.example.shopping.entity.jwt.TokenEntity;
 import com.example.shopping.entity.member.MemberEntity;
 import com.example.shopping.exception.member.UserException;
 import com.example.shopping.repository.board.BoardRepository;
 import com.example.shopping.repository.cart.CartJpaRepository;
+import com.example.shopping.repository.cart.CartRepository;
 import com.example.shopping.repository.comment.CommentRepository;
 import com.example.shopping.repository.jwt.TokenRepository;
 import com.example.shopping.repository.member.MemberRepository;
@@ -49,7 +53,8 @@ public class MemberServiceImpl implements MemberService {
     private final TokenRepository tokenRepository;
     private final BoardRepository boardRepository;
     private final CommentRepository commentRepository;
-    private final CartJpaRepository cartRepository;
+    private final CartJpaRepository cartJpaRepository;
+    private final CartRepository cartRepository;
 
     // 회원가입
     @Override
@@ -74,6 +79,11 @@ public class MemberServiceImpl implements MemberService {
             log.info("member : " + member);
             MemberEntity saveMember = memberRepository.save(member);
 
+            // 유저 생성시 장바구니를 생성해주기 위해서 작성
+            CartDTO newCart = CartDTO.createCart(saveMember);
+            log.info("새로운 장바구니 생성 : " + newCart.toString());
+            cartRepository.create(newCart);
+
             ResponseMemberDTO coverMember = ResponseMemberDTO.toMemberDTO(saveMember);
             return ResponseEntity.ok().body(coverMember);
         } catch (Exception e) {
@@ -81,7 +91,6 @@ public class MemberServiceImpl implements MemberService {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-
     // 회원 조회
     @Override
     public ResponseMemberDTO search(Long memberId) {
@@ -106,7 +115,7 @@ public class MemberServiceImpl implements MemberService {
         if (findUser.getMemberId().equals(memberId)) {
             boardRepository.deleteAllByMemberMemberId(memberId);
             commentRepository.deleteAllByMemberMemberId(memberId);
-            cartRepository.deleteAllByMemberMemberId(memberId);
+            cartJpaRepository.deleteAllByMemberMemberId(memberId);
             memberRepository.deleteByMemberId(memberId);
             return "회원 탈퇴 완료";
         } else {
@@ -170,20 +179,20 @@ public class MemberServiceImpl implements MemberService {
 
     // 회원정보 수정
     @Override
-    public ResponseEntity<?> updateUser(Long memberId, ModifyMemberDTO modifyMemberDTO, String memberEmail) {
+    public ResponseEntity<?> updateUser(Long memberId, UpdateMemberDTO updateMemberDTO, String memberEmail) {
         try {
             // 회원조회
             MemberEntity findUser = memberRepository.findByEmail(memberEmail);
             log.info("user : " + findUser);
 
             // 닉네임 중복 체크
-            if (!nickNameCheck(modifyMemberDTO.getNickName())) {
+            if (!nickNameCheck(updateMemberDTO.getNickName())) {
                 throw new UserException("이미 존재하는 닉네임이 있습니다.");
             }
-            String encodePw = passwordEncoder.encode(modifyMemberDTO.getMemberPw());
+            String encodePw = passwordEncoder.encode(updateMemberDTO.getMemberPw());
 
             if (findUser.getMemberId().equals(memberId)) {
-                findUser.updateMember(modifyMemberDTO, encodePw);
+                findUser.updateMember(updateMemberDTO, encodePw);
                 log.info("유저 수정 : " + findUser);
 
                 MemberEntity updateUser = memberRepository.save(findUser);
