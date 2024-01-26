@@ -4,7 +4,6 @@ import com.example.shopping.domain.Item.CreateItemDTO;
 import com.example.shopping.domain.Item.ItemDTO;
 import com.example.shopping.domain.Item.ItemSearchCondition;
 import com.example.shopping.domain.Item.UpdateItemDTO;
-import com.example.shopping.domain.container.ItemContainerDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,11 +27,9 @@ public interface ItemService {
                        String role) throws Exception;
 
     // 상품 삭제
-    String removeItem(Long itemId, Long sellerId, String memberEmail, String role);
+    String removeItem(Long itemId, String memberEmail, String role);
 
     // 검색
     Page<ItemDTO> searchItemsConditions(Pageable pageable, ItemSearchCondition condition);
 
-    // 상품 창고 검색
-    List<ItemContainerDTO> getSellPlaceList();
 }
