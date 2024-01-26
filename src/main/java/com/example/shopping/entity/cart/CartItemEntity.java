@@ -3,6 +3,7 @@ package com.example.shopping.entity.cart;
 import com.example.shopping.domain.cart.*;
 import com.example.shopping.entity.Base.BaseTimeEntity;
 import com.example.shopping.entity.item.ItemEntity;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,7 +17,7 @@ import javax.persistence.*;
  * */
 @Entity(name = "cartitem")
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class CartItemEntity extends BaseTimeEntity {
 
     @Id
@@ -40,12 +41,12 @@ public class CartItemEntity extends BaseTimeEntity {
     private ItemEntity item;
 
     @Builder
-    public CartItemEntity(Long cartitemId,
+    public CartItemEntity(Long cartItemId,
                           CartEntity cart,
                           CartStatus status,
                           ItemEntity item,
                           int count) {
-        this.cartitemId = cartitemId;
+        this.cartitemId = cartItemId;
         this.cart =cart;
         this.item = item;
         this.status = status;
