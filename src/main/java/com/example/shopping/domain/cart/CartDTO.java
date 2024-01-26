@@ -73,9 +73,8 @@ public class CartDTO {
                 .build();
     }
 
-    public CartDTO createCart(MemberEntity member){
+    public static CartDTO createCart(MemberEntity member){
         return CartDTO.builder()
-                .cartId(this.cartId)
                 .member(InfoMemberDTO.from(member))
                 .cartItems(new ArrayList<>())
                 .build();
