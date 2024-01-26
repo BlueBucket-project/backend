@@ -27,7 +27,6 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.persistence.EntityNotFoundException;
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /*
  *   writer : 유요한, 오현진
@@ -36,7 +35,7 @@ import java.util.stream.Collectors;
  *          - 상품 CRUD기능과 상품의 판매지역을 가져올 수 있고 조건에 맞춰서 검색할 수 있습니다.
  *          이렇게 인터페이스를 만들고 상속해주는 방식을 선택한 이유는
  *          메소드에 의존하지 않고 필요한 기능만 사용할 수 있게 하고 가독성과 유지보수성을 높이기 위해서 입니다.
- *   date : 2024/01/24
+ *   date : 2024/01/25
  * */
 @RequiredArgsConstructor
 @Service
@@ -138,7 +137,7 @@ public class ItemServiceImpl implements ItemService {
             // 이미지 조회
             List<ItemImgEntity> itemImgs = itemImgRepository.findByItemItemId(itemId);
 
-            if (role.equals("ROLE_ADMIN")) {
+            if (role.equals("ROLE_ADMIN") && findItem.getItemSeller().equals(findMember.getMemberId())) {
                 // 상품 정보 수정
                 findItem.updateItem(itemDTO);
                 // 남겨줄 이미지id를 받지 못한다는 것은 전부 삭제한다는 의미이니
@@ -218,7 +217,7 @@ public class ItemServiceImpl implements ItemService {
 
     // 상품 삭제
     @Override
-    public String removeItem(Long itemId, Long sellerId, String memberEmail, String role) {
+    public String removeItem(Long itemId, String memberEmail, String role) {
 
         try {
             // 상품 조회
@@ -232,9 +231,10 @@ public class ItemServiceImpl implements ItemService {
             // 이미지 조회
             List<ItemImgEntity> findImg = itemImgRepository.findByItemItemId(itemId);
             // 회원 조회
-            MemberEntity sellUser = memberRepository.findById(sellerId).orElseThrow();
+            MemberEntity sellUser = memberRepository.findById(findItem.getItemSeller()).orElseThrow();
+            MemberEntity findUser = memberRepository.findByEmail(memberEmail);
 
-            if (role.equals("ROLE_ADMIN") && sellUser.getMemberId().equals(findItem.getItemSeller())) {
+            if (role.equals("ROLE_ADMIN") && findUser.getMemberId().equals(sellUser.getMemberId())) {
 
                 // item을 참조하고 있는 자식Entity값 null셋팅
                 List<CartItemDTO> items = cartItemRepository.findByItemId(itemId);
@@ -259,19 +259,6 @@ public class ItemServiceImpl implements ItemService {
             throw new ItemException("상품 삭제에 실패하였습니다.\n" + ignored.getMessage());
         }
         return "상품과 이미지를 삭제했습니다.";
-    }
-
-
-
-    // 상품의 판매지역을 보여줍니다.
-    @Override
-    @Transactional(readOnly = true)
-    public List<ItemContainerDTO> getSellPlaceList() {
-        // 반환값이 컬렉션이기 때문에 .stream().map()을 사용합니다.
-        return itemContainerRepository.findAll()
-                        .stream()
-                        .map(ItemContainerDTO::from)
-                        .collect(Collectors.toList());
     }
 
     // 상품 검색 - 여러 조건으로 검색하기
