@@ -42,60 +42,48 @@ public class CartController {
                                         , @AuthenticationPrincipal UserDetails userDetails
     ) {
         CartDTO cartItem;
-
         try {
             if (result.hasErrors()) {
                 log.error("bindingResult error : " + result.hasErrors());
                 return ResponseEntity.badRequest().body(result.getClass().getSimpleName());
             }
-
             String email = userDetails.getUsername();
             cartItem = cartService.addCart(cart, email);
-
         } catch (CartException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
-
         return ResponseEntity.ok().body(cartItem);
     }
 
     @PutMapping(value = "/item")
     @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
     @Operation(summary = "장바구니물품 수정", description = "장바구니 물품 수량을 수정하는 API입니다.")
-    public ResponseEntity<?> updateCart(@RequestBody CartUpdateDTO cartItem
+    public ResponseEntity<?> updateCart(@RequestBody UpdateCartDTO cartItem
                                     , @AuthenticationPrincipal UserDetails userDetails
     ) {
         String res;
-
         try {
-
             String email = userDetails.getUsername();
             res = cartService.updateCart(cartItem, email);
-
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
-
         return ResponseEntity.ok().body(res);
     }
 
     @PostMapping(value = "/items")
     @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
     @Operation(summary = "장바구니삭제", description = "상품을 장바구니에서 삭제하는 API입니다.")
-    public ResponseEntity<?> deleteCart(@RequestBody List<CartUpdateDTO> cartItems
+    public ResponseEntity<?> deleteCart(@RequestBody List<UpdateCartDTO> cartItems
                                         , @AuthenticationPrincipal UserDetails userDetails
     ) {
         String res;
-
         try {
-
             String email = userDetails.getUsername();
             res = cartService.deleteCart(cartItems, email);
-
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
-
         return ResponseEntity.ok().body(res);
     }
 
@@ -106,16 +94,12 @@ public class CartController {
                             , @AuthenticationPrincipal UserDetails userDetails
     ) {
         String res;
-
         try {
-
             String email = userDetails.getUsername();
             res = cartService.orderCart(cartItems, email);
-
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
-
         return ResponseEntity.ok().body(res);
     }
 
@@ -126,16 +110,12 @@ public class CartController {
                                             , @AuthenticationPrincipal UserDetails userDetails
     ) {
         String res;
-
         try {
-
             String email = userDetails.getUsername();
             res = cartService.cancelCartOrder(cartItems, email);
-
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
-
         return ResponseEntity.ok().body(res);
     }
 
