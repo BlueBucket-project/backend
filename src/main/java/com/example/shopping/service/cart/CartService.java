@@ -10,9 +10,9 @@ public interface CartService {
 
     CartDTO addCart(CartMainDTO cart, String email);
 
-    String deleteCart(List<CartUpdateDTO> cartItem, String email);
+    String deleteCart(List<UpdateCartDTO> cartItem, String email);
 
-    String updateCart(CartUpdateDTO cartItem, String email);
+    String updateCart(UpdateCartDTO cartItem, String email);
 
     String orderCart(List<CartOrderDTO> cartOrderList, String email);
 
