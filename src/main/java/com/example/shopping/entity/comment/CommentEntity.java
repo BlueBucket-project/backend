@@ -1,7 +1,7 @@
 package com.example.shopping.entity.comment;
 
 import com.example.shopping.domain.comment.CommentDTO;
-import com.example.shopping.domain.comment.ModifyCommentDTO;
+import com.example.shopping.domain.comment.UpdateCommentDTO;
 import com.example.shopping.entity.Base.BaseEntity;
 import com.example.shopping.entity.board.BoardEntity;
 import com.example.shopping.entity.member.MemberEntity;
@@ -61,7 +61,7 @@ public class CommentEntity extends BaseEntity {
     }
 
     // 생성
-    public static CommentEntity createComment(ModifyCommentDTO commentDTO,
+    public static CommentEntity createComment(UpdateCommentDTO commentDTO,
                                               MemberEntity member,
                                               BoardEntity board) {
         return CommentEntity.builder()
