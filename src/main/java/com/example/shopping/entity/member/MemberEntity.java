@@ -1,8 +1,7 @@
 package com.example.shopping.entity.member;
 
-import com.example.shopping.domain.member.ModifyMemberDTO;
+import com.example.shopping.domain.member.UpdateMemberDTO;
 import com.example.shopping.domain.member.RequestMemberDTO;
-import com.example.shopping.domain.member.ResponseMemberDTO;
 import com.example.shopping.domain.member.Role;
 import com.example.shopping.entity.Base.BaseTimeEntity;
 import lombok.*;
@@ -90,7 +89,7 @@ public class MemberEntity extends BaseTimeEntity {
                         .build()).build();
     }
 
-    public void updateMember(ModifyMemberDTO updateMember, String encodePw) {
+    public void updateMember(UpdateMemberDTO updateMember, String encodePw) {
         MemberEntity.builder()
                 .memberId(this.memberId)
                 .email(this.email)
