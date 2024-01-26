@@ -4,7 +4,6 @@ import com.example.shopping.domain.Item.ItemDTO;
 import com.example.shopping.entity.cart.CartEntity;
 import com.example.shopping.entity.cart.CartItemEntity;
 import com.example.shopping.entity.item.ItemEntity;
-import com.example.shopping.entity.member.MemberEntity;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,7 +20,6 @@ public class CartItemDTO {
     private Long cartItemId;
     private int price;
     private int count;
-    // private Long cartId;
     private CartDTO cart;
     private ItemDTO item;
     private Long mbrId;
