@@ -104,7 +104,8 @@ public class ItemEntity extends BaseTimeEntity {
         this.boardEntityList = boardEntityList;
         this.itemSeller = itemSeller;
     }
-    public static ItemEntity saveEntity(ItemDTO itemDTO, CreateItemDTO saveItem) {
+    public static ItemEntity saveEntity(ItemDTO itemDTO,
+                                        CreateItemDTO saveItem) {
         return ItemEntity.builder()
                 .itemName(itemDTO.getItemName())
                 .itemDetail(itemDTO.getItemDetail())
