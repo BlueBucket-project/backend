@@ -1,6 +1,7 @@
 package com.example.shopping.controller.item;
 
 import com.example.shopping.domain.Item.*;
+import com.example.shopping.service.container.ItemContainerService;
 import com.example.shopping.service.item.ItemService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,7 +28,7 @@ import java.util.Map;
  *   writer : YuYoHan, 오현진
  *   work :
  *          상품 작성, 삭제, 수정, 전체 가져오기 그리고 검색하는 기능입니다.
- *   date : 2024/01/23
+ *   date : 2024/01/25
  * */
 @RestController
 @Log4j2
@@ -36,6 +37,7 @@ import java.util.Map;
 @Tag(name = "item", description = "상품 API")
 public class ItemController {
     private final ItemService itemService;
+    private final ItemContainerService itemContainerService;
 
     // 상품 등록
     @PostMapping("")
@@ -53,11 +55,8 @@ public class ItemController {
                 log.error("bindingResult error : " + result.hasErrors());
                 return ResponseEntity.badRequest().body(result.getClass().getSimpleName());
             }
-
             String email = userDetails.getUsername();
             ItemDTO savedItem = itemService.saveItem(item, itemFiles, email);
-            //testData
-            //ItemDTO savedItem = itemServiceImpl.saveItem(itemInfo, itemFiles, "mem123@test.com");
             return ResponseEntity.ok().body(savedItem);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -86,16 +85,13 @@ public class ItemController {
     @Operation(summary = "상품 수정", description = "상품을 수정하는 API입니다.")
     public ResponseEntity<?> updateItem(@PathVariable Long itemId,
                                         @RequestPart("key") UpdateItemDTO itemDTO,
-                                        @RequestPart(value = "files", required = false) List<MultipartFile> itemFiles
-            , @AuthenticationPrincipal UserDetails userDetails
+                                        @RequestPart(value = "files", required = false) List<MultipartFile> itemFiles,
+                                        @AuthenticationPrincipal UserDetails userDetails
     ) {
         try {
-
             String email = userDetails.getUsername();
             String role = userDetails.getAuthorities().iterator().next().getAuthority();
-
             ItemDTO updateItem = itemService.updateItem(itemId, itemDTO, itemFiles, email, role);
-
             return ResponseEntity.ok().body(updateItem);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -108,14 +104,13 @@ public class ItemController {
     @Tag(name = "item")
     @Operation(summary = "상품 삭제", description = "상품을 삭제하는 API입니다.")
     public ResponseEntity<?> deleteItem(@PathVariable Long itemId
-            , @RequestBody DelItemDTO itemDTO
             , @AuthenticationPrincipal UserDetails userDetails
     ) {
         try {
             String email = userDetails.getUsername();
             String role = userDetails.getAuthorities().iterator().next().getAuthority();
 
-            String result = itemService.removeItem(itemId, itemDTO.getItemSeller(), email, role);
+            String result = itemService.removeItem(itemId, email, role);
 
             return ResponseEntity.ok().body(result);
         } catch (Exception e) {
@@ -130,10 +125,9 @@ public class ItemController {
     @Operation(summary = "상품 전체", description = "모든 상품을 보여주는 API입니다.")
     public ResponseEntity<?> searchItemsConditions(Pageable pageable,
                                                    ItemSearchCondition condition) {
-        Page<ItemDTO> items;
         try {
             log.info("condition : " + condition);
-            items = itemService.searchItemsConditions(pageable, condition);
+            Page<ItemDTO> items = itemService.searchItemsConditions(pageable, condition);
             log.info("상품 조회 {}", items);
 
             Map<String, Object> response = new HashMap<>();
@@ -164,9 +158,8 @@ public class ItemController {
     @GetMapping("/sellplace")
     @Tag(name = "item")
     @Operation(summary = "상품 판매지역 리스트", description = "모든 상품의 판매지역을 보여주는 API입니다.")
-    public ResponseEntity<?> getSellPlaceList() {
-
-        return ResponseEntity.ok().body(itemService.getSellPlaceList());
+    public ResponseEntity<?> getSellPlaceList(Pageable pageable) {
+        return ResponseEntity.ok().body(itemContainerService.getSellPlaceList(pageable));
     }
 
 }
