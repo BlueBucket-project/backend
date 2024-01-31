@@ -103,15 +103,10 @@ public class ItemController {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Tag(name = "item")
     @Operation(summary = "상품 삭제", description = "상품을 삭제하는 API입니다.")
-    public ResponseEntity<?> deleteItem(@PathVariable Long itemId
-            , @AuthenticationPrincipal UserDetails userDetails
-    ) {
+    public ResponseEntity<?> deleteItem(@PathVariable Long itemId,
+                                        @AuthenticationPrincipal UserDetails userDetails) {
         try {
-            String email = userDetails.getUsername();
-            String role = userDetails.getAuthorities().iterator().next().getAuthority();
-
-            String result = itemService.removeItem(itemId, email, role);
-
+            String result = itemService.removeItem(itemId, userDetails);
             return ResponseEntity.ok().body(result);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
