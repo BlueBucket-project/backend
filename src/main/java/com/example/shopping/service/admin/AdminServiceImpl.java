@@ -251,81 +251,7 @@ public class AdminServiceImpl implements AdminService {
         }
     }
 
-    // 상품 삭제
-    @Override
-    public String removeItem(Long itemId, UserDetails userDetails) {
-        try {
-            // 삭제할 권한이 있는지 확인
-            // userDetails에서 권한을 가져오기
-            Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
 
-            // 상품 조회
-            ItemEntity findItem = itemRepository.findById(itemId)
-                    .orElseThrow(EntityNotFoundException::new);
-            // 상품 이미지 조회
-            List<ItemImgEntity> findItemImg = itemImgRepository.findByItemItemId(itemId);
-
-            // 현재는 권한이 1개만 있는 것으로 가정
-            if (!authorities.isEmpty()) {
-                // 현재 사용자의 권한(authority) 목록에서 첫 번째 권한을 가져오는 코드입니다.
-                // 현재 저의 로직에서는 유저는 하나의 권한을 가지므로 이렇게 처리할 수 있다.
-                String role = authorities.iterator().next().getAuthority();
-                log.info("권한 : " + role);
-                // 존재하는 권한이 관리자인지 체크
-                if (role.equals("ADMIN") || role.equals("ROLE_ADMIN")) {
-                    // 장바구니 상품을 null로 바꾸고 저장
-                    List<CartItemDTO> items = cartItemRepository.findByItemId(itemId);
-                    for (CartItemDTO item : items) {
-                        item.setItem(null);
-                        cartItemRepository.save(item);
-                    }
-                    // 상품 정보 삭제
-                    itemRepository.deleteByItemId(findItem.getItemId());
-                    // 삭제하는데 이미지를 풀어놓는 이유는
-                    // S3에 삭제할 때 넘겨줘야 할 매개변수때문이다.
-                    for (ItemImgEntity itemImgEntity : findItemImg) {
-                        String uploadImgPath = itemImgEntity.getUploadImgPath();
-                        String uploadImgName = itemImgEntity.getUploadImgName();
-                        // S3에서 이미지 삭제
-                        s3ItemImgUploaderService.deleteFile(uploadImgPath, uploadImgName);
-                    }
-                    return "상품을 삭제 했습니다.";
-                }
-            }
-            return "상품 삭제 권한이 없습니다.";
-        } catch (Exception e) {
-            return e.getMessage();
-        }
-    }
-
-    // 게시물 삭제
-    @Override
-    public String removeBoard(Long boardId, UserDetails userDetails) {
-        try {
-            // 삭제할 권한이 있는지 확인
-            // userDetails에서 권한을 가져오기
-            Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
-
-            // 게시글 조회
-            BoardEntity findBoard = boardRepository.findById(boardId)
-                    .orElseThrow(EntityNotFoundException::new);
-
-            // 권한이 있는지 체크
-            if (!authorities.isEmpty()) {
-                String role = authorities.iterator().next().getAuthority();
-                log.info("권한 : " + role);
-
-                if (role.equals("ADMIN") || role.equals("ROLE_ADMIN")) {
-                    // 게시글 정보 삭제
-                    boardRepository.deleteByBoardId(findBoard.getBoardId());
-                    return "게시글을 삭제 했습니다.";
-                }
-            }
-            return "게시글 삭제 권한이 없습니다.";
-        } catch (Exception e) {
-            return e.getMessage();
-        }
-    }
     // 구매 확정 메소드
     public OrderDTO orderItem(List<OrderMainDTO> orders, String adminEmail) {
 
@@ -360,7 +286,9 @@ public class AdminServiceImpl implements AdminService {
             }
 
             // 구매처리 하려는 아이템 셋팅
-            OrderItemEntity orderItem = OrderItemEntity.setOrderItem(item, memberId, item.getItemSeller(), order.getCount());
+            OrderItemEntity orderItem =
+                    OrderItemEntity.setOrderItem(
+                            item, memberId, item.getItemSeller(), order.getCount());
             itemList.add(orderItem.toOrderItemDTO());
 
             orderInfo = OrderDTO.createOrder(adminId, memberId, itemList);
@@ -429,10 +357,7 @@ public class AdminServiceImpl implements AdminService {
 
                 // 관리자라 모두 읽을 수 있으니 UN_LOCK
                 allBoards.forEach(board -> board.changeSecret(BoardSecret.UN_LOCK));
-                return allBoards.map(board -> BoardDTO.toBoardDTO(
-                        board,
-                        board.getMember().getNickName(),
-                        board.getItem().getItemId()));
+                return allBoards.map(BoardDTO::toBoardDTO);
             }
         }
         return null;
@@ -469,10 +394,7 @@ public class AdminServiceImpl implements AdminService {
                 replyCheck(allByNickName);
                 // 관리자라 모두 읽을 수 있으니 UN_LOCK
                 allByNickName.forEach(board -> board.changeSecret(BoardSecret.UN_LOCK));
-                return allByNickName.map(board -> BoardDTO.toBoardDTO(
-                        board,
-                        nickName,
-                        board.getItem().getItemId()));
+                return allByNickName.map(BoardDTO::toBoardDTO);
             }
         }
         return null;
@@ -495,10 +417,7 @@ public class AdminServiceImpl implements AdminService {
                 String role = authorities.iterator().next().getAuthority();
                 log.info("권한 : " + role);
                 if (role.equals("ADMIN") || role.equals("ROLE_ADMIN")) {
-                    BoardDTO returnBoard = BoardDTO.toBoardDTO(
-                            findBoard,
-                            findBoard.getMember().getNickName(),
-                            findBoard.getItem().getItemId());
+                    BoardDTO returnBoard = BoardDTO.toBoardDTO(findBoard);
                     return ResponseEntity.ok().body(returnBoard);
                 }
             }
@@ -537,11 +456,7 @@ public class AdminServiceImpl implements AdminService {
                 replyCheck(allItemBoards);
 
                 allItemBoards.forEach(board -> board.changeSecret(BoardSecret.UN_LOCK));
-                return allItemBoards.map(board -> BoardDTO.toBoardDTO(
-                        board,
-                        board.getMember().getNickName(),
-                        board.getItem().getItemId()
-                ));
+                return allItemBoards.map(BoardDTO::toBoardDTO);
             }
         }
         return null;
