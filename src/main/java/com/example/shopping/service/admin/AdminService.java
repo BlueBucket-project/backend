@@ -15,10 +15,6 @@ import org.springframework.security.core.userdetails.UserDetails;
  *   date : 2024/01/10
  * */
 public interface AdminService {
-    // 상품 삭제
-    String removeItem(Long itemId, UserDetails userDetails);
-    // 게시글 삭제
-    String removeBoard(Long boardId, UserDetails userDetails);
     // 문의글 전체 보기
     Page<BoardDTO> getAllBoards(Pageable pageable, String searchKeyword, UserDetails userDetails);
     // 작성자의 문의글 보기
