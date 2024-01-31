@@ -174,21 +174,36 @@ public class MemberController {
     }
 
     // 주문 조회
-    @GetMapping(value = "/order/{findEmail}")
+    @GetMapping(value = "/orders")
     @Tag(name = "member")
     @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
     @Operation(summary = "주문내역조회", description = "주문내역을 조회하는 API입니다.")
-    public ResponseEntity<?> getOrders(@PathVariable String findEmail
-            ,@AuthenticationPrincipal UserDetails userDetails) {
-        List<OrderItemDTO> orders = new ArrayList<>();
+    public ResponseEntity<?> getOrders(Pageable pageable,
+                                       @AuthenticationPrincipal UserDetails userDetails) {
         try {
             String email = userDetails.getUsername();
-            orders = orderService.getOrders(findEmail, email);
-
+            Page<OrderItemDTO> ordersPage = orderService.getOrdersPage(pageable, email);
+            Map<String, Object> response = new HashMap<>();
+            // 현재 페이지의 아이템 목록
+            response.put("items", ordersPage.getContent());
+            // 현재 페이지 번호
+            response.put("nowPageNumber", ordersPage.getNumber()+1);
+            // 전체 페이지 수
+            response.put("totalPage", ordersPage.getTotalPages());
+            // 한 페이지에 출력되는 데이터 개수
+            response.put("pageSize", ordersPage.getSize());
+            // 다음 페이지 존재 여부
+            response.put("hasNextPage", ordersPage.hasNext());
+            // 이전 페이지 존재 여부
+            response.put("hasPreviousPage", ordersPage.hasPrevious());
+            // 첫 번째 페이지 여부
+            response.put("isFirstPage", ordersPage.isFirst());
+            // 마지막 페이지 여부
+            response.put("isLastPage", ordersPage.isLast());
+            return ResponseEntity.ok().body(response);
         } catch (Exception e) {
-            return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
-        return ResponseEntity.ok().body(orders);
     }
 
     // 나의 문의글 확인
