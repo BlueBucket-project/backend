@@ -9,6 +9,8 @@ import com.example.shopping.domain.member.RequestMemberDTO;
 import com.example.shopping.domain.order.OrderDTO;
 import com.example.shopping.domain.order.OrderMainDTO;
 import com.example.shopping.service.admin.AdminServiceImpl;
+import com.example.shopping.service.board.BoardService;
+import com.example.shopping.service.item.ItemService;
 import com.example.shopping.service.item.ItemServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -49,30 +51,23 @@ import java.util.Map;
 @Tag(name = "admin", description = "관리자 API입니다.")
 public class AdminController {
     private final AdminServiceImpl adminService;
-    private final ItemServiceImpl itemService;
+    private final ItemService itemService;
+    private final BoardService boardService;
 
-    // 상품 삭제
-    @DeleteMapping("/items/{itemId}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    @Tag(name = "admin")
-    @Operation(summary = "상품 삭제", description = "관리자가 상품을 삭제하는 API입니다.")
-    public String removeItem(@PathVariable Long itemId,
-                             @AuthenticationPrincipal UserDetails userDetails) {
-        String result = adminService.removeItem(itemId, userDetails);
-        log.info("result : " + result);
-        return result;
-    }
 
     // 게시글 삭제
     @DeleteMapping("/boards/{boardId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Tag(name = "admin")
     @Operation(summary = "게시글 삭제", description = "관리자가 게시글을 삭제하는 API입니다.")
-    public String removeBoard(@PathVariable Long boardId,
+    public ResponseEntity<?> removeBoard(@PathVariable Long boardId,
                              @AuthenticationPrincipal UserDetails userDetails) {
-        String result = adminService.removeBoard(boardId, userDetails);
-        log.info("result : " + result);
-        return result;
+        try {
+            String result = boardService.removeBoard(boardId, userDetails);
+            return ResponseEntity.ok().body(result);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     // 모든 문의글 보기
@@ -91,28 +86,33 @@ public class AdminController {
             // 검색하지 않을 때는 모든 글을 보여준다.
             Page<BoardDTO> boards = adminService.getAllBoards(pageable, searchKeyword, userDetails);
 
-            Map<String, Object> response = new HashMap<>();
-            // 현재 페이지의 아이템 목록
-            response.put("items", boards.getContent());
-            // 현재 페이지 번호
-            response.put("nowPageNumber", boards.getNumber() + 1);
-            // 전체 페이지 수
-            response.put("totalPage", boards.getTotalPages());
-            // 한 페이지에 출력되는 데이터 개수
-            response.put("pageSize", boards.getSize());
-            // 다음 페이지 존재 여부
-            response.put("hasNextPage", boards.hasNext());
-            // 이전 페이지 존재 여부
-            response.put("hasPreviousPage", boards.hasPrevious());
-            // 첫 번째 페이지 여부
-            response.put("isFirstPage", boards.isFirst());
-            // 마지막 페이지 여부
-            response.put("isLastPage", boards.isLast());
+            Map<String, Object> response = pageInfo(boards);
 
             return ResponseEntity.ok().body(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
+    }
+
+    private static Map<String, Object> pageInfo(Page<BoardDTO> boards) {
+        Map<String, Object> response = new HashMap<>();
+        // 현재 페이지의 아이템 목록
+        response.put("items", boards.getContent());
+        // 현재 페이지 번호
+        response.put("nowPageNumber", boards.getNumber() + 1);
+        // 전체 페이지 수
+        response.put("totalPage", boards.getTotalPages());
+        // 한 페이지에 출력되는 데이터 개수
+        response.put("pageSize", boards.getSize());
+        // 다음 페이지 존재 여부
+        response.put("hasNextPage", boards.hasNext());
+        // 이전 페이지 존재 여부
+        response.put("hasPreviousPage", boards.hasPrevious());
+        // 첫 번째 페이지 여부
+        response.put("isFirstPage", boards.isFirst());
+        // 마지막 페이지 여부
+        response.put("isLastPage", boards.isLast());
+        return response;
     }
 
     // 상품에 대한 문의글 보기
@@ -128,23 +128,7 @@ public class AdminController {
     ) {
         try {
             Page<BoardDTO> itemBoards = adminService.getItemBoards(pageable, itemId, userDetails);
-            Map<String, Object> response = new HashMap<>();
-            // 현재 페이지의 아이템 목록
-            response.put("items", itemBoards.getContent());
-            // 현재 페이지 번호
-            response.put("nowPageNumber", itemBoards.getNumber()+1);
-            // 전체 페이지 수
-            response.put("totalPage", itemBoards.getTotalPages());
-            // 한 페이지에 출력되는 데이터 개수
-            response.put("pageSize", itemBoards.getSize());
-            // 다음 페이지 존재 여부
-            response.put("hasNextPage", itemBoards.hasNext());
-            // 이전 페이지 존재 여부
-            response.put("hasPreviousPage", itemBoards.hasPrevious());
-            // 첫 번째 페이지 여부
-            response.put("isFirstPage", itemBoards.isFirst());
-            // 마지막 페이지 여부
-            response.put("isLastPage", itemBoards.isLast());
+            Map<String, Object> response = pageInfo(itemBoards);
 
             return ResponseEntity.ok().body(response);
         }catch (Exception e) {
@@ -168,23 +152,7 @@ public class AdminController {
         try {
             // 검색하지 않을 때는 모든 글을 보여준다.
             Page<BoardDTO> boards = adminService.getBoardsByNiickName(userDetails,pageable,nickName,searchKeyword);
-            Map<String, Object> response = new HashMap<>();
-            // 현재 페이지의 아이템 목록
-            response.put("items", boards.getContent());
-            // 현재 페이지 번호
-            response.put("nowPageNumber", boards.getNumber()+1);
-            // 전체 페이지 수
-            response.put("totalPage", boards.getTotalPages());
-            // 한 페이지에 출력되는 데이터 개수
-            response.put("pageSize", boards.getSize());
-            // 다음 페이지 존재 여부
-            response.put("hasNextPage", boards.hasNext());
-            // 이전 페이지 존재 여부
-            response.put("hasPreviousPage", boards.hasPrevious());
-            // 첫 번째 페이지 여부
-            response.put("isFirstPage", boards.isFirst());
-            // 마지막 페이지 여부
-            response.put("isLastPage", boards.isLast());
+            Map<String, Object> response = pageInfo(boards);
 
             return ResponseEntity.ok().body(response);
         } catch (Exception e) {
@@ -218,7 +186,6 @@ public class AdminController {
             , @AuthenticationPrincipal UserDetails userDetails
     ) {
         OrderDTO orderItem;
-
         try {
             if (result.hasErrors()) {
                 log.error("bindingResult error : " + result.hasErrors());
@@ -227,8 +194,6 @@ public class AdminController {
 
             String email = userDetails.getUsername();
             orderItem = adminService.orderItem(orders, email);
-            //test데이터 - 배포시 삭제
-            //orderItem = orderService.orderItem(orders, "admin123@test.com");
 
         } catch (Exception e) {
             return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
