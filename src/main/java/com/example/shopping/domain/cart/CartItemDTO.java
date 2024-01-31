@@ -44,7 +44,7 @@ public class CartItemDTO {
 
     public CartItemEntity toEntity(){
         return CartItemEntity.builder()
-                .cartitemId(this.cartItemId)
+                .cartItemId(this.cartItemId)
                 .count(this.count)
                 .cart(this.cart == null? null :
                         CartEntity.builder().cartId(this.cart.getCartId()).build())
