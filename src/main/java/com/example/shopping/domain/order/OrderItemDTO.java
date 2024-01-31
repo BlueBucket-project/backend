@@ -25,7 +25,7 @@ public class OrderItemDTO {
     @Schema(description = "주문결제일자")
     private LocalDateTime orderDate;
     @Schema(description = "구매상품내역고유번호")
-    private Long orderitemId;
+    private Long orderItemId;
     @Schema(description = "구매상품가격")
     private int itemPrice;
     @Schema(description = "구매상품수량")
@@ -38,14 +38,17 @@ public class OrderItemDTO {
     private Long itemId;
     @Schema(description = "상품번호")
     private ItemDTO item;
-
-    public interface orderItemId{
-        Long getItemId();
-    }
-
+    
     @Builder
-    public OrderItemDTO(Long orderitemId, int itemPrice, Integer itemAmount, Long itemBuyer, Long itemSeller, Long itemId, LocalDateTime orderDate, ItemDTO item) {
-        this.orderitemId = orderitemId;
+    public OrderItemDTO(Long orderItemId,
+                        int itemPrice, 
+                        Integer itemAmount,
+                        Long itemBuyer,
+                        Long itemSeller,
+                        Long itemId,
+                        LocalDateTime orderDate,
+                        ItemDTO item) {
+        this.orderItemId = orderItemId;
         this.itemPrice = itemPrice;
         this.itemAmount = itemAmount;
         this.itemBuyer = itemBuyer;
@@ -60,7 +63,7 @@ public class OrderItemDTO {
                 .count(this.itemAmount)
                 .itemBuyer(this.itemBuyer)
                 .itemSeller(this.itemSeller)
-                .orderitemId(this.orderitemId)
+                .orderItemId(this.orderItemId)
                 .item(this.item.toEntity())
                 .build();
     }
@@ -70,7 +73,7 @@ public class OrderItemDTO {
                 .count(this.itemAmount)
                 .itemBuyer(this.itemBuyer)
                 .itemSeller(this.itemSeller)
-                .orderitemId(this.orderitemId)
+                .orderItemId(this.orderItemId)
                 .item(this.item.toEntity())
                 .order(order)
                 .build();
