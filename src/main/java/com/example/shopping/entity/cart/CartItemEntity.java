@@ -1,5 +1,6 @@
 package com.example.shopping.entity.cart;
 
+import com.example.shopping.domain.Item.ItemSellStatus;
 import com.example.shopping.domain.cart.*;
 import com.example.shopping.entity.Base.BaseTimeEntity;
 import com.example.shopping.entity.item.ItemEntity;
@@ -10,10 +11,10 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 /*
- *   writer : 오현진
+ *   writer : 오현진, 유요한
  *   work :
  *          장바구니 상품 테이블을 만들어줍니다.
- *   date : 2024/12/08
+ *   date : 2024/01/29
  * */
 @Entity(name = "cartitem")
 @Getter
@@ -51,5 +52,18 @@ public class CartItemEntity extends BaseTimeEntity {
         this.item = item;
         this.status = status;
         this.count = count;
+    }
+
+    // 예약 시 상품의 상태, 예약자 그리고 예약 수량을 수정하기 위해서
+    // 여기에 처리한 이유는 더티 체킹을 이용하기 위해서 입니다.
+    public void orderItem(String email) {
+        this.getItem().changeStatus(ItemSellStatus.RESERVED);
+        this.getItem().reserveItem(email, this.count);
+    }
+
+    public void cancelOrderItem() {
+        // 상품 엔티티의 상태 변경 메소드 호출
+        this.getItem().changeStatus(ItemSellStatus.SELL);
+        this.getItem().reserveItem(null, 0);
     }
 }
