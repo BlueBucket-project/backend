@@ -25,7 +25,7 @@ import java.util.Map;
  *   writer : 오현진
  *   work :
  *          장바구니 기능
- *   date : 2023/10/25
+ *   date : 2024/01/27
  * */
 @Slf4j
 @RestController
@@ -38,28 +38,28 @@ public class CartController {
     @PostMapping(value = "")
     @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
     @Operation(summary = "장바구니담기", description = "상품을 장바구니에 담는 API입니다.")
-    public ResponseEntity<?> insertCart(@Valid @RequestBody CartMainDTO cart, BindingResult result
-                                        , @AuthenticationPrincipal UserDetails userDetails
+    public ResponseEntity<?> insertCart(@Valid @RequestBody CartMainDTO cart,
+                                        BindingResult result,
+                                        @AuthenticationPrincipal UserDetails userDetails
     ) {
-        CartDTO cartItem;
         try {
             if (result.hasErrors()) {
                 log.error("bindingResult error : " + result.hasErrors());
                 return ResponseEntity.badRequest().body(result.getClass().getSimpleName());
             }
             String email = userDetails.getUsername();
-            cartItem = cartService.addCart(cart, email);
+            CartDTO cartItem = cartService.addCart(cart, email);
+            return ResponseEntity.ok().body(cartItem);
         } catch (CartException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
-        return ResponseEntity.ok().body(cartItem);
     }
 
     @PutMapping(value = "/item")
     @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
     @Operation(summary = "장바구니물품 수정", description = "장바구니 물품 수량을 수정하는 API입니다.")
-    public ResponseEntity<?> updateCart(@RequestBody UpdateCartDTO cartItem
-                                    , @AuthenticationPrincipal UserDetails userDetails
+    public ResponseEntity<?> updateCart(@RequestBody UpdateCartDTO cartItem,
+                                        @AuthenticationPrincipal UserDetails userDetails
     ) {
         String res;
         try {
@@ -71,11 +71,11 @@ public class CartController {
         return ResponseEntity.ok().body(res);
     }
 
-    @PostMapping(value = "/items")
+    @DeleteMapping(value = "/items")
     @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
     @Operation(summary = "장바구니삭제", description = "상품을 장바구니에서 삭제하는 API입니다.")
-    public ResponseEntity<?> deleteCart(@RequestBody List<UpdateCartDTO> cartItems
-                                        , @AuthenticationPrincipal UserDetails userDetails
+    public ResponseEntity<?> deleteCart(@RequestBody List<UpdateCartDTO> cartItems,
+                                        @AuthenticationPrincipal UserDetails userDetails
     ) {
         String res;
         try {
@@ -90,17 +90,15 @@ public class CartController {
     @PostMapping(value = "/orderItems")
     @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
     @Operation(summary = "장바구니구매예약", description = "장바구니 상품을 구매예약하는 API입니다.")
-    public ResponseEntity<?> orderCart(@RequestBody List<CartOrderDTO> cartItems
-                            , @AuthenticationPrincipal UserDetails userDetails
+    public ResponseEntity<?> orderCart(@RequestBody List<CartOrderDTO> cartItems,
+                                       @AuthenticationPrincipal UserDetails userDetails
     ) {
-        String res;
         try {
             String email = userDetails.getUsername();
-            res = cartService.orderCart(cartItems, email);
+            return cartService.orderCart(cartItems, email);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
-        return ResponseEntity.ok().body(res);
     }
 
     @PostMapping(value = "/cancelItems")
