@@ -222,11 +222,9 @@ public class ItemServiceImpl implements ItemService {
         try {
             // 상품 조회
             ItemEntity findItem = itemRepository.findById(itemId)
-                    .orElseThrow(() -> new ItemException("해당 상품 정보가 존재하지 않습니다."));
-
-            if (findItem.getItemSellStatus() == ItemSellStatus.RESERVED) {
-                throw new ItemException("해당 상품은 예약되었으니 관리자 혹은 예약자와 논의 후 삭제를 진행하여 주시기 바랍니다.");
-            }
+                    .orElseThrow(EntityNotFoundException::new);
+            // 상품 이미지 조회
+            List<ItemImgEntity> findItemImg = itemImgRepository.findByItemItemId(itemId);
 
             // 이미지 조회
             List<ItemImgEntity> findImg = itemImgRepository.findByItemItemId(itemId);
