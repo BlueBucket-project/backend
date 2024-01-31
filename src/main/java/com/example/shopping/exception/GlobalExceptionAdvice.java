@@ -1,12 +1,14 @@
 package com.example.shopping.exception;
 
 import com.example.shopping.exception.board.BoardException;
+import com.example.shopping.exception.cart.CartException;
 import com.example.shopping.exception.comment.CommentException;
 import com.example.shopping.exception.externalService.ExternalServiceException;
 import com.example.shopping.exception.file.FileDownloadException;
 import com.example.shopping.exception.file.FileUploadException;
 import com.example.shopping.exception.item.ItemException;
 import com.example.shopping.exception.member.UserException;
+import com.example.shopping.exception.order.OrderException;
 import com.example.shopping.exception.service.OutOfStockException;
 import com.example.shopping.exception.sessionExpire.SessionExpiredException;
 import com.example.shopping.exception.validation.DataValidationException;
@@ -18,7 +20,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  *   writer : 유요한
  *   work :
  *          전역으로 발생한 예외를 처리해줄 수 있는 Class를 생성
- *   date : 2024/01/22
+ *   date : 2024/01/30
  * */
 @RestControllerAdvice
 public class GlobalExceptionAdvice {
@@ -44,6 +46,18 @@ public class GlobalExceptionAdvice {
     @ExceptionHandler(CommentException.class)
     public ResponseEntity<CommentException> handleCustomException2(CommentException commentException) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(commentException);
+    }
+
+    // 장바구니 관련 발생하는 예외처리
+    @ExceptionHandler(CartException.class)
+    public ResponseEntity<CartException> handleCustomException3(CartException cartException) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(cartException);
+    }
+
+    // 주문 관련 발생하는 예외처리
+    @ExceptionHandler(OrderException.class)
+    public ResponseEntity<OrderException> handleCustomException3(OrderException orderException) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(orderException);
     }
 
     // 상품을 못찾을 경우 발생하는 예외처리
