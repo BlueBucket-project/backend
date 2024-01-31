@@ -20,12 +20,15 @@ import com.example.shopping.service.s3.S3ItemImgUploaderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.EntityNotFoundException;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 
 /*
@@ -205,7 +208,7 @@ public class ItemServiceImpl implements ItemService {
             // 썸네일 작업
             boolean isFirstImage = true;
             for (ItemImgEntity img : findItem.getItemImgList()) {
-                if(isFirstImage) {
+                if (isFirstImage) {
                     img.changeRepImgY();
                     isFirstImage = false;
                 } else {
@@ -217,46 +220,50 @@ public class ItemServiceImpl implements ItemService {
 
     // 상품 삭제
     @Override
-    public String removeItem(Long itemId, String memberEmail, String role) {
-
+    public String removeItem(Long itemId, UserDetails userDetails) {
         try {
+            // 삭제할 권한이 있는지 확인
+            // userDetails에서 권한을 가져오기
+            Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
+
             // 상품 조회
             ItemEntity findItem = itemRepository.findById(itemId)
                     .orElseThrow(EntityNotFoundException::new);
             // 상품 이미지 조회
             List<ItemImgEntity> findItemImg = itemImgRepository.findByItemItemId(itemId);
 
-            // 이미지 조회
-            List<ItemImgEntity> findImg = itemImgRepository.findByItemItemId(itemId);
-            // 회원 조회
-            MemberEntity sellUser = memberRepository.findById(findItem.getItemSeller()).orElseThrow();
-            MemberEntity findUser = memberRepository.findByEmail(memberEmail);
-
-            if (role.equals("ROLE_ADMIN") && findUser.getMemberId().equals(sellUser.getMemberId())) {
-
-                // item을 참조하고 있는 자식Entity값 null셋팅
-                List<CartItemDTO> items = cartItemRepository.findByItemId(itemId);
-
-                for (CartItemDTO item : items) {
-                    item.setItem(null);
-                    cartItemRepository.save(item);
-                }
-                // 상품 정보 삭제
-                itemRepository.delete(findItem);
-
-                for (ItemImgEntity img : findImg) {
-                    String uploadFilePath = img.getUploadImgPath();
-                    String uuidFileName = img.getUploadImgName();
-
-                    // S3에서 삭제
-                    String result = s3ItemImgUploaderService.deleteFile(uploadFilePath, uuidFileName);
-                    log.info(result);
+            // 현재는 권한이 1개만 있는 것으로 가정
+            if (!authorities.isEmpty()) {
+                // 현재 사용자의 권한(authority) 목록에서 첫 번째 권한을 가져오는 코드입니다.
+                // 현재 저의 로직에서는 유저는 하나의 권한을 가지므로 이렇게 처리할 수 있다.
+                String role = authorities.iterator().next().getAuthority();
+                log.info("권한 : " + role);
+                // 존재하는 권한이 관리자인지 체크
+                if (role.equals("ADMIN") || role.equals("ROLE_ADMIN")) {
+                    // 장바구니 상품을 null로 바꾸고 저장
+                    List<CartItemDTO> items = cartItemRepository.findByItemId(itemId);
+                    for (CartItemDTO item : items) {
+                        item.setItem(null);
+                        cartItemRepository.save(item);
+                    }
+                    // 상품 정보 삭제
+                    itemRepository.deleteByItemId(findItem.getItemId());
+                    // 삭제하는데 이미지를 풀어놓는 이유는
+                    // S3에 삭제할 때 넘겨줘야 할 매개변수때문이다.
+                    for (ItemImgEntity itemImgEntity : findItemImg) {
+                        String uploadImgPath = itemImgEntity.getUploadImgPath();
+                        String uploadImgName = itemImgEntity.getUploadImgName();
+                        // S3에서 이미지 삭제
+                        String result = s3ItemImgUploaderService.deleteFile(uploadImgPath, uploadImgName);
+                        log.info("s3 삭제 : " + result);
+                    }
+                    return "상품을 삭제 했습니다.";
                 }
             }
-        } catch (Exception ignored) {
-            throw new ItemException("상품 삭제에 실패하였습니다.\n" + ignored.getMessage());
+            return "상품 삭제 권한이 없습니다.";
+        } catch (Exception e) {
+            return e.getMessage();
         }
-        return "상품과 이미지를 삭제했습니다.";
     }
 
     // 상품 검색 - 여러 조건으로 검색하기
@@ -276,7 +283,7 @@ public class ItemServiceImpl implements ItemService {
             pageItem.forEach(status -> {
                 String[] split = status.getSellPlace().split("/");
                 ContainerEntity container = itemContainerRepository.findByContainerName(split[0]);
-                if(container == null) {
+                if (container == null) {
                     status.setSellPlace("폐점된 지점", null);
                 } else {
                     status.setSellPlace(container.getContainerName(), container.getContainerAddr());
