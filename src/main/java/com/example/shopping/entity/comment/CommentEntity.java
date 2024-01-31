@@ -1,26 +1,24 @@
 package com.example.shopping.entity.comment;
 
 import com.example.shopping.domain.comment.CommentDTO;
-import com.example.shopping.domain.comment.ModifyCommentDTO;
+import com.example.shopping.domain.comment.UpdateCommentDTO;
 import com.example.shopping.entity.Base.BaseEntity;
 import com.example.shopping.entity.board.BoardEntity;
 import com.example.shopping.entity.member.MemberEntity;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 /*
  *   writer : 유요한
  *   work :
  *          주소에 대한 ResponseDTO
- *   date : 2023/11/01
+ *   date : 2024/01/23
  * */
 @Entity(name = "comment")
 @Table
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@ToString(exclude = {"member", "board"})
 public class CommentEntity extends BaseEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "comment_id")
@@ -63,7 +61,7 @@ public class CommentEntity extends BaseEntity {
     }
 
     // 생성
-    public static CommentEntity createComment(ModifyCommentDTO commentDTO,
+    public static CommentEntity createComment(UpdateCommentDTO commentDTO,
                                               MemberEntity member,
                                               BoardEntity board) {
         return CommentEntity.builder()

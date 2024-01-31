@@ -8,7 +8,6 @@ import com.example.shopping.domain.board.ReplyStatus;
 import com.example.shopping.entity.board.BoardEntity;
 import com.example.shopping.entity.item.ItemEntity;
 import com.example.shopping.entity.member.MemberEntity;
-import com.example.shopping.exception.board.BoardException;
 import com.example.shopping.repository.board.BoardRepository;
 import com.example.shopping.repository.item.ItemRepository;
 import com.example.shopping.repository.member.MemberRepository;
@@ -32,7 +31,7 @@ import java.util.Collection;
  *          - 게시글의 등록, 수정, 삭제, 그리고 작성자의 문의글과 특정 상품에 해당하는 문의글을 확인하는 기능이 있습니다.
  *          이렇게 인터페이스를 만들고 상속해주는 방식을 선택한 이유는
  *          메소드에 의존하지 않고 필요한 기능만 사용할 수 있게 하고 가독성과 유지보수성을 높이기 위해서 입니다.
- *   date : 2024/01/09
+ *   date : 2024/01/22
  * */
 @Service
 @RequiredArgsConstructor
@@ -58,16 +57,12 @@ public class BoardServiceImpl implements BoardService {
                     .orElseThrow(EntityNotFoundException::new);
             log.info("상품 : " + ItemDTO.toItemDTO(findItem));
 
-            if (findUser != null && findUser.getNickName() != null) {
+            if (findUser.getNickName() != null) {
                 // 작성할 문의글(제목, 내용), 유저 정보, 해당 상품의 정보를 넘겨준다.
                 BoardEntity boardEntity =
                         BoardEntity.createBoard(boardDTO, findUser, findItem);
-                boardEntity.changeSecret(BoardSecret.UN_LOCK);
                 BoardEntity saveBoard = boardRepository.save(boardEntity);
-                BoardDTO returnBoard = BoardDTO.toBoardDTO(
-                        saveBoard,
-                        findUser.getNickName(),
-                        findItem.getItemId());
+                BoardDTO returnBoard = BoardDTO.toBoardDTO(saveBoard);
                 log.info("게시글 : " + returnBoard);
 
                 return ResponseEntity.ok().body(returnBoard);
@@ -83,33 +78,36 @@ public class BoardServiceImpl implements BoardService {
     // 문의 삭제
     @Override
     public String removeBoard(Long boardId, UserDetails userDetails) {
+        try {
+            String memberEmail = userDetails.getUsername();
+            log.info("유저 : " + memberEmail);
 
-        String userEmail = userDetails.getUsername();
-        log.info("유저 : " + userEmail);
+            // 권한 가져오기
+            Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
 
-        // 권한 가져오기
-        Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
+            // 게시글 조회
+            BoardEntity findBoard = boardRepository.findByBoardId(boardId)
+                    .orElseThrow(EntityNotFoundException::new);
+            // 유저 조회
+            MemberEntity findUser = memberRepository.findByEmail(memberEmail);
+            boolean equalsEmail = findUser.getEmail().equals(findBoard.getMember().getEmail());
+            String authority = authorities.iterator().next().getAuthority();
+            log.info("권한 : " + authority);
 
-        // 게시글 조회
-        BoardEntity findBoard = boardRepository.findByBoardId(boardId)
-                .orElseThrow(EntityNotFoundException::new);
-        // 유저 조회
-        MemberEntity findUser = memberRepository.findByEmail(userEmail);
-        boolean equalsEmail = findUser.getEmail().equals(findBoard.getMember().getEmail());
-        String authority = authorities.iterator().next().getAuthority();
-        log.info("권한 : " + authority);
-
-        // 일치하다면 내 글이 맞으므로 삭제할 수 있다.
-        if (equalsEmail) {
-            // 게시글 삭제
-            boardRepository.deleteById(boardId);
-            return "게시글을 삭제했습니다.";
-            // 관리자 등급이 맞다면 삭제할 수 있다.
-        } else if(authority.equals("ADMIN") || authority.equals("ROLE_ADMIN")){
-            boardRepository.deleteById(findBoard.getBoardId());
-            return "게시글을 삭제 했습니다.";
-        } else {
-            return "삭제할 수 없습니다.";
+            // 일치하다면 내 글이 맞으므로 삭제할 수 있다.
+            if (equalsEmail) {
+                // 게시글 삭제
+                boardRepository.deleteById(findBoard.getBoardId());
+                return "게시글을 삭제했습니다.";
+                // 관리자 등급이 맞다면 삭제할 수 있다.
+            } else if(authority.equals("ADMIN") || authority.equals("ROLE_ADMIN")){
+                boardRepository.deleteById(findBoard.getBoardId());
+                return "게시글을 삭제 했습니다.";
+            } else {
+                return "삭제할 수 없습니다.";
+            }
+        }catch (Exception e) {
+            return e.getMessage();
         }
     }
 
@@ -119,22 +117,23 @@ public class BoardServiceImpl implements BoardService {
     @Transactional(readOnly = true)
     @Override
     public ResponseEntity<?> getBoard(Long boardId, String memberEmail) {
-        // 회원 조회
-        MemberEntity findUser = memberRepository.findByEmail(memberEmail);
-        // 문의글 조회
-        BoardEntity findBoard = boardRepository.findByBoardId(boardId)
-                .orElseThrow(EntityNotFoundException::new);
+       try {
+           // 회원 조회
+           MemberEntity findUser = memberRepository.findByEmail(memberEmail);
+           // 문의글 조회
+           BoardEntity findBoard = boardRepository.findByBoardId(boardId)
+                   .orElseThrow(EntityNotFoundException::new);
 
-        // 문의글을 작성할 때 등록된 이메일이 받아온 이메일이 맞아야 true
-        if (findUser.getEmail().equals(findBoard.getMember().getEmail())) {
-            BoardDTO boardDTO = BoardDTO.toBoardDTO(
-                    findBoard,
-                    findBoard.getMember().getNickName(),
-                    findBoard.getItem().getItemId());
-            return ResponseEntity.ok().body(boardDTO);
-        } else {
-            return ResponseEntity.badRequest().body("해당 유저의 문의글이 아닙니다.");
-        }
+           // 문의글을 작성할 때 등록된 이메일이 받아온 이메일이 맞아야 true
+           if (findUser.getEmail().equals(findBoard.getMember().getEmail())) {
+               BoardDTO boardDTO = BoardDTO.toBoardDTO(findBoard);
+               return ResponseEntity.ok().body(boardDTO);
+           } else {
+               return ResponseEntity.badRequest().body("해당 유저의 문의글이 아닙니다.");
+           }
+       } catch (Exception e) {
+           return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+       }
     }
 
     // 문의 수정
@@ -155,20 +154,9 @@ public class BoardServiceImpl implements BoardService {
             boolean equalsEmail = findBoard.getMember().getEmail().equals(memberEmail);
             if(equalsEmail) {
                 // 수정할 내용, 유저정보, 게시글을 작성할 때 받은 상품의 정보를 넘겨준다.
-                findBoard = BoardEntity.builder()
-                        .boardId(findBoard.getBoardId())
-                        .title(boardDTO.getTitle() != null ? boardDTO.getTitle() : findBoard.getTitle())
-                        .content(boardDTO.getContent() != null ? boardDTO.getContent() : findBoard.getContent())
-                        .item(findBoard.getItem())
-                        .member(findBoard.getMember())
-                        .commentEntityList(findBoard.getCommentEntityList())
-                        .boardSecret(BoardSecret.LOCK)
-                        .build();
+                findBoard.updateBoard(boardDTO);
                 BoardEntity updateBoard = boardRepository.save(findBoard);
-                BoardDTO returnBoard = BoardDTO.toBoardDTO(
-                        updateBoard,
-                        findUser.getNickName(),
-                        findBoard.getItem().getItemId());
+                BoardDTO returnBoard = BoardDTO.toBoardDTO(updateBoard);
                 log.info("게시글 : " + returnBoard);
                 return ResponseEntity.ok().body(returnBoard);
             } else {
@@ -188,7 +176,8 @@ public class BoardServiceImpl implements BoardService {
         MemberEntity findUser = memberRepository.findByEmail(memberEmail);
 
         // 작성자의 문의글을 조회해온다.
-        Page<BoardEntity> findAllBoards = boardRepository.findByMemberEmailAndTitleContaining(memberEmail, pageable, searchKeyword);
+        Page<BoardEntity> findAllBoards =
+                boardRepository.findByMemberEmailAndTitleContaining(memberEmail, pageable, searchKeyword);
         // 댓글이 있으면 답변완료, 없으면 미완료
         for(BoardEntity boardCheck : findAllBoards) {
             if(boardCheck.getCommentEntityList().isEmpty()) {
@@ -204,13 +193,10 @@ public class BoardServiceImpl implements BoardService {
             if(board.getMember().getMemberId().equals(findUser.getMemberId())) {
                 board.changeSecret(BoardSecret.UN_LOCK);
             } else {
-                throw new BoardException("작성자의 글이 아닙니다.");
+                board.changeSecret(BoardSecret.LOCK);
             }
         });
-        return findAllBoards.map(board -> BoardDTO.toBoardDTO(
-                board,
-                board.getMember().getNickName(),
-                board.getItem().getItemId()));
+        return findAllBoards.map(BoardDTO::toBoardDTO);
     }
 
     // 상품에 대한 문의글 보기
@@ -257,9 +243,6 @@ public class BoardServiceImpl implements BoardService {
         log.info("조회된 게시글 수 : {}", findAllBoards.getTotalElements());
         log.info("조회된 게시글 : {}", findAllBoards);
 
-        return findAllBoards.map(board -> BoardDTO.toBoardDTO(
-                board,
-                board.getMember().getNickName(),
-                board.getItem().getItemId()));
+        return findAllBoards.map(BoardDTO::toBoardDTO);
     }
 }

@@ -1,6 +1,7 @@
 package com.example.shopping.entity.member;
 
-import com.example.shopping.domain.member.ModifyMemberDTO;
+import com.example.shopping.domain.member.UpdateMemberDTO;
+import com.example.shopping.domain.member.RequestMemberDTO;
 import com.example.shopping.domain.member.Role;
 import com.example.shopping.entity.Base.BaseTimeEntity;
 import lombok.*;
@@ -70,7 +71,25 @@ public class MemberEntity extends BaseTimeEntity {
         this.memberPoint = memberPoint;
     }
 
-    public void updateMember(ModifyMemberDTO updateMember, String encodePw) {
+    // 저장
+    public static MemberEntity saveMember(RequestMemberDTO member, String password) {
+        return MemberEntity.builder()
+                .email(member.getEmail())
+                .memberPw(password)
+                .memberName(member.getMemberName())
+                .nickName(member.getNickName())
+                .memberRole(Role.USER)
+                .address(AddressEntity.builder()
+                        .memberAddr(member.getMemberAddress().getMemberAddr() == null
+                                ? null : member.getMemberAddress().getMemberAddr())
+                        .memberAddrDetail(member.getMemberAddress().getMemberAddrDetail() == null
+                                ? null : member.getMemberAddress().getMemberAddrDetail())
+                        .memberZipCode(member.getMemberAddress().getMemberZipCode() == null
+                                ? null : member.getMemberAddress().getMemberZipCode())
+                        .build()).build();
+    }
+
+    public void updateMember(UpdateMemberDTO updateMember, String encodePw) {
         MemberEntity.builder()
                 .memberId(this.memberId)
                 .email(this.email)

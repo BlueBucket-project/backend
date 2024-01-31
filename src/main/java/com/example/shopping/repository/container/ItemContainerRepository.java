@@ -9,7 +9,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
  *          상품 창고 레포지토리
  *   date : 2024/01/07
  * */
-public interface ItemContainerRepository extends JpaRepository<ItemContainerEntity, Long> {
-
+public interface ItemContainerRepository extends JpaRepository<ItemContainerEntity, Long>, ItemContainerRepositoryCustom {
     ContainerEntity findByContainerName(String sellPlace);
 }

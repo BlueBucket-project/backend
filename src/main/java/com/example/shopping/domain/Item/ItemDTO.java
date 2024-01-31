@@ -16,11 +16,13 @@ import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+
 /*
  *   writer : 유요한, 오현진
  *   work :
  *          상품에 대한 정보를 담은 ResponseDTO
- *   date : 2023/12/06
+ *   date : 2024/01/24
  * */
 @ToString
 @Getter
@@ -100,7 +102,7 @@ public class ItemDTO {
         this.stockNumber = stockNumber;
         this.sellPlace = sellPlace;
         this.itemReserver = itemReserver;
-        this.itemRamount =itemRamount;
+        this.itemRamount = itemRamount;
         this.boardDTOList = boardDTOList;
         this.itemImgList = itemImgList;
         this.itemSeller = itemSeller;
@@ -109,25 +111,15 @@ public class ItemDTO {
     public static ItemDTO toItemDTO(ItemEntity item) {
         // 이미지 처리
         List<ItemImgEntity> itemImgEntities = item.getItemImgList();
-        List<ItemImgDTO> itemImgDTOList = new ArrayList<>();
-
-        if(itemImgEntities != null){
-            for(ItemImgEntity itemImg : itemImgEntities) {
-                ItemImgDTO itemImgDTO = ItemImgDTO.toItemImgDTO(itemImg);
-                itemImgDTOList.add(itemImgDTO);
-            }
-        }
+        List<ItemImgDTO> itemImgDTOList = itemImgEntities.stream()
+                .map(ItemImgDTO::toItemImgDTO)
+                .collect(Collectors.toList());
 
         // 문의글 처리
         List<BoardEntity> boardEntityList = item.getBoardEntityList();
-        List<BoardDTO> boardDTOS = new ArrayList<>();
-        if(boardEntityList != null) {
-            for (BoardEntity boardEntity : boardEntityList) {
-                String nickName = boardEntity.getMember().getNickName();
-                BoardDTO boardDTO = BoardDTO.toBoardDTO(boardEntity, nickName, item.getItemId());
-                boardDTOS.add(boardDTO);
-            }
-        }
+        List<BoardDTO> boardDTOS = boardEntityList.stream()
+                .map(BoardDTO::toBoardDTO)
+                .collect(Collectors.toList());
 
         // 상품 정보와 이미지 그리고 문의글을 리턴
         return ItemDTO.builder()
@@ -147,14 +139,14 @@ public class ItemDTO {
                 .build();
     }
 
-    public void setMemberNickName(String nickName){
+    public void setMemberNickName(String nickName) {
         this.memberNickName = nickName;
     }
 
-    public ItemEntity toEntity(){
+    public ItemEntity toEntity() {
         String[] splitPlace = this.sellPlace.split("/");
 
-        return  ItemEntity.builder()
+        return ItemEntity.builder()
                 .itemId(this.itemId)
                 .itemDetail(this.itemDetail)
                 .itemName(this.itemName)
@@ -171,7 +163,7 @@ public class ItemDTO {
                 .build();
     }
 
-    public void setSellPlace(String placeName, String placeAddr){
-        this.sellPlace = placeName + "/"+ placeAddr;
+    public void setSellPlace(String placeName, String placeAddr) {
+        this.sellPlace = placeName + "/" + placeAddr;
     }
 }

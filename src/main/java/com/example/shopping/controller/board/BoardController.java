@@ -3,7 +3,7 @@ package com.example.shopping.controller.board;
 
 import com.example.shopping.domain.board.BoardDTO;
 import com.example.shopping.domain.board.CreateBoardDTO;
-import com.example.shopping.service.board.BoardServiceImpl;
+import com.example.shopping.service.board.BoardService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -37,7 +37,7 @@ import java.util.Map;
 @RequestMapping("/api/v1/{itemId}/boards")
 @Tag(name = "board", description = "상품 문의 API")
 public class BoardController {
-    private final BoardServiceImpl boardService;
+    private final BoardService boardService;
 
     // 문의 등록
     @PostMapping("")
@@ -68,13 +68,13 @@ public class BoardController {
     @PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
     @Tag(name = "board")
     @Operation(summary = "문의 삭제", description = "상품에 대한 문의를 삭제합니다.")
-    public String removeBoard(@PathVariable Long boardId,
+    public ResponseEntity<?> removeBoard(@PathVariable Long boardId,
                               @AuthenticationPrincipal UserDetails userDetails) {
         try {
             String result = boardService.removeBoard(boardId, userDetails);
-            return result;
+            return ResponseEntity.ok().body(result);
         } catch (Exception e) {
-            return "문의를 삭제하는데 실패했습니다.";
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 

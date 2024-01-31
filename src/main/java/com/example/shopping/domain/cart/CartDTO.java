@@ -73,9 +73,8 @@ public class CartDTO {
                 .build();
     }
 
-    public CartDTO createCart(MemberEntity member){
+    public static CartDTO createCart(MemberEntity member){
         return CartDTO.builder()
-                .cartId(this.cartId)
                 .member(InfoMemberDTO.from(member))
                 .cartItems(new ArrayList<>())
                 .build();
@@ -104,5 +103,9 @@ public class CartDTO {
             // id를 비교해서 맞지 않다면 index를 증가시켜준다.
             idx++;
         }
+    }
+
+    public void addList(List<CartItemDTO> cartItems) {
+        this.cartItems = cartItems;
     }
 }

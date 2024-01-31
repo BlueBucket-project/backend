@@ -53,7 +53,7 @@ public class TokenEntity {
 
     // 토큰 엔티티로 변환
     public static TokenEntity tokenEntity(TokenDTO token) {
-        return TokenEntity.builder()
+        return com.example.shopping.entity.jwt.TokenEntity.builder()
                 .grantType(token.getGrantType())
                 .accessToken(token.getAccessToken())
                 .accessTokenTime(token.getAccessTokenTime())
@@ -65,16 +65,16 @@ public class TokenEntity {
     }
 
     // 토큰 업데이트
-    public static TokenEntity updateToken(Long id, TokenDTO tokenDTO) {
-        return TokenEntity.builder()
-                .id(id)
+    public void updateToken(TokenDTO tokenDTO) {
+        TokenEntity.builder()
+                .id(this.id)
                 .grantType(tokenDTO.getGrantType())
                 .accessToken(tokenDTO.getAccessToken())
                 .accessTokenTime(tokenDTO.getAccessTokenTime())
-                .refreshToken(tokenDTO.getRefreshToken())
-                .refreshTokenTime(tokenDTO.getRefreshTokenTime())
+                .refreshToken(this.refreshToken)
+                .refreshTokenTime(this.refreshTokenTime)
                 .memberEmail(tokenDTO.getMemberEmail())
-                .memberId(tokenDTO.getMemberId())
+                .memberId(this.memberId)
                 .build();
     }
 }

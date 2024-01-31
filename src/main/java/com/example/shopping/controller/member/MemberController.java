@@ -1,15 +1,14 @@
 package com.example.shopping.controller.member;
 
 import com.example.shopping.domain.board.BoardDTO;
-import com.example.shopping.domain.jwt.TokenDTO;
 import com.example.shopping.domain.member.LoginDTO;
 import com.example.shopping.domain.member.RequestMemberDTO;
 import com.example.shopping.domain.member.ResponseMemberDTO;
-import com.example.shopping.domain.member.ModifyMemberDTO;
+import com.example.shopping.domain.member.UpdateMemberDTO;
 import com.example.shopping.domain.order.OrderItemDTO;
-import com.example.shopping.service.board.BoardServiceImpl;
-import com.example.shopping.service.jwt.TokenServiceImpl;
-import com.example.shopping.service.member.MemberServiceImpl;
+import com.example.shopping.service.board.BoardService;
+import com.example.shopping.service.jwt.TokenService;
+import com.example.shopping.service.member.MemberService;
 import com.example.shopping.service.order.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -39,7 +38,7 @@ import java.util.Map;
  *   work :
  *          유저의 CRUD 기능과 이메일 조회와 닉네임 조회 기능이 있고
  *          주문 조회와 나의 문의글을 보는 기능이 있습니다.
- *   date : 2023/11/06
+ *   date : 2024/01/22
  * */
 @RestController
 // @Slf4j를 사용하지 않고 Log4j2를 사용하는 이유는
@@ -50,13 +49,13 @@ import java.util.Map;
 @Tag(name = "member", description = "유저 API")
 public class MemberController {
 
-    private final MemberServiceImpl memberServiceImpl;
-    private final TokenServiceImpl tokenServiceImpl;
+    private final MemberService memberService;
+    private final TokenService tokenService;
     private final OrderService orderService;
-    private final BoardServiceImpl boardService;
+    private final BoardService boardService;
 
     // 회원가입
-    @PostMapping("/")
+    @PostMapping("")
     @Tag(name = "member")
     @Operation(summary = "회원가입", description = "회원가입하는 API입니다")
     // BindingResult 타입의 매개변수를 지정하면 BindingResult 매개 변수가 입력값 검증 예외를 처리한다.
@@ -69,7 +68,7 @@ public class MemberController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result.getClass().getSimpleName());
             }
 
-            ResponseEntity<?> signUp = memberServiceImpl.signUp(member);
+            ResponseEntity<?> signUp = memberService.signUp(member);
             return ResponseEntity.ok().body(signUp);
         } catch (Exception e) {
             log.error("예외 : " + e.getMessage());
@@ -81,12 +80,12 @@ public class MemberController {
     @GetMapping("/{memberId}")
     @Tag(name = "member")
     @Operation(summary = "회원 조회", description = "회원을 검색하는 API입니다.")
-    public ResponseEntity<ResponseMemberDTO> search(@PathVariable Long memberId) {
+    public ResponseEntity<?> search(@PathVariable Long memberId) {
         try {
-            ResponseMemberDTO search = memberServiceImpl.search(memberId);
+            ResponseMemberDTO search = memberService.search(memberId);
             return ResponseEntity.ok().body(search);
         } catch (EntityNotFoundException e) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
 
@@ -100,7 +99,7 @@ public class MemberController {
         try {
             String email = userDetails.getUsername();
             log.info("email : " + email);
-            String remove = memberServiceImpl.removeUser(memberId, email);
+            String remove = memberService.removeUser(memberId, email);
             return remove;
         } catch (Exception e) {
             return "회원탈퇴 실패했습니다. :" + e.getMessage();
@@ -115,7 +114,7 @@ public class MemberController {
         try {
             String email = loginDTO.getMemberEmail();
             String password = loginDTO.getMemberPw();
-            ResponseEntity<?> login = memberServiceImpl.login(email, password);
+            ResponseEntity<?> login = memberService.login(email, password);
             return ResponseEntity.ok().body(login);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("로그인을 실패했습니다.");
@@ -128,16 +127,16 @@ public class MemberController {
     @Operation(summary = "수정 API", description = "유저 정보를 수정하는 API입니다.")
     @PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
     public ResponseEntity<?> update(@PathVariable Long memberId,
-                                    @Validated @RequestBody ModifyMemberDTO modifyMemberDTO,
+                                    @Validated @RequestBody UpdateMemberDTO updateMemberDTO,
                                     @AuthenticationPrincipal UserDetails userDetails) {
         try {
             String email = userDetails.getUsername();
             log.info("email : " + email);
-            log.info("비밀번호 체크 : " + modifyMemberDTO.getMemberPw());
-            ResponseEntity<?> responseEntity = memberServiceImpl.updateUser(memberId, modifyMemberDTO, email);
+            log.info("비밀번호 체크 : " + updateMemberDTO.getMemberPw());
+            ResponseEntity<?> responseEntity = memberService.updateUser(memberId, updateMemberDTO, email);
             return ResponseEntity.ok().body(responseEntity);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("잘못된 요청 : " + e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
@@ -149,15 +148,10 @@ public class MemberController {
         try {
             String email = userDetails.getUsername();
             log.info("이메일 : " + email);
-
-            if (email != null) {
-                ResponseEntity<TokenDTO> accessToken = tokenServiceImpl.createAccessToken(email);
-                return ResponseEntity.ok().body(accessToken);
-            } else {
-                return ResponseEntity.notFound().build();
-            }
+            ResponseEntity<?> accessToken = tokenService.createAccessToken(email);
+            return ResponseEntity.ok().body(accessToken);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
@@ -167,7 +161,7 @@ public class MemberController {
     @Operation(summary = "중복체크 API", description = "userEmail이 중복인지 체크하는 API입니다.")
     public boolean emailCheck(@PathVariable String memberEmail) {
         log.info("email : " + memberEmail);
-       return memberServiceImpl.emailCheck(memberEmail);
+       return memberService.emailCheck(memberEmail);
     }
 
     // 닉네임 조회
@@ -176,25 +170,40 @@ public class MemberController {
     @Operation(summary = "닉네임 조회", description = "중복된 닉네임이 있는지 확인하는 API입니다.")
     public boolean nickNameCheck(@PathVariable String nickName) {
         log.info("nickName : " + nickName);
-        return memberServiceImpl.nickNameCheck(nickName);
+        return memberService.nickNameCheck(nickName);
     }
 
     // 주문 조회
-    @GetMapping(value = "/order/{findEmail}")
+    @GetMapping(value = "/orders")
     @Tag(name = "member")
     @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
     @Operation(summary = "주문내역조회", description = "주문내역을 조회하는 API입니다.")
-    public ResponseEntity<?> getOrders(@PathVariable String findEmail
-            ,@AuthenticationPrincipal UserDetails userDetails) {
-        List<OrderItemDTO> orders = new ArrayList<>();
+    public ResponseEntity<?> getOrders(Pageable pageable,
+                                       @AuthenticationPrincipal UserDetails userDetails) {
         try {
             String email = userDetails.getUsername();
-            orders = orderService.getOrders(findEmail, email);
-
+            Page<OrderItemDTO> ordersPage = orderService.getOrdersPage(pageable, email);
+            Map<String, Object> response = new HashMap<>();
+            // 현재 페이지의 아이템 목록
+            response.put("items", ordersPage.getContent());
+            // 현재 페이지 번호
+            response.put("nowPageNumber", ordersPage.getNumber()+1);
+            // 전체 페이지 수
+            response.put("totalPage", ordersPage.getTotalPages());
+            // 한 페이지에 출력되는 데이터 개수
+            response.put("pageSize", ordersPage.getSize());
+            // 다음 페이지 존재 여부
+            response.put("hasNextPage", ordersPage.hasNext());
+            // 이전 페이지 존재 여부
+            response.put("hasPreviousPage", ordersPage.hasPrevious());
+            // 첫 번째 페이지 여부
+            response.put("isFirstPage", ordersPage.isFirst());
+            // 마지막 페이지 여부
+            response.put("isLastPage", ordersPage.isLast());
+            return ResponseEntity.ok().body(response);
         } catch (Exception e) {
-            return new ResponseEntity<String>(e.getMessage(), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
-        return ResponseEntity.ok().body(orders);
     }
 
     // 나의 문의글 확인

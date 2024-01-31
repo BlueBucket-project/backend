@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
  * */
 @Getter
 @NoArgsConstructor
-public class CartUpdateDTO {
+public class UpdateCartDTO {
 
     @Schema(description = "장바구니번호")
     private Long cartId;
@@ -24,7 +24,7 @@ public class CartUpdateDTO {
     private int count;
 
     @Builder
-    public CartUpdateDTO(Long cartId, Long itemId, int count) {
+    public UpdateCartDTO(Long cartId, Long itemId, int count) {
         this.cartId = cartId;
         this.itemId = itemId;
         this.count = count;

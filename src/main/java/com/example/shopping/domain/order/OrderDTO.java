@@ -8,10 +8,11 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 /*
- *   writer : 유요한,오현진
+ *   writer : 오현진
  *   work :
  *          주문에 대한 정보를 담은 DTO
  *   date : 2023/12/04
@@ -32,7 +33,7 @@ public class OrderDTO {
     @Schema(description = "구매자아이디")
     private Long orderMember;
 
-    private List<OrderItemDTO> orderItem;
+    private List<OrderItemDTO> orderItem = new ArrayList<>();
 
     @Builder
     public OrderDTO(Long orderId,

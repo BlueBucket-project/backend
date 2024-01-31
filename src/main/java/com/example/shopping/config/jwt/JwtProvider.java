@@ -9,7 +9,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -23,7 +22,7 @@ import java.util.stream.Collectors;
  *   writer : YuYoHan
  *   work :
  *          토큰을 생성하는 역할을 가지고 있습니다.
- *   date : 2023/11/15
+ *   date : 2024/01/17
  * */
 
 // PrincipalDetails 정보를 가지고 토큰을 만들어준다.
@@ -250,8 +249,8 @@ public class JwtProvider {
                     .parseClaimsJws(token)
                     .getBody();
         } catch (ExpiredJwtException e) {
-            log.info("ExpiredJwtException : " + e.getMessage());
-            log.info("ExpiredJwtException : " + e.getClaims());
+            log.error("ExpiredJwtException : " + e.getMessage());
+            log.error("ExpiredJwtException : " + e.getClaims());
             return e.getClaims();
         }
     }

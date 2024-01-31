@@ -10,6 +10,7 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
+
 import static org.springframework.util.StringUtils.hasText;
 import static com.example.shopping.entity.item.QItemEntity.itemEntity;
 
@@ -30,13 +31,13 @@ public class ItemQuerydslRepository extends Querydsl4RepositorySupport {
     // count처리 까지 해줍니다.
     public Page<ItemEntity> itemSearch(ItemSearchCondition condition, Pageable pageable) {
         return applyPagination(pageable, contentQuery -> contentQuery
-                .selectFrom(itemEntity)
-                .where(nameEq(condition.getName()),
-                        detailEq(condition.getDetail()),
-                        priceEq(condition.getStartP(), condition.getEndP()),
-                        placeEq(condition.getPlace()),
-                        reserverEq(condition.getReserver()),
-                        itemStatusEq(condition.getStatus())),
+                        .selectFrom(itemEntity)
+                        .where(nameEq(condition.getName()),
+                                detailEq(condition.getDetail()),
+                                priceEq(condition.getStartP(), condition.getEndP()),
+                                placeEq(condition.getPlace()),
+                                reserverEq(condition.getReserver()),
+                                itemStatusEq(condition.getStatus())),
                 countQuery -> countQuery
                         .select(itemEntity.count())
                         .from(itemEntity)
@@ -52,7 +53,7 @@ public class ItemQuerydslRepository extends Querydsl4RepositorySupport {
     private BooleanExpression nameEq(String name) {
         // likeIgnoreCase는 QueryDSL에서 문자열에 대한 대소문자를 무시하고 부분 일치 검색을 수행하는 메서드입니다.
         // 이 메서드는 SQL에서의 LIKE 연산과 유사하지만, 대소문자를 구분하지 않고 비교합니다.
-        return hasText(name) ? itemEntity.itemName.likeIgnoreCase("%"+ name + "%") : null;
+        return hasText(name) ? itemEntity.itemName.likeIgnoreCase("%" + name + "%") : null;
     }
 
     private BooleanExpression detailEq(String detail) {
@@ -89,10 +90,11 @@ public class ItemQuerydslRepository extends Querydsl4RepositorySupport {
     }
 
     private BooleanExpression placeNameEq(String place) {
-        return hasText(place) ? itemEntity.itemPlace.containerName.likeIgnoreCase("%" + place +"%") : null;
+        return hasText(place) ? itemEntity.itemPlace.containerName.likeIgnoreCase("%" + place + "%") : null;
     }
+
     private BooleanExpression placeAddrEq(String place) {
-        return hasText(place) ? itemEntity.itemPlace.containerAddr.likeIgnoreCase("%" + place +"%") : null;
+        return hasText(place) ? itemEntity.itemPlace.containerAddr.likeIgnoreCase("%" + place + "%") : null;
     }
 
     private BooleanExpression reserverEq(String reserver) {

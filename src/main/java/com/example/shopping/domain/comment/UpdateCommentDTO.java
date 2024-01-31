@@ -14,12 +14,12 @@ import lombok.ToString;
 @Getter
 @ToString
 @NoArgsConstructor
-public class ModifyCommentDTO {
+public class UpdateCommentDTO {
     @Schema(description = "댓글")
     private String comment;
 
     @Builder
-    public ModifyCommentDTO(String comment) {
+    public UpdateCommentDTO(String comment) {
         this.comment = comment;
     }
 }

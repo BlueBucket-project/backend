@@ -1,9 +1,6 @@
 package com.example.shopping.entity.Container;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.*;
 /*
@@ -16,7 +13,7 @@ import javax.persistence.*;
 @Embeddable
 @ToString
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ContainerEntity{
     private String containerName;
     private String containerAddr;

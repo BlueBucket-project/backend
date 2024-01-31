@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
 import java.util.*;
@@ -29,15 +30,15 @@ import java.util.ArrayList;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class OrderServiceImpl implements  OrderService{
-
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
-
     private final MemberRepository memberRepository;
 
     //회원 주문조회
     @Override
+    @Transactional(readOnly = true)
     public List<OrderItemDTO> getOrders(String email, String user) {
         MemberEntity authUser = memberRepository.findByEmail(user);
         if(authUser == null)
@@ -53,10 +54,7 @@ public class OrderServiceImpl implements  OrderService{
             orderList = orderRepository.findByOrderAdmin(member.getMemberId());
             for(OrderDTO order : orderList){
                 List<OrderItemDTO> itemList = orderItemRepository.findByOrderOrderId(order.getOrderId());
-                for(OrderItemDTO item : itemList)
-                {
-                    orderItemList.add(item);
-                }
+                orderItemList.addAll(itemList);
             }
         }
         else{
@@ -64,21 +62,18 @@ public class OrderServiceImpl implements  OrderService{
             orderList = orderRepository.findByOrderMember(member.getMemberId());
             for(OrderDTO order : orderList) {
                 List<OrderItemDTO> itemList = orderItemRepository.findByOrderOrderId(order.getOrderId());
-                for(OrderItemDTO item : itemList)
-                {
-                    orderItemList.add(item);
-                }            }
+                orderItemList.addAll(itemList);
+            }
             //판매자 기준 조회
             List<OrderItemDTO> itemList = orderItemRepository.findByItemSeller(member.getMemberId());
-            for(OrderItemDTO item : itemList)
-            {
-                orderItemList.add(item);
-            }        }
+            orderItemList.addAll(itemList);
+        }
         return orderItemList;
     }
 
     //회원 주문내역 Page로 return
     @Override
+    @Transactional(readOnly = true)
     public Page<OrderItemDTO> getOrdersPage(Pageable pageable, String email) {
         //email로 order_id조회하여 판매된 내역 보여줌
         MemberEntity member = memberRepository.findByEmail(email);
@@ -93,10 +88,7 @@ public class OrderServiceImpl implements  OrderService{
             orderList = orderRepository.findByOrderAdmin(member.getMemberId());
             for(OrderDTO order : orderList){
                 List<OrderItemDTO> itemList = orderItemRepository.findByOrderOrderId(order.getOrderId());
-                for(OrderItemDTO item : itemList)
-                {
-                    orderItemList.add(item);
-                }
+                orderItemList.addAll(itemList);
             }
         }
         else{
@@ -104,17 +96,11 @@ public class OrderServiceImpl implements  OrderService{
             orderList = orderRepository.findByOrderMember(member.getMemberId());
             for(OrderDTO order : orderList) {
                 List<OrderItemDTO> itemList = orderItemRepository.findByOrderOrderId(order.getOrderId());
-                for(OrderItemDTO item : itemList)
-                {
-                    orderItemList.add(item);
-                }
+                orderItemList.addAll(itemList);
             }
             //판매자 기준 조회
             List<OrderItemDTO> itemList = orderItemRepository.findByItemSeller(member.getMemberId());
-            for(OrderItemDTO item : itemList)
-            {
-                orderItemList.add(item);
-            }
+            orderItemList.addAll(itemList);
         }
 
         if(orderItemList.isEmpty()){

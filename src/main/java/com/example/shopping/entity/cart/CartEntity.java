@@ -14,7 +14,7 @@ import java.util.List;
  *   writer : 오현진
  *   work :
  *          장바구니 테이블을 만들어줍니다.
- *   date : 2024/01/06
+ *   date : 2024/01/29
  * */
 @Entity(name = "cart")
 @Getter
@@ -31,7 +31,7 @@ public class CartEntity extends BaseTimeEntity {
     @JoinColumn(name = "member_id")
     private MemberEntity member;
 
-    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CartItemEntity> cartItems = new ArrayList<>();
 
     @Builder
