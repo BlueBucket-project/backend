@@ -104,4 +104,8 @@ public class CartDTO {
             idx++;
         }
     }
+
+    public void addList(List<CartItemDTO> cartItems) {
+        this.cartItems = cartItems;
+    }
 }
