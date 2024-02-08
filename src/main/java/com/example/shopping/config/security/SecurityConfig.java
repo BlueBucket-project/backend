@@ -6,6 +6,7 @@ import com.example.shopping.config.jwt.JwtProvider;
 import com.example.shopping.config.oauth2.OAuth2FailHandler;
 import com.example.shopping.config.oauth2.OAuth2SuccessHandler;
 import com.example.shopping.config.oauth2.PrincipalOAuth2UserService;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,6 +21,7 @@ import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
+import javax.persistence.EntityManager;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -176,5 +178,10 @@ public class SecurityConfig {
             p.setOneIndexedParameters(true);    // 1 페이지 부터 시작
             p.setMaxPageSize(10);               // 한 페이지에 10개씩 출력
         };
+    }
+
+    @Bean
+    public JPAQueryFactory jpaQueryFactory(EntityManager entityManager) {
+        return new JPAQueryFactory(entityManager);
     }
 }
