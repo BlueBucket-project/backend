@@ -84,6 +84,8 @@ public class ItemServiceImpl implements ItemService {
                 ItemImgEntity itemImg = ItemImgEntity.toEntity(productImg, itemEntity);
                 // ItemEntity에 있는 이미지 리스트에 추가
                 itemEntity.addItemImgList(itemImg);
+            } else {
+                itemEntity.addItemImgList(null);
             }
             // container안에 저장해서 테이블로 관리하기 위해서 저장
             ItemContainerEntity saveContainer = ItemContainerEntity.saveContainer(itemEntity);
@@ -109,7 +111,7 @@ public class ItemServiceImpl implements ItemService {
 
             ItemDTO itemDTO = ItemDTO.toItemDTO(findItem);
             // 상품 컨테이너 조회
-            ContainerEntity container =
+            ItemContainerEntity container =
                     itemContainerRepository.findByContainerName(findItem.getItemPlace().getContainerName());
             if (container == null) {
                 itemDTO.setSellPlace("폐점된 지점", null);
@@ -282,7 +284,7 @@ public class ItemServiceImpl implements ItemService {
 
             pageItem.forEach(status -> {
                 String[] split = status.getSellPlace().split("/");
-                ContainerEntity container = itemContainerRepository.findByContainerName(split[0]);
+                ItemContainerEntity container = itemContainerRepository.findByContainerName(split[0]);
                 if (container == null) {
                     status.setSellPlace("폐점된 지점", null);
                 } else {
