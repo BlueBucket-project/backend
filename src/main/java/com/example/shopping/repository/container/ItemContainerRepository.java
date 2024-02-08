@@ -1,6 +1,5 @@
 package com.example.shopping.repository.container;
 
-import com.example.shopping.entity.Container.ContainerEntity;
 import com.example.shopping.entity.Container.ItemContainerEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 /*
@@ -10,5 +9,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
  *   date : 2024/01/07
  * */
 public interface ItemContainerRepository extends JpaRepository<ItemContainerEntity, Long>, ItemContainerRepositoryCustom {
-    ContainerEntity findByContainerName(String sellPlace);
+    ItemContainerEntity findByContainerName(String sellPlace);
 }
