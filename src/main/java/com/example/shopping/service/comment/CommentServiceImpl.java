@@ -27,7 +27,7 @@ import java.util.Collection;
  *          - 댓글의 생성, 삭제, 업데이트 기능이 있습니다.
  *          이렇게 인터페이스를 만들고 상속해주는 방식을 선택한 이유는
  *          메소드에 의존하지 않고 필요한 기능만 사용할 수 있게 하고 가독성과 유지보수성을 높이기 위해서 입니다.
- *   date : 2024/01/22
+ *   date : 2024/02/07
  * */
 @Service
 @RequiredArgsConstructor
@@ -133,12 +133,7 @@ public class CommentServiceImpl implements CommentService{
             // 해당 유저인지 체크하고 댓글을 작성한 게시글 id인지 체크
             if(equalsEmail && equalsId) {
                 // 댓글 수정
-                findComment = CommentEntity.builder()
-                        .commentId(findComment.getCommentId())
-                        .comment(commentDTO.getComment())
-                        .member(findComment.getMember())
-                        .board(findComment.getBoard())
-                        .build();
+                findComment.updateComment(commentDTO);
                 CommentEntity updateComment = commentRepository.save(findComment);
                 log.info("댓글 : " + updateComment);
                 CommentDTO returnComment = CommentDTO.toCommentDTO(updateComment);
