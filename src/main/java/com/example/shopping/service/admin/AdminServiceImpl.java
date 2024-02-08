@@ -125,20 +125,11 @@ public class AdminServiceImpl implements AdminService {
             if (!memberService.nickNameCheck(admin.getNickName())) {
                 return ResponseEntity.badRequest().body("이미 존재하는 닉네임이 있습니다.");
             }
+            // 비밀번호 암호화
+            String encodePw = passwordEncoder.encode(admin.getMemberPw());
 
             // 아이디가 없다면 DB에 등록해줍니다.
-            MemberEntity adminId = MemberEntity.builder()
-                    .email(admin.getEmail())
-                    .memberPw(passwordEncoder.encode(admin.getMemberPw()))
-                    .memberName(admin.getMemberName())
-                    .nickName(admin.getNickName())
-                    .memberRole(Role.ADMIN)
-                    .address(AddressEntity.builder()
-                            .memberAddr(admin.getMemberAddress().getMemberAddr())
-                            .memberAddrDetail(admin.getMemberAddress().getMemberAddrDetail())
-                            .memberZipCode(admin.getMemberAddress().getMemberZipCode())
-                            .build()).build();
-
+            MemberEntity adminId = MemberEntity.saveMember(admin, encodePw);
             log.info("admin in service : " + adminId);
             MemberEntity saveMember = memberRepository.save(adminId);
 
@@ -168,8 +159,29 @@ public class AdminServiceImpl implements AdminService {
         // 메일로 사용자에게 보낸 인증코드를 서버로 반환! 인증코드 일치여부를 확인하기 위함
         return key;
     }
+
+    // 랜덤 인증 코드 생성
+    private String createKey() throws Exception {
+        int length = 6;
+        try {
+            // SecureRandom.getInstanceStrong()을 호출하여 강력한 (strong) 알고리즘을 사용하는 SecureRandom 인스턴스를 가져옵니다.
+            // 이는 예측하기 어려운 안전한 랜덤 값을 제공합니다.
+            Random random = SecureRandom.getInstanceStrong();
+            // StringBuilder는 가변적인 문자열을 효율적으로 다루기 위한 클래스입니다.
+            // 여기서는 생성된 랜덤 값을 문자열로 변환하여 저장하기 위해 StringBuilder를 사용합니다.
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < length; i++) {
+                builder.append(random.nextInt(10));
+            }
+            return builder.toString();
+        } catch (NoSuchAlgorithmException e) {
+            log.debug("MemberService.createCode() exception occur");
+            throw new UserException(e.getMessage());
+        }
+    }
+
     // 메일 내용 작성
-    private MimeMessage createMessage(String email) throws MessagingException, UnsupportedEncodingException {
+    private MimeMessage createMessage(String email) throws MessagingException {
         log.info("메일받을 사용자 : " + email);
         log.info("인증번호 : " + key);
         codeGenerationTime = Instant.now();
@@ -199,25 +211,6 @@ public class AdminServiceImpl implements AdminService {
         log.info("********creatMessage 함수에서 생성된 리턴 메시지********" + message);
 
         return message;
-    }
-    // 랜덤 인증 코드 생성
-    private String createKey() throws Exception {
-        int length = 6;
-        try {
-            // SecureRandom.getInstanceStrong()을 호출하여 강력한 (strong) 알고리즘을 사용하는 SecureRandom 인스턴스를 가져옵니다.
-            // 이는 예측하기 어려운 안전한 랜덤 값을 제공합니다.
-            Random random = SecureRandom.getInstanceStrong();
-            // StringBuilder는 가변적인 문자열을 효율적으로 다루기 위한 클래스입니다.
-            // 여기서는 생성된 랜덤 값을 문자열로 변환하여 저장하기 위해 StringBuilder를 사용합니다.
-            StringBuilder builder = new StringBuilder();
-            for (int i = 0; i < length; i++) {
-                builder.append(random.nextInt(10));
-            }
-            return builder.toString();
-        } catch (NoSuchAlgorithmException e) {
-            log.debug("MemberService.createCode() exception occur");
-            throw new UserException(e.getMessage());
-        }
     }
 
     // 사용자가 입력한 인증번호와 서버에서 생성한 인증번호를 비교하는 메서드
@@ -318,24 +311,28 @@ public class AdminServiceImpl implements AdminService {
 
             //아이템 이미지 삭제처리
             List<ItemImgEntity> findImg = itemImgRepository.findByItemItemId(updateItem.getItemId());
-            for (ItemImgEntity img : findImg) {
-                String uploadFilePath = img.getUploadImgPath();
-                String uuidFileName = img.getUploadImgName();
+            if(!findImg.isEmpty()) {
+                for (ItemImgEntity img : findImg) {
+                    String uploadFilePath = img.getUploadImgPath();
+                    String uuidFileName = img.getUploadImgName();
 
-                // DB에서 이미지 삭제
-                itemImgRepository.deleteById(img.getItemImgId());
-                // S3에서 삭제
-                String result = s3ItemImgUploaderService.deleteFile(uploadFilePath, uuidFileName);
-                log.info(result);
+                    // DB에서 이미지 삭제
+                    itemImgRepository.deleteById(img.getItemImgId());
+                    // S3에서 삭제
+                    String result = s3ItemImgUploaderService.deleteFile(uploadFilePath, uuidFileName);
+                    log.info(result);
+                }
             }
         }
         return savedOrder;
     }
 
     // 모든 문의글 보기
-    @Transactional(readOnly = true)
     @Override
-    public Page<BoardDTO> getAllBoards(Pageable pageable, String searchKeyword, UserDetails userDetails) {
+    @Transactional(readOnly = true)
+    public Page<BoardDTO> getAllBoards(Pageable pageable,
+                                       String searchKeyword,
+                                       UserDetails userDetails) {
         // userDetails에서 권한을 가져오기
         Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
 
@@ -353,7 +350,7 @@ public class AdminServiceImpl implements AdminService {
                 // 키워드로 페이지 처리해서 검색
                 allBoards = boardRepository.findByTitleContaining(pageable, searchKeyword);
                 // 댓글이 존재하는지 아닌지 체크할 수 있게 상태를 바꿔줍니다.
-                replyCheck(allBoards);
+                allBoards.forEach(BoardEntity::replyCheck);
 
                 // 관리자라 모두 읽을 수 있으니 UN_LOCK
                 allBoards.forEach(board -> board.changeSecret(BoardSecret.UN_LOCK));
@@ -362,18 +359,6 @@ public class AdminServiceImpl implements AdminService {
         }
         return null;
     }
-    // 댓글이 존재하는지 아닌지 체크할 수 있게 상태를 바꿔줍니다.
-    private static void replyCheck(Page<BoardEntity> allBoards) {
-        // 댓글이 없으면 답변 미완료, 있으면 완료
-        for(BoardEntity boardCheck : allBoards) {
-            if(boardCheck.getCommentEntityList().isEmpty()) {
-                boardCheck.changeReply(ReplyStatus.REPLY_X);
-            } else {
-                boardCheck.changeReply(ReplyStatus.REPLY_O);
-            }
-        }
-    }
-
 
     // 관리자가 해당 유저의 모든 문의글 보기
     @Transactional(readOnly = true)
@@ -391,7 +376,7 @@ public class AdminServiceImpl implements AdminService {
             if (role.equals("ADMIN") || role.equals("ROLE_ADMIN")) {
                 Page<BoardEntity> allByNickName = boardRepository.findByMemberNickNameAndTitleContaining(nickName, pageable, searchKeyword);
                 // 댓글이 존재하는지 아닌지 체크할 수 있게 상태를 바꿔줍니다.
-                replyCheck(allByNickName);
+                allByNickName.forEach(BoardEntity::replyCheck);
                 // 관리자라 모두 읽을 수 있으니 UN_LOCK
                 allByNickName.forEach(board -> board.changeSecret(BoardSecret.UN_LOCK));
                 return allByNickName.map(BoardDTO::toBoardDTO);
@@ -453,7 +438,7 @@ public class AdminServiceImpl implements AdminService {
             if (authority.equals("ADMIN") || authority.equals("ROLE_ADMIN")) {
                 allItemBoards = boardRepository.findAllByItemItemId(itemId, pageable);
                 // 댓글이 존재하는지 아닌지 체크할 수 있게 상태를 바꿔줍니다.
-                replyCheck(allItemBoards);
+                allItemBoards.forEach(BoardEntity::replyCheck);
 
                 allItemBoards.forEach(board -> board.changeSecret(BoardSecret.UN_LOCK));
                 return allItemBoards.map(BoardDTO::toBoardDTO);
