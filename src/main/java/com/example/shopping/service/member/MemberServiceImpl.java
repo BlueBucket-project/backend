@@ -54,35 +54,55 @@ public class MemberServiceImpl implements MemberService {
     private final BoardRepository boardRepository;
     private final CommentRepository commentRepository;
     private final CartJpaRepository cartJpaRepository;
-    private final CartRepository cartRepository;
+    private final CartJpaRepository cartRepository;
+
+
+    // 중복체크
+    @Override
+    public boolean emailCheck(String email) {
+        MemberEntity findEmail = memberRepository.findByEmail(email);
+        return findEmail == null;
+    }
+
+    // 닉네임 체크
+    @Override
+    public boolean nickNameCheck(String nickName) {
+        MemberEntity findNickName = memberRepository.findByNickName(nickName);
+        return findNickName == null;
+    }
 
     // 회원가입
     @Override
     public ResponseEntity<?> signUp(RequestMemberDTO memberDTO) {
+        log.info("비번 : " + memberDTO.getMemberPw());
         String encodePw = passwordEncoder.encode(memberDTO.getMemberPw());
+        log.info("암호화 : " + encodePw);
         try {
             log.info("email : " + memberDTO.getEmail());
             log.info("nickName : " + memberDTO.getNickName());
 
             // 이메일 중복 체크
             if (!emailCheck(memberDTO.getEmail())) {
+                log.error("이미 존재하는 이메일이 있습니다.");
                 return ResponseEntity.badRequest().body("이미 존재하는 이메일이 있습니다.");
             }
 
             // 닉네임 중복 체크
             if (!nickNameCheck(memberDTO.getNickName())) {
+                log.error("이미 존재하는 닉네임이 있습니다.");
                 return ResponseEntity.badRequest().body("이미 존재하는 닉네임이 있습니다.");
             }
 
             // 아이디가 없다면 DB에 등록해줍니다.
             MemberEntity member = MemberEntity.saveMember(memberDTO, encodePw);
-            log.info("member : " + member);
             MemberEntity saveMember = memberRepository.save(member);
+            log.info("member : " + saveMember);
 
             // 유저 생성시 장바구니를 생성해주기 위해서 작성
-            CartDTO newCart = CartDTO.createCart(saveMember);
-            log.info("새로운 장바구니 생성 : " + newCart.toString());
-            cartRepository.create(newCart);
+            CartEntity cart = CartEntity.createCart(saveMember);
+            CartDTO cartDTO = CartDTO.toCartDTO(cart);
+            log.info("새로운 장바구니 생성 : " + cartDTO);
+            cartRepository.save(cart);
 
             ResponseMemberDTO coverMember = ResponseMemberDTO.toMemberDTO(saveMember);
             return ResponseEntity.ok().body(coverMember);
@@ -189,7 +209,12 @@ public class MemberServiceImpl implements MemberService {
             if (!nickNameCheck(updateMemberDTO.getNickName())) {
                 throw new UserException("이미 존재하는 닉네임이 있습니다.");
             }
-            String encodePw = passwordEncoder.encode(updateMemberDTO.getMemberPw());
+
+            String encodePw = null;
+            if(updateMemberDTO.getMemberPw() != null) {
+                encodePw = passwordEncoder.encode(updateMemberDTO.getMemberPw());
+            }
+            log.info("encodePw : " + encodePw);
 
             if (findUser.getMemberId().equals(memberId)) {
                 findUser.updateMember(updateMemberDTO, encodePw);
@@ -207,27 +232,7 @@ public class MemberServiceImpl implements MemberService {
         }
     }
 
-    // 중복체크
-    @Override
-    public boolean emailCheck(String email) {
-        MemberEntity findEmail = memberRepository.findByEmail(email);
-        if (findEmail == null) {
-            return true;
-        } else {
-            return false;
-        }
-    }
 
-    // 닉네임 체크
-    @Override
-    public boolean nickNameCheck(String nickName) {
-        MemberEntity findNickName = memberRepository.findByNickName(nickName);
-        if (findNickName == null) {
-            return true;
-        } else {
-            return false;
-        }
-    }
 
 
 }
