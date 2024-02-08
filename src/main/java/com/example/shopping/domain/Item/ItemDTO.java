@@ -15,6 +15,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,7 +23,7 @@ import java.util.stream.Collectors;
  *   writer : 유요한, 오현진
  *   work :
  *          상품에 대한 정보를 담은 ResponseDTO
- *   date : 2024/01/24
+ *   date : 2024/02/06
  * */
 @ToString
 @Getter
@@ -110,13 +111,15 @@ public class ItemDTO {
 
     public static ItemDTO toItemDTO(ItemEntity item) {
         // 이미지 처리
-        List<ItemImgEntity> itemImgEntities = item.getItemImgList();
+        List<ItemImgEntity> itemImgEntities =
+                (item.getItemImgList() != null) ? item.getItemImgList() : Collections.emptyList();
         List<ItemImgDTO> itemImgDTOList = itemImgEntities.stream()
                 .map(ItemImgDTO::toItemImgDTO)
                 .collect(Collectors.toList());
 
         // 문의글 처리
-        List<BoardEntity> boardEntityList = item.getBoardEntityList();
+        List<BoardEntity> boardEntityList =
+                item.getBoardEntityList() != null ? item.getBoardEntityList() : Collections.emptyList();
         List<BoardDTO> boardDTOS = boardEntityList.stream()
                 .map(BoardDTO::toBoardDTO)
                 .collect(Collectors.toList());
