@@ -31,7 +31,7 @@ import java.util.Collection;
  *          - 게시글의 등록, 수정, 삭제, 그리고 작성자의 문의글과 특정 상품에 해당하는 문의글을 확인하는 기능이 있습니다.
  *          이렇게 인터페이스를 만들고 상속해주는 방식을 선택한 이유는
  *          메소드에 의존하지 않고 필요한 기능만 사용할 수 있게 하고 가독성과 유지보수성을 높이기 위해서 입니다.
- *   date : 2024/01/22
+ *   date : 2024/02/07
  * */
 @Service
 @RequiredArgsConstructor
@@ -95,14 +95,11 @@ public class BoardServiceImpl implements BoardService {
             log.info("권한 : " + authority);
 
             // 일치하다면 내 글이 맞으므로 삭제할 수 있다.
-            if (equalsEmail) {
+            // 일치하거나 권한이 ADMIN인 경우 삭제
+            if (equalsEmail || authority.equals("ADMIN") || authority.equals("ROLE_ADMIN")) {
                 // 게시글 삭제
                 boardRepository.deleteById(findBoard.getBoardId());
                 return "게시글을 삭제했습니다.";
-                // 관리자 등급이 맞다면 삭제할 수 있다.
-            } else if(authority.equals("ADMIN") || authority.equals("ROLE_ADMIN")){
-                boardRepository.deleteById(findBoard.getBoardId());
-                return "게시글을 삭제 했습니다.";
             } else {
                 return "삭제할 수 없습니다.";
             }
@@ -146,16 +143,20 @@ public class BoardServiceImpl implements BoardService {
             BoardEntity findBoard = boardRepository.findByBoardId(boardId)
                     .orElseThrow(EntityNotFoundException::new);
             log.info("게시글 닉네임 : " + findBoard.getMember().getNickName());
+            log.info("게시글 댓글 확인 : " + findBoard.getCommentEntityList());
             // 유저 조회
             MemberEntity findUser = memberRepository.findByEmail(memberEmail);
-            log.info("유저 : " + findUser);
+            log.info("유저 : " + findUser.getEmail());
 
             // 받아온 유저를 조회하고 그 유저 정보와 게시글에 담긴 유저가 일치하는지
             boolean equalsEmail = findBoard.getMember().getEmail().equals(memberEmail);
+            log.info("equalsEmail : " + equalsEmail);
             if(equalsEmail) {
                 // 수정할 내용, 유저정보, 게시글을 작성할 때 받은 상품의 정보를 넘겨준다.
                 findBoard.updateBoard(boardDTO);
+                log.info("findBoard : " + findBoard);
                 BoardEntity updateBoard = boardRepository.save(findBoard);
+                log.info("updateBoard : " + updateBoard);
                 BoardDTO returnBoard = BoardDTO.toBoardDTO(updateBoard);
                 log.info("게시글 : " + returnBoard);
                 return ResponseEntity.ok().body(returnBoard);
@@ -163,7 +164,7 @@ public class BoardServiceImpl implements BoardService {
                 return ResponseEntity.badRequest().body("일치하지 않습니다.");
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
             return ResponseEntity.badRequest().body("수정하는데 실패했습니다. : " + e.getMessage());
         }
     }
