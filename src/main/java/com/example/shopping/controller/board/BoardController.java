@@ -86,9 +86,13 @@ public class BoardController {
     public ResponseEntity<?> updateBoard(@PathVariable Long boardId,
                                          @RequestBody CreateBoardDTO modifyDTO,
                                          @AuthenticationPrincipal UserDetails userDetails) {
-        String email = userDetails.getUsername();
-        log.info("이메일 : " + email);
-        return boardService.updateBoard(boardId, modifyDTO, email);
+        try {
+            String email = userDetails.getUsername();
+            log.info("이메일 : " + email);
+            return boardService.updateBoard(boardId, modifyDTO, email);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     // 문의 상세 보기
