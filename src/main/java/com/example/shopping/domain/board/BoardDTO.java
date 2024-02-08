@@ -14,6 +14,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+
 /*
  *   writer : YuYoHan
  *   work :
@@ -77,26 +79,19 @@ public class BoardDTO {
     // 엔티티를 DTO로 변환하는 작업
     public static BoardDTO toBoardDTO(BoardEntity board) {
         // 게시글 댓글 처리
-        List<CommentEntity> commentEntityList = board.getCommentEntityList();
-        List<CommentDTO> commentDTOS = new ArrayList<>();
+        List<CommentEntity> commentEntityList =
+                board.getCommentEntityList() != null ? board.getCommentEntityList() : Collections.emptyList();
 
-        // 엔티티 댓글을 DTO 리스트에 담아주는 작업을 진행하고 있다.
-        if (commentEntityList != null) {
-            for (CommentEntity commentEntity : commentEntityList) {
-                CommentDTO commentDTO = CommentDTO.toCommentDTO(commentEntity);
-                commentDTOS.add(commentDTO);
-            }
-        } else {
-            // commentEntityList가 null일 경우 빈 리스트로 초기화
-            commentDTOS = Collections.emptyList();
-        }
+        List<CommentDTO> commentDTO = commentEntityList.stream()
+                .map(CommentDTO::toCommentDTO)
+                .collect(Collectors.toList());
 
         return BoardDTO.builder()
                 .boardId(board.getBoardId())
                 .title(board.getTitle())
                 .content(board.getContent())
                 .nickName(board.getMember().getNickName())
-                .commentDTOList(commentDTOS)
+                .commentDTOList(commentDTO)
                 .itemId(board.getItem().getItemId())
                 // 답글 미완료 상태로 등록
                 .replyStatus(board.getReplyStatus())
