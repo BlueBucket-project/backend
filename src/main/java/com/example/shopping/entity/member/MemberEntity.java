@@ -78,7 +78,7 @@ public class MemberEntity extends BaseTimeEntity {
                 .memberPw(password)
                 .memberName(member.getMemberName())
                 .nickName(member.getNickName())
-                .memberRole(Role.USER)
+                .memberRole(member.getMemberRole())
                 .address(AddressEntity.builder()
                         .memberAddr(member.getMemberAddress().getMemberAddr() == null
                                 ? null : member.getMemberAddress().getMemberAddr())
@@ -90,25 +90,19 @@ public class MemberEntity extends BaseTimeEntity {
     }
 
     public void updateMember(UpdateMemberDTO updateMember, String encodePw) {
-        MemberEntity.builder()
-                .memberId(this.memberId)
-                .email(this.email)
-                .memberPw(updateMember.getMemberPw() == null
-                        ? this.memberPw
-                        : encodePw)
-                .nickName(updateMember.getNickName() == null
-                ? this.getNickName() : updateMember.getNickName())
-                .memberRole(this.memberRole)
-                .memberPoint(this.memberPoint)
-                .memberName(this.memberName)
-                .address(AddressEntity.builder()
-                        .memberAddr(updateMember.getMemberAddress().getMemberAddr() == null
-                        ? this.address.getMemberAddr() : updateMember.getMemberAddress().getMemberAddr())
-                        .memberAddrDetail(updateMember.getMemberAddress().getMemberAddrDetail() == null
-                        ? this.address.getMemberAddrDetail() : updateMember.getMemberAddress().getMemberAddrDetail())
-                        .memberZipCode(updateMember.getMemberAddress().getMemberZipCode() == null
-                        ? this.address.getMemberZipCode() : updateMember.getMemberAddress().getMemberZipCode())
-                        .build()).build();
+        this.memberPw = updateMember.getMemberPw() == null ? this.memberPw : encodePw;
+        this.nickName = updateMember.getNickName() == null ? this.nickName : updateMember.getNickName();
+
+        // 기존 주소 엔티티를 직접 수정
+        if (updateMember.getMemberAddress() != null) {
+            this.address = AddressEntity.builder()
+                    .memberAddr(updateMember.getMemberAddress().getMemberAddr())
+                    .memberAddrDetail(updateMember.getMemberAddress().getMemberAddrDetail())
+                    .memberZipCode(updateMember.getMemberAddress().getMemberZipCode())
+                    .build();
+        } else {
+            this.address = null;
+        }
     }
 
 
