@@ -12,11 +12,13 @@ import lombok.*;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
 /*
  *   writer : 유요한, 오현진
  *   work :
  *          상품 엔티티
- *   date : 2024/01/08
+ *   date : 2024/02/07
  * */
 @Entity(name = "item")
 @Table
@@ -123,21 +125,12 @@ public class ItemEntity extends BaseTimeEntity {
     }
 
 
-    public ItemEntity updateItem(UpdateItemDTO item) {
-        return ItemEntity.builder()
-                .itemId(this.itemId)
-                .itemName(item.getItemName())
-                .itemDetail(item.getItemDetail())
-                .itemPlace(this.itemPlace)
-                .itemSellStatus(this.itemSellStatus)
-                .stockNumber(item.getStockNumber())
-                .price(item.getPrice())
-                .itemSeller(item.getItemSeller())
-                .itemRamount(this.itemRamount)
-                .itemReserver(this.itemReserver == null ? null : this.itemReserver)
-                .itemImgList(this.itemImgList)
-                .boardEntityList(this.boardEntityList)
-                .build();
+    public void updateItem(UpdateItemDTO item) {
+        this.itemName = Optional.ofNullable(item.getItemName()).orElse(this.getItemName());
+        this.itemDetail = Optional.ofNullable(item.getItemDetail()).orElse(this.getItemDetail());
+        this.stockNumber = Optional.of(item.getStockNumber()).orElse(this.stockNumber);
+        this.price = Optional.of(item.getPrice()).orElse(this.price);
+        this.itemSeller = Optional.ofNullable(item.getItemSeller()).orElse(this.itemSeller);
     }
 
     // 상품 상태 바꿔주는 메소드
