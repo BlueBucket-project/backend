@@ -43,6 +43,13 @@ public class CartEntity extends BaseTimeEntity {
         this.cartItems = carItems == null ? new ArrayList<>() : carItems;
     }
 
+    public static CartEntity createCart(MemberEntity member) {
+        return CartEntity.builder()
+                .member(member)
+                .carItems(new ArrayList<>())
+                .build();
+    }
+
     public void addCartItems(CartItemEntity cartItem){
         this.cartItems.add(cartItem);
     }
