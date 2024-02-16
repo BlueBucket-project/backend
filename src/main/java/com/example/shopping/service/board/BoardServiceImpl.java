@@ -180,13 +180,7 @@ public class BoardServiceImpl implements BoardService {
         Page<BoardEntity> findAllBoards =
                 boardRepository.findByMemberEmailAndTitleContaining(memberEmail, pageable, searchKeyword);
         // 댓글이 있으면 답변완료, 없으면 미완료
-        for(BoardEntity boardCheck : findAllBoards) {
-            if(boardCheck.getCommentEntityList().isEmpty()) {
-                boardCheck.changeReply(ReplyStatus.REPLY_X);
-            } else {
-                boardCheck.changeReply(ReplyStatus.REPLY_O);
-            }
-        }
+        findAllBoards.forEach(BoardEntity::replyCheck);
 
         // 해당 게시글을 만들때 id와 조회한 id를 체크
         // 그리고 맞다면 읽을 권한주고 없으면 잠가주기
@@ -219,13 +213,8 @@ public class BoardServiceImpl implements BoardService {
         // 조회해올 게시글을 넣을 곳
         Page<BoardEntity> findAllBoards = boardRepository.findAllByItemItemId(itemId, pageable);
         // 댓글이 있으면 답변완료, 없으면 미완료
-        for(BoardEntity boardCheck : findAllBoards) {
-            if(boardCheck.getCommentEntityList().isEmpty()) {
-                boardCheck.changeReply(ReplyStatus.REPLY_X);
-            } else {
-                boardCheck.changeReply(ReplyStatus.REPLY_O);
-            }
-        }
+        // 댓글이 존재하는지 아닌지 체크할 수 있게 상태를 바꿔줍니다.
+        findAllBoards.forEach(BoardEntity::replyCheck);
 
         for (BoardEntity boardEntity : findAllBoards) {
             // 파라미터로 받아온 이메일이 있다면
