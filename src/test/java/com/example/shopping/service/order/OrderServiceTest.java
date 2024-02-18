@@ -5,6 +5,7 @@ import com.example.shopping.domain.Item.ItemSellStatus;
 import com.example.shopping.domain.member.Role;
 import com.example.shopping.domain.order.OrderDTO;
 import com.example.shopping.domain.order.OrderItemDTO;
+import com.example.shopping.entity.Container.ContainerEntity;
 import com.example.shopping.entity.item.ItemEntity;
 import com.example.shopping.entity.member.MemberEntity;
 import com.example.shopping.repository.member.MemberRepository;
@@ -39,6 +40,11 @@ public class OrderServiceTest {
     @InjectMocks
     private OrderServiceImpl orderService;
 
+
+    ContainerEntity container = ContainerEntity.builder()
+            .containerName("1지점")
+            .containerAddr("서울시 고척동 130-44")
+            .build();
     MemberEntity member = MemberEntity.builder()
             .memberId(1L)
             .memberName("테스트유저")
@@ -71,7 +77,7 @@ public class OrderServiceTest {
             .itemSellStatus(ItemSellStatus.SELL)
             .itemReserver("")
             .itemRamount(0)
-            .itemPlace("서울시 관악구")
+            .itemPlace(container)
             .price(10000)
             .stockNumber(3)
             .itemImgList(null)
@@ -86,7 +92,7 @@ public class OrderServiceTest {
             .itemSellStatus(ItemSellStatus.SELL)
             .itemReserver("")
             .itemRamount(0)
-            .itemPlace("서울시 강남구")
+            .itemPlace(container)
             .price(30000)
             .stockNumber(3)
             .itemImgList(null)
@@ -101,7 +107,7 @@ public class OrderServiceTest {
             .itemSellStatus(ItemSellStatus.SELL)
             .itemReserver("")
             .itemRamount(0)
-            .itemPlace("서울시 중구")
+            .itemPlace(container)
             .price(30000)
             .stockNumber(1)
             .itemImgList(null)
@@ -116,7 +122,7 @@ public class OrderServiceTest {
             .itemSellStatus(ItemSellStatus.SELL)
             .itemReserver("")
             .itemRamount(0)
-            .itemPlace("서울시 중구")
+            .itemPlace(container)
             .price(30000)
             .stockNumber(1)
             .itemImgList(null)
@@ -129,7 +135,7 @@ public class OrderServiceTest {
             .itemId(1L)
             .itemBuyer(1L)
             .itemSeller(2L)
-            .orderitemId(1L)
+            .orderItemId(1L)
             .itemPrice(10000)
             .itemAmount(1)
             .item(ItemDTO.toItemDTO(newItem1))
@@ -140,7 +146,7 @@ public class OrderServiceTest {
             .itemId(2L)
             .itemBuyer(1L)
             .itemSeller(2L)
-            .orderitemId(1L)
+            .orderItemId(1L)
             .itemPrice(60000)
             .itemAmount(2)
             .item(ItemDTO.toItemDTO(newItem2))
@@ -151,7 +157,7 @@ public class OrderServiceTest {
             .itemId(3L)
             .itemBuyer(1L)
             .itemSeller(2L)
-            .orderitemId(1L)
+            .orderItemId(1L)
             .itemPrice(30000)
             .itemAmount(1)
             .item(ItemDTO.toItemDTO(newItem3))
@@ -162,7 +168,7 @@ public class OrderServiceTest {
             .itemId(4L)
             .itemBuyer(2L)
             .itemSeller(1L)
-            .orderitemId(1L)
+            .orderItemId(1L)
             .itemPrice(30000)
             .itemAmount(1)
             .item(ItemDTO.toItemDTO(newItem4))
