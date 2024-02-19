@@ -2,10 +2,7 @@ package com.example.shopping.config;
 
 import com.example.shopping.domain.member.Role;
 import com.example.shopping.entity.member.MemberEntity;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -29,8 +26,8 @@ import java.util.Map;
 @Getter
 @ToString
 @Log4j2
-@NoArgsConstructor
 @Component
+@NoArgsConstructor
 public class PrincipalDetails implements UserDetails, OAuth2User {
 
     // 일반 로그인 정보를 저장하기 위한 필드
@@ -38,6 +35,7 @@ public class PrincipalDetails implements UserDetails, OAuth2User {
     // OAuth2 로그인 정보를 저장하기 위한 필드
     // 일반적으로 attributes에는 사용자의 아이디(ID), 이름, 이메일 주소, 프로필 사진 URL 등의 정보가 포함됩니다.
     private Map<String, Object> attributes;
+
 
     // 일반 로그인
     public PrincipalDetails(MemberEntity member) {
@@ -49,6 +47,8 @@ public class PrincipalDetails implements UserDetails, OAuth2User {
         this.member = member;
         this.attributes = attributes;
     }
+
+
 
     // 해당 유저의 권한을 권한을 리턴
     @Override

@@ -6,6 +6,7 @@ import com.example.shopping.domain.cart.*;
 import com.example.shopping.domain.member.InfoMemberDTO;
 import com.example.shopping.domain.member.ResponseMemberDTO;
 import com.example.shopping.domain.member.Role;
+import com.example.shopping.entity.Container.ContainerEntity;
 import com.example.shopping.entity.item.ItemEntity;
 import com.example.shopping.entity.member.MemberEntity;
 import com.example.shopping.exception.service.OutOfStockException;
@@ -19,6 +20,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseEntity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -76,6 +78,11 @@ public class CartServiceImplTest {
             .memberRole(Role.USER)
             .build();
 
+    ContainerEntity container = ContainerEntity.builder()
+            .containerName("1지점")
+            .containerAddr("서울시 고척동 130-44")
+            .build();
+
     ItemEntity newItem1 = ItemEntity.builder()
             .itemId(1L)
             .itemName("테스트")
@@ -83,7 +90,7 @@ public class CartServiceImplTest {
             .itemSellStatus(ItemSellStatus.SELL)
             .itemReserver("")
             .itemRamount(0)
-            .itemPlace("서울시 관악구")
+            .itemPlace(container)
             .price(10000)
             .stockNumber(3)
             .itemImgList(null)
@@ -97,7 +104,7 @@ public class CartServiceImplTest {
             .itemSellStatus(ItemSellStatus.SELL)
             .itemReserver("")
             .itemRamount(0)
-            .itemPlace("서울시 강남구")
+            .itemPlace(container)
             .price(30000)
             .stockNumber(3)
             .itemImgList(null)
@@ -111,7 +118,7 @@ public class CartServiceImplTest {
             .itemSellStatus(ItemSellStatus.SELL)
             .itemReserver("")
             .itemRamount(0)
-            .itemPlace("서울시 중구")
+            .itemPlace(container)
             .price(30000)
             .stockNumber(1)
             .itemImgList(null)
@@ -126,7 +133,7 @@ public class CartServiceImplTest {
             .itemSellStatus(ItemSellStatus.RESERVED)
             .itemReserver("")
             .itemRamount(0)
-            .itemPlace("서울시 중구")
+            .itemPlace(container)
             .price(30000)
             .stockNumber(1)
             .itemImgList(null)
@@ -303,7 +310,7 @@ public class CartServiceImplTest {
 
     @Test
     void 카트아이템_수정(){
-        CartUpdateDTO updateCart = CartUpdateDTO.builder()
+        UpdateCartDTO updateCart = UpdateCartDTO.builder()
                 .cartId(1L)
                 .itemId(1L)
                 .count(2)
@@ -329,13 +336,13 @@ public class CartServiceImplTest {
 
     @Test
     void 카트아이템_삭제(){
-        List<CartUpdateDTO> delCartItems = new ArrayList<>();
-        CartUpdateDTO delCartItem = CartUpdateDTO.builder()
+        List<UpdateCartDTO> delCartItems = new ArrayList<>();
+        UpdateCartDTO delCartItem = UpdateCartDTO.builder()
                 .cartId(1L)
                 .itemId(1L)
                 .count(1)
                 .build();
-        CartUpdateDTO delCartItem2 = CartUpdateDTO.builder()
+        UpdateCartDTO delCartItem2 = UpdateCartDTO.builder()
                 .cartId(1L)
                 .itemId(2L)
                 .count(2)
@@ -392,9 +399,9 @@ public class CartServiceImplTest {
         given(itemRepository.findById(1L)).willReturn(Optional.ofNullable(newItem1));
         given(itemRepository.findById(2L)).willReturn(Optional.ofNullable(newItem2));
 
-        String res = cartService.orderCart(cartOrderDTOList, testEmail);
+        ResponseEntity<?> responseEntity = cartService.orderCart(cartOrderDTOList, testEmail);
 
-        assertThat(res).isEqualTo("구매예약에 성공하였습니다.");
+        assertThat(responseEntity).isEqualTo("구매예약에 성공하였습니다.");
 
     }
 

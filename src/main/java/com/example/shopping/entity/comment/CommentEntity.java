@@ -12,7 +12,7 @@ import javax.persistence.*;
  *   writer : 유요한
  *   work :
  *          주소에 대한 ResponseDTO
- *   date : 2024/01/23
+ *   date : 2024/02/07
  * */
 @Entity(name = "comment")
 @Table
@@ -69,5 +69,10 @@ public class CommentEntity extends BaseEntity {
                 .member(member)
                 .board(board)
                 .build();
+    }
+
+    // 수정
+    public void updateComment(UpdateCommentDTO commentDTO) {
+        this.comment = commentDTO.getComment() != null ? commentDTO.getComment() : this.comment;
     }
 }

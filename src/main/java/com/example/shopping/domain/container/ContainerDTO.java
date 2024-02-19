@@ -1,5 +1,6 @@
 package com.example.shopping.domain.container;
 
+import com.example.shopping.entity.Container.ContainerEntity;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,6 +23,13 @@ public class ContainerDTO {
     public ContainerDTO(String containerName, String containerAddr) {
         this.containerName = containerName;
         this.containerAddr = containerAddr;
+    }
+
+    public static ContainerDTO changeDTO(ContainerEntity entity) {
+        return ContainerDTO.builder()
+                .containerName(entity.getContainerName())
+                .containerAddr(entity.getContainerAddr())
+                .build();
     }
 
 

@@ -98,17 +98,17 @@ public class CartServiceImpl implements CartService {
                 savedCartItem = cartRepository.save(cart);
             }
         }
-//        //기존에 생성된 장바구니 없다면 생성
-//        else {
-//            log.info("기존 장바구니 없음");
-//            CartDTO newCart = CartDTO.createCart(member);
-//            log.info("새로운 장바구니 생성 : " + newCart.toString());
-//
-//            CartItemDTO itemDetail = CartItemDTO.setCartItem(newCart, item, cartItem.getCount());
-//            newCart.addCartItems(itemDetail);
-//
-//            savedCartItem = cartRepository.create(newCart);
-//        }
+        //기존에 생성된 장바구니 없다면 생성
+        else {
+            log.info("기존 장바구니 없음");
+            CartDTO newCart = CartDTO.createCart(member);
+            log.info("새로운 장바구니 생성 : " + newCart.toString());
+
+            CartItemDTO itemDetail = CartItemDTO.setCartItem(newCart, item, cartItem.getCount());
+            newCart.addCartItems(itemDetail);
+
+            savedCartItem = cartRepository.create(newCart);
+        }
         return savedCartItem;
     }
 

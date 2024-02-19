@@ -9,8 +9,8 @@ spring:
         - mail
       prod:
         - prod
-#    active: local
-    active: ${profile}
+    active: local
+#    active: ${profile}
   devtools:
     livereload:
       enabled: true

@@ -28,9 +28,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.persistence.EntityNotFoundException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /*
@@ -132,7 +130,7 @@ public class MemberController {
         try {
             String email = userDetails.getUsername();
             log.info("email : " + email);
-            log.info("비밀번호 체크 : " + updateMemberDTO.getMemberPw());
+            log.info("수정 정보 체크 : " + updateMemberDTO);
             ResponseEntity<?> responseEntity = memberService.updateUser(memberId, updateMemberDTO, email);
             return ResponseEntity.ok().body(responseEntity);
         } catch (Exception e) {

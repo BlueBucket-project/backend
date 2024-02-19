@@ -9,14 +9,13 @@ import com.example.shopping.entity.Base.BaseEntity;
 import com.example.shopping.entity.comment.CommentEntity;
 import com.example.shopping.entity.item.ItemEntity;
 import com.example.shopping.entity.member.MemberEntity;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+
 /*
  *   writer : 유요한
  *   work :
@@ -27,6 +26,7 @@ import java.util.List;
 @Table
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@ToString(exclude = {"item", "member", "commentEntityList"})
 public class BoardEntity extends BaseEntity {
     @Id
     @GeneratedValue
@@ -94,8 +94,8 @@ public class BoardEntity extends BaseEntity {
                 .build();
 
         // 댓글 처리
-        List<CommentDTO> commentDTOList = board.getCommentDTOList();
-
+        List<CommentDTO> commentDTOList =
+                board.getCommentDTOList() != null ? board.getCommentDTOList() : Collections.emptyList();
         for (CommentDTO commentDTO : commentDTOList) {
             CommentEntity commentEntity = CommentEntity.toCommentEntity(commentDTO, member, boardEntity);
             boardEntity.commentEntityList.add(commentEntity);
@@ -103,21 +103,9 @@ public class BoardEntity extends BaseEntity {
         return boardEntity;
     }
 
-    public void updateBoard(CreateBoardDTO boardDTO) {
-        BoardEntity.builder()
-                .boardId(this.boardId)
-                .title(boardDTO.getTitle() != null ?
-                        boardDTO.getTitle() : this.title)
-                .content(boardDTO.getContent() != null ?
-                        boardDTO.getContent() : this.content)
-                .member(this.member)
-                .commentEntityList(this.commentEntityList)
-                .boardSecret(this.boardSecret)
-                .build();
-    }
-
     /* 비즈니스 로직 */
     // 게시글 작성
+
     public static BoardEntity createBoard(CreateBoardDTO boardDTO,
                                           MemberEntity member,
                                           ItemEntity item) {
@@ -132,12 +120,24 @@ public class BoardEntity extends BaseEntity {
                 .build();
     }
 
+    // 게시글 수정
+    public void updateBoard(CreateBoardDTO boardDTO) {
+        this.title = boardDTO.getTitle() != null ? boardDTO.getTitle() : this.title;
+        this.content = boardDTO.getContent() != null ? boardDTO.getContent() : this.content;
+    }
+
     // 답장 상태 변화
     public void changeReply(ReplyStatus replyStatus) {
         this.replyStatus = replyStatus;
+    }
+    // 댓글 존재여부에 따라 상태 변화
+    public void replyCheck() {
+        // 댓글이 없으면 답변 미완료, 있으면 완료
+       this.replyStatus = this.getCommentEntityList().isEmpty() ? ReplyStatus.REPLY_X : ReplyStatus.REPLY_O;
     }
     // 잠금 상태 변화
     public void changeSecret(BoardSecret boardSecret) {
         this.boardSecret = boardSecret;
     }
+
 }

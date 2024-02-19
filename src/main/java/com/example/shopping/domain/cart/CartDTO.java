@@ -8,9 +8,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 /*
  *   writer : 오현진
@@ -20,6 +22,7 @@ import java.util.stream.Collectors;
  * */
 @Getter
 @NoArgsConstructor
+@ToString
 public class CartDTO {
 
     @Schema(description = "장바구니번호")
@@ -93,7 +96,7 @@ public class CartDTO {
 
         for(CartItemDTO item : this.cartItems){
             // 받아온 상품id와 기존의 id를 비교해서 맞다면 true
-            if(item.getCartItemId() == cartItem.getCartItemId()){
+            if(Objects.equals(item.getCartItemId(), cartItem.getCartItemId())){
                 // 리스트에서 삭제
                 this.cartItems.remove(idx);
                 // 리스트에 추가

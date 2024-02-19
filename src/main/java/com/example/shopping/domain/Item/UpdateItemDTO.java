@@ -48,13 +48,13 @@ public class UpdateItemDTO {
                          int price,
                          String itemDetail,
                          int stockNumber,
-                         List<Long> delImgId,
+                         List<Long> remainImgId,
                          Long itemSeller) {
         this.itemName = itemName;
         this.price = price;
         this.itemDetail = itemDetail;
         this.stockNumber = stockNumber;
-        this.remainImgId = delImgId;
+        this.remainImgId = remainImgId;
         this.itemSeller = itemSeller;
     }
 }
