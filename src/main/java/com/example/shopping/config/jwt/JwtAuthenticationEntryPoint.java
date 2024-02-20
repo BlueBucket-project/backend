@@ -15,7 +15,6 @@ import java.io.IOException;
  *          JWT를 통한 인증이 실패할 때 호출되는 역할입니다.
  *   date : 2024/01/17
  * */
-
 @Component
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     @Override
