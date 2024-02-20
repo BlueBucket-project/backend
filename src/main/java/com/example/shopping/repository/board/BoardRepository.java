@@ -28,7 +28,7 @@ public interface BoardRepository extends JpaRepository<BoardEntity, Long> {
     void deleteByBoardId(Long boardId);
     void deleteAllByMemberMemberId(Long memberId);
 
-    @Query(value = "select b from board b" +
+    @Query(value = "select distinct b from board b" +
             " join fetch  b.member " +
             " join fetch b.item " +
             " where (:searchKeyword is null or b.title like %:searchKeyword%)" +
@@ -37,7 +37,7 @@ public interface BoardRepository extends JpaRepository<BoardEntity, Long> {
     Page<BoardEntity> findByTitleContaining(Pageable pageable,
                                             @Param("searchKeyword") String searchKeyword);
 
-    @Query(value = "select b from board b" +
+    @Query(value = "select distinct b from board b" +
             " join fetch b.member " +
             " join fetch b.item " +
             " order by b.boardId DESC ",
@@ -45,7 +45,7 @@ public interface BoardRepository extends JpaRepository<BoardEntity, Long> {
     Page<BoardEntity> findAll(Pageable pageable);
 
 
-    @Query(value = "select  b from board  b " +
+    @Query(value = "select distinct b from board  b " +
             " join fetch b.member " +
             " join fetch b.item " +
             " where b.member.email = :email and (:searchKeyword is null or b.title like %:searchKeyword%)" +
@@ -57,7 +57,7 @@ public interface BoardRepository extends JpaRepository<BoardEntity, Long> {
                                                           @Param("searchKeyword") String searchKeyword);
 
 
-    @Query(value = "select b from board b " +
+    @Query(value = "select distinct b from board b " +
             " join fetch b.member " +
             " join fetch b.item " +
             "where b.member.nickName = :nickName and (:searchKeyword is null or b.title like %:searchKeyword%)" +
@@ -68,7 +68,7 @@ public interface BoardRepository extends JpaRepository<BoardEntity, Long> {
                                                              Pageable pageable,
                                                              @Param("searchKeyword") String searchKeyword);
 
-    @Query(value = "select b from board b " +
+    @Query(value = "select distinct b from board b " +
             " join fetch b.member " +
             " join fetch b.item " +
             "where b.item.itemId = :itemId" +
