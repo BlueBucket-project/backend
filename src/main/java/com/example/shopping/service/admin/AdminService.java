@@ -18,7 +18,10 @@ public interface AdminService {
     // 문의글 전체 보기
     Page<BoardDTO> getAllBoards(Pageable pageable, String searchKeyword, UserDetails userDetails);
     // 작성자의 문의글 보기
-    Page<BoardDTO> getBoardsByNiickName(UserDetails userDetails, Pageable pageable, String nickName, String searchKeyword);
+    Page<BoardDTO> getBoardsByNiickName(UserDetails userDetails,
+                                        Pageable pageable,
+                                        String nickName,
+                                        String searchKeyword);
     // 문의글 상세 페이지 보기
     ResponseEntity<BoardDTO> getBoard(Long boardId, UserDetails userDetails);
     // 관리자가 상품의 문의글 보기

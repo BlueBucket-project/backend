@@ -7,9 +7,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 /*
- *   writer : 유요한
+ *   writer : 오현진
  *   work :
- *          유저에 대한 필요한 정보를 받는 RequestDTO
+ *          유저에 대한 필요한 정보를 보내주는 RequestDTO
  *   date : 2023/11/16
  * */
 @ToString

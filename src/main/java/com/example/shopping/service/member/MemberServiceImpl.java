@@ -61,14 +61,24 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public boolean emailCheck(String email) {
         MemberEntity findEmail = memberRepository.findByEmail(email);
-        return findEmail == null;
+        log.info("이메일 체크 : " + findEmail);
+        if(findEmail == null) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     // 닉네임 체크
     @Override
     public boolean nickNameCheck(String nickName) {
         MemberEntity findNickName = memberRepository.findByNickName(nickName);
-        return findNickName == null;
+        log.info("닉네임 체크 : " + findNickName);
+        if(findNickName == null) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     // 회원가입
@@ -95,6 +105,7 @@ public class MemberServiceImpl implements MemberService {
 
             // 아이디가 없다면 DB에 등록해줍니다.
             MemberEntity member = MemberEntity.saveMember(memberDTO, encodePw);
+            log.info("체크 : " + member);
             MemberEntity saveMember = memberRepository.save(member);
             log.info("member : " + saveMember);
 
@@ -231,8 +242,4 @@ public class MemberServiceImpl implements MemberService {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
-
-
-
-
 }

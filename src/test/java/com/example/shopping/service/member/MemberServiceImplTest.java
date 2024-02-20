@@ -5,218 +5,229 @@ import com.example.shopping.domain.jwt.TokenDTO;
 import com.example.shopping.domain.member.RequestMemberDTO;
 import com.example.shopping.domain.member.ResponseMemberDTO;
 import com.example.shopping.domain.member.Role;
+import com.example.shopping.domain.member.UpdateMemberDTO;
+import com.example.shopping.entity.cart.CartEntity;
+import com.example.shopping.entity.jwt.TokenEntity;
 import com.example.shopping.entity.member.AddressEntity;
 import com.example.shopping.entity.member.MemberEntity;
+import com.example.shopping.repository.board.BoardRepository;
+import com.example.shopping.repository.cart.CartJpaRepository;
+import com.example.shopping.repository.comment.CommentRepository;
+import com.example.shopping.repository.jwt.TokenRepository;
 import com.example.shopping.repository.member.MemberRepository;
 import lombok.extern.log4j.Log4j2;
-import org.assertj.core.api.AbstractStringAssert;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.transaction.annotation.Transactional;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.aspectj.bridge.MessageUtil.fail;
+import static org.hamcrest.CoreMatchers.not;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verify;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 
+@ExtendWith(MockitoExtension.class)
 @Log4j2
-@SpringBootTest
-@ExtendWith(SpringExtension.class)
-@Transactional
 class MemberServiceImplTest {
-    @Autowired
+    @Mock
     private MemberRepository memberRepository;
-    @Autowired
+
+    @Mock
+    private BoardRepository boardRepository;
+    @Mock
+    private CartJpaRepository cartJpaRepository;
+    @Mock
     private PasswordEncoder passwordEncoder;
-    @Autowired
+    @Mock
+    private TokenRepository tokenRepository;
+    @Mock
+    private CommentRepository commentRepository;
+    @Mock
     private JwtProvider jwtProvider;
-    @Autowired
+
+    @InjectMocks
     private MemberServiceImpl memberService;
 
 
-    private MemberEntity createMemberInfo() {
+    private MemberEntity createMember() {
+
         return MemberEntity.builder()
-                .email("zxzz11@naver.com")
-                .memberPw(passwordEncoder.encode("dudtjq8990!"))
+                .memberId(1L)
+                .memberPw("dudtjq8990!")
                 .memberName("테스터")
                 .memberRole(Role.USER)
                 .nickName("테스터")
+                .email("test@test.com")
+                .memberPoint(0)
+                .provider(null)
+                .providerId(null)
                 .address(AddressEntity.builder()
-                        .memberAddr("서울시 xxx")
-                        .memberAddrDetail("xxx")
-                        .memberZipCode("101-1")
-                        .build()).build();
+                        .memberAddr("서울시 강남구")
+                        .memberZipCode("103-332")
+                        .memberAddrDetail("102")
+                        .build())
+                .build();
     }
 
     @Test
     @DisplayName("회원가입 테스트")
     void signUp() {
-        MemberEntity findUser = memberRepository.findByEmail(createMemberInfo().getEmail());
-        if (findUser == null) {
-            MemberEntity save = memberRepository.save(createMemberInfo());
-            log.info("회원가입 : " + save);
+        // given
+        MemberEntity member = createMember();
+        log.info(member);
+        // 가상의 존재하는 이메일
+        MemberEntity haveEmail = MemberEntity.builder()
+                .memberPw("dudtjq8990!")
+                .memberName("테스터2")
+                .memberRole(Role.USER)
+                .nickName("테스터2")
+                .email("test2@test.com")
+                .memberPoint(0)
+                .provider(null)
+                .providerId(null)
+                .address(AddressEntity.builder()
+                        .memberAddr("서울시 강남구")
+                        .memberZipCode("103-332")
+                        .memberAddrDetail("102")
+                        .build())
+                .build();
 
+        CartEntity cart = CartEntity.builder()
+                .cartId(1L)
+                .carItems(new ArrayList<>())
+                .member(member)
+                .build();
 
-            Assertions.assertThat(save.getEmail()).isEqualTo(createMemberInfo().getEmail());
-            Assertions.assertThat(save.getMemberName()).isEqualTo(createMemberInfo().getMemberName());
-            Assertions.assertThat(save.getMemberRole()).isEqualTo(createMemberInfo().getMemberRole());
-            Assertions.assertThat(save.getNickName()).isEqualTo(createMemberInfo().getNickName());
-            Assertions.assertThat(save.getAddress().getMemberAddr())
-                    .isEqualTo(createMemberInfo().getAddress().getMemberAddr());
-            Assertions.assertThat(save.getAddress().getMemberAddrDetail())
-                    .isEqualTo(createMemberInfo().getAddress().getMemberAddrDetail());
-            Assertions.assertThat(save.getAddress().getMemberZipCode())
-                    .isEqualTo(createMemberInfo().getAddress().getMemberZipCode());
-        } else {
-            log.error("이미 중복된 아이디입니다.");
-        }
+        RequestMemberDTO request = RequestMemberDTO.builder()
+                .email(member.getEmail())
+                .memberName(member.getMemberName())
+                .nickName(member.getNickName())
+                .memberPw(member.getMemberPw())
+                .memberRole(member.getMemberRole())
+                .build();
+
+        String encode = "encodePasword!";
+        log.info("인코드 :  " + encode);
+
+        given(memberRepository.save(any())).willReturn(member);
+        given(cartJpaRepository.save(any())).willReturn(cart);
+        // 비밀번호 인코딩 시 모의(mock) 객체가 특정 문자열을 반환하도록 설정
+        given(passwordEncoder.encode(anyString())).willReturn(encode);
+
+        // when
+        memberService.signUp(request);
+
+        // then
+        verify(memberRepository).save(any());
     }
 
     @Test
     @DisplayName("로그인 기능 테스트")
     void login() {
-        MemberEntity memberInfo = createMemberInfo();
-        MemberEntity save = memberRepository.save(memberInfo);
-        MemberEntity findUser = memberRepository.findByEmail(save.getEmail());
+        // given
+        MemberEntity member = createMember();
 
-        if (passwordEncoder.matches(memberInfo.getMemberPw(), findUser.getMemberPw())) {
-            Authentication authentication =
-                    new UsernamePasswordAuthenticationToken(findUser.getEmail(), findUser.getMemberPw());
-            List<GrantedAuthority> authoritiesForUser = getAuthoritiesForUser(findUser);
+        TokenDTO tokenDTO = TokenDTO.builder()
+                .accessToken("accessToken")
+                .refreshToken("refreshToken")
+                .memberId(member.getMemberId())
+                .grantType("Bearer ")
+                .memberEmail(member.getEmail())
+                .memberId(member.getMemberId())
+                .build();
 
-            // JWT 생성
-            TokenDTO token = jwtProvider.createToken(authentication, authoritiesForUser, findUser.getMemberId());
-            Assertions.assertThat(token).isNotNull();
-        }
-    }
+        TokenEntity tokenEntity = TokenEntity.tokenEntity(tokenDTO);
 
-    // 회원의 권한을 GrantedAuthority타입으로 반환하는 메소드
-    private List<GrantedAuthority> getAuthoritiesForUser(MemberEntity member) {
-        Role memberRole = member.getMemberRole();
-        List<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority("ROLE_" + memberRole.name()));
-        log.info("role : " + authorities);
-        return authorities;
+        given(memberRepository.findByEmail(anyString())).willReturn(member);
+        given(tokenRepository.findByMemberEmail(anyString())).willReturn(null);
+        given(jwtProvider.createToken(any(Authentication.class), any(), anyLong())).willReturn(tokenDTO);
+        given(tokenRepository.save(any())).willReturn(tokenEntity);
+        // 비밀번호 매칭 시 모의(mock) 객체가 매칭 여부를 true로 설정
+        given(passwordEncoder.matches(anyString(), anyString())).willReturn(true);
+
+
+        // when
+        memberService.login(member.getEmail(), member.getMemberPw());
+
+        // then
+        verify(tokenRepository).save(any());
     }
 
     @Test
     @DisplayName("조회하는 기능 테스트")
     void search() {
-        MemberEntity memberInfo = createMemberInfo();
-        MemberEntity save = memberRepository.save(memberInfo);
-        MemberEntity findUser = memberRepository.findByEmail(save.getEmail());
-        log.info("user : " + findUser);
-        Assertions.assertThat(findUser.getEmail()).isEqualTo("zxzz11@naver.com");
+        // given
+        MemberEntity member = createMember();
+        given(memberRepository.findById(anyLong())).willReturn(Optional.ofNullable(member));
+
+        // when
+        memberService.search(1L);
+
+        // then
+        verify(memberRepository).findById(1L);
     }
 
     @Test
     @DisplayName("삭제하는 기능 테스트")
     void removeUser() {
-        MemberEntity memberInfo = createMemberInfo();
-        MemberEntity save = memberRepository.save(memberInfo);
+        // given
+        MemberEntity member = createMember();
+        given(memberRepository.findByEmail(anyString())).willReturn(member);
+        doNothing().when(boardRepository).deleteAllByMemberMemberId(anyLong());
+        doNothing().when(cartJpaRepository).deleteAllByMemberMemberId(anyLong());
+        doNothing().when(commentRepository).deleteAllByMemberMemberId(anyLong());
+        doNothing().when(memberRepository).deleteByMemberId(anyLong());
 
-        memberRepository.deleteByMemberId(save.getMemberId());
-        MemberEntity checkUser = memberRepository.findByEmail(createMemberInfo().getEmail());
-        Assertions.assertThat(checkUser).isNull();
+        // when
+        memberService.removeUser(1L, member.getEmail());
 
+        // then
+        verify(boardRepository).deleteAllByMemberMemberId(1L);
+        verify(cartJpaRepository).deleteAllByMemberMemberId(1L);
+        verify(commentRepository).deleteAllByMemberMemberId(1L);
+        verify(memberRepository).deleteByMemberId(1L);
     }
 
 
     @Test
     @DisplayName("업데이트 기능 테스트")
     void updateUser() {
-        MemberEntity findUser = memberRepository.findByEmail(createMemberInfo().getEmail());
+        // given
+        MemberEntity member = createMember();
 
-        if (findUser != null) {
-            MemberEntity member = MemberEntity.builder()
-                    .email("zxzz12@naver.com")
-                    .memberPw(passwordEncoder.encode("zxzz12"))
-                    .memberName("테스터2")
-                    .memberRole(createMemberInfo().getMemberRole())
-                    .nickName("테스터2")
-                    .address(AddressEntity.builder()
-                            .memberAddr(createMemberInfo().getAddress().getMemberAddr())
-                            .memberAddrDetail(createMemberInfo().getAddress().getMemberAddrDetail())
-                            .memberZipCode(createMemberInfo().getAddress().getMemberZipCode())
-                            .build()).build();
-            MemberEntity save = memberRepository.save(member);
-            Assertions.assertThat(save.getEmail()).isEqualTo(member.getEmail());
-            Assertions.assertThat(save.getMemberName()).isEqualTo(member.getMemberName());
-            Assertions.assertThat(save.getMemberRole()).isEqualTo(member.getMemberRole());
-            Assertions.assertThat(save.getNickName()).isEqualTo(member.getNickName());
-            Assertions.assertThat(save.getAddress().getMemberAddr())
-                    .isEqualTo(member.getAddress().getMemberAddr());
-            Assertions.assertThat(save.getAddress().getMemberAddrDetail())
-                    .isEqualTo(member.getAddress().getMemberAddrDetail());
-            Assertions.assertThat(save.getAddress().getMemberZipCode())
-                    .isEqualTo(member.getAddress().getMemberZipCode());
-        }
-    }
+        UpdateMemberDTO request = UpdateMemberDTO.builder()
+                .nickName("수정된닉네임")
+                .memberPw(null)
+                .memberAddress(null)
+                .build();
 
-    @Test
-    @DisplayName("이메일 중복 체크")
-    void emailCheck() {
-        MemberEntity findUser = memberRepository.findByEmail(createMemberInfo().getEmail());
-        Assertions.assertThat(findUser).isNull();
-    }
+        member.updateMember(request, null);
 
-//    @Test
-//    @DisplayName("이메일 중복 체크")
-//    void emailCheck_fail() {
-//        // given
-//        MemberEntity memberInfo = createMemberInfo();
-//        MemberEntity memberInfo2 = createMemberInfo();
-//
-//        RequestMemberDTO requsetMember = RequestMemberDTO.builder()
-//                .email(memberInfo.getEmail())
-//                .memberName(memberInfo.getMemberName())
-//                .nickName(memberInfo.getNickName())
-//                .memberPw(memberInfo.getMemberPw())
-//                .build();
-//
-//        // when
-////        memberService.signUp(requsetMember);
-//
-//        // then
-//        assertThrows(IllegalStateException.class, () -> {
-//            memberService.emailCheck(memberInfo2.getEmail());
-//        });
-//    }
-//
-//    @Test
-//    @DisplayName("닉네임 중복 체크")
-//    void nickNameCheck() {
-//        MemberEntity findNickName = memberRepository.findByNickName(createMemberInfo().getNickName());
-//        Assertions.assertThat(findNickName).isNull();
-//    }
-//
-//    @Test
-//    @DisplayName("중복회원 예외")
-//    void 중복회원_예외() {
-//        // given
-//        MemberEntity memberInfo = createMemberInfo();
-//        MemberEntity memberInfo2 = createMemberInfo();
-//
-//        // when
-//        memberRepository.save(memberInfo);
-//
-//        // then
-//        // 코드 실행 중 예외가 발생하지 않으면 테스트가 실패합니다.
-//        Assertions.assertThatThrownBy(() -> memberRepository.save(memberInfo2))
-//                .isInstanceOf(IllegalStateException.class);
-//        fail("예외가 발생해야 합니다.");
-//    }
+        given(memberRepository.findByEmail(anyString())).willReturn(member);
+        given(memberRepository.findByNickName(eq(member.getNickName()))).willReturn(member);
+        given(memberRepository.findByNickName(not(eq(member.getNickName())).toString())).willReturn(null);
+        given(memberRepository.save(any())).willReturn(member);
+
+        // when
+        ResponseEntity<?> responseEntity = memberService.updateUser(1L, request, "test@test.com");
+        ResponseMemberDTO body = (ResponseMemberDTO) responseEntity.getBody();
+
+        // then
+        verify(memberRepository).save(any());
+        Assertions.assertThat(Objects.requireNonNull(body).getEmail()).isEqualTo(member.getEmail());
+        Assertions.assertThat(body.getMemberName()).isEqualTo(member.getMemberName());
+        Assertions.assertThat(body.getNickName()).isNotEqualTo(member.getNickName());
+}
 }
