@@ -53,7 +53,7 @@ public class TokenEntity {
 
     // 토큰 엔티티로 변환
     public static TokenEntity tokenEntity(TokenDTO token) {
-        return com.example.shopping.entity.jwt.TokenEntity.builder()
+        return TokenEntity.builder()
                 .grantType(token.getGrantType())
                 .accessToken(token.getAccessToken())
                 .accessTokenTime(token.getAccessTokenTime())
