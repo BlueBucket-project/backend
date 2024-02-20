@@ -13,7 +13,12 @@ import lombok.ToString;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
-
+/*
+ *   writer : 유요한
+ *   work :
+ *          관리자 정보만 Response하고 위한 용도
+ *   date : 2024/01/10
+ * */
 @NoArgsConstructor
 @ToString
 @Getter
