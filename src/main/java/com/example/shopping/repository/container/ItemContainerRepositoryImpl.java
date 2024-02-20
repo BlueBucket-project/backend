@@ -17,7 +17,13 @@ import static com.example.shopping.entity.Container.QItemContainerEntity.*;
 import static com.example.shopping.entity.item.QItemEntity.itemEntity;
 import static com.querydsl.core.types.Order.ASC;
 import static com.querydsl.core.types.Order.DESC;
-
+/*
+ *   writer : 유요한
+ *   work :
+ *          QueryDsl를 사용하기 위해서 구현한 클래스
+ *          정렬은 동적으로 처리하고 있습니다.
+ *   date : 2024/01/26
+ * */
 @RequiredArgsConstructor
 public class ItemContainerRepositoryImpl implements ItemContainerRepositoryCustom{
 
