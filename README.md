@@ -34,7 +34,7 @@
 - 디스코드
  
 ---
-## 화면 구성 (일반 유저)📺
+## 화면 구성 📺
 | 로그인 | 회원가입  | 회원 수정 | 회원 탈퇴 |
 | :-------------------------------------------: | :----------------------: | :---------------------:| :--------------------------:|
 |  <img width="220" src="https://velog.velcdn.com/images/zxzz45/post/1830e0c9-4d46-4a75-8144-034542b831c1/image.gif"/> |  <img width="220" src="https://github.com/BlueBucket-project/backend/assets/110465572/988d6155-3515-466d-9bb3-456377450b21"/>| <img width="220" src="https://github.com/BlueBucket-project/backend/assets/110465572/8bf8d64a-2034-4175-af95-701994d8c213"/> | <img width="220" src="https://velog.velcdn.com/images/zxzz45/post/2f373513-6bf1-436d-b7a8-20570c58f78c/image.gif"/>|
