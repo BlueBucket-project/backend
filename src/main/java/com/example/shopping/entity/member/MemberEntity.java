@@ -100,8 +100,6 @@ public class MemberEntity extends BaseTimeEntity {
                     .memberAddrDetail(updateMember.getMemberAddress().getMemberAddrDetail())
                     .memberZipCode(updateMember.getMemberAddress().getMemberZipCode())
                     .build();
-        } else {
-            this.address = null;
         }
     }
 
