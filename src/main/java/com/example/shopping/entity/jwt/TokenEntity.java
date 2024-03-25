@@ -65,16 +65,9 @@ public class TokenEntity {
     }
 
     // 토큰 업데이트
-    public void updateToken(TokenDTO tokenDTO) {
-        TokenEntity.builder()
-                .id(this.id)
-                .grantType(tokenDTO.getGrantType())
-                .accessToken(tokenDTO.getAccessToken())
-                .accessTokenTime(tokenDTO.getAccessTokenTime())
-                .refreshToken(this.refreshToken)
-                .refreshTokenTime(this.refreshTokenTime)
-                .memberEmail(tokenDTO.getMemberEmail())
-                .memberId(this.memberId)
-                .build();
+    public void updateToken(TokenDTO token) {
+        this.grantType = token.getGrantType();
+        this.accessToken = token.getAccessToken();
+        this.refreshToken = token.getRefreshToken();
     }
 }
